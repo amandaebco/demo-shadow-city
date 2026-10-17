@@ -14,6 +14,8 @@ class Settings:
     gemini_model: str
     gemini_fallback_model: str
     gemini_concurrency: int
+    # Layer 2 determinism: replay identical decisions from Firestore decision_cache.
+    decision_cache: bool
 
 
 def load_settings() -> Settings:
@@ -25,4 +27,5 @@ def load_settings() -> Settings:
         gemini_model=os.environ.get("GEMINI_MODEL", "gemini-3.8-flash"),
         gemini_fallback_model=os.environ.get("GEMINI_FALLBACK_MODEL", "gemini-3.5-flash-lite"),
         gemini_concurrency=int(os.environ.get("GEMINI_CONCURRENCY", "16")),
+        decision_cache=os.environ.get("DECISION_CACHE", "on") == "on",
     )

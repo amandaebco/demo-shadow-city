@@ -29,7 +29,7 @@ bind() { gcloud projects add-iam-policy-binding $P --member=serviceAccount:$1@$P
 bind sc-orchestrator roles/datastore.user "$COND"
 bind sc-orchestrator roles/pubsub.publisher None
 bind sc-orchestrator roles/aiplatform.user None
-bind sc-system-one   roles/datastore.viewer "$COND"
+bind sc-system-one   roles/datastore.user "$COND"
 bind sc-system-one   roles/aiplatform.user None
 bind sc-sim-worker   roles/datastore.user "$COND"
 bind sc-sim-worker   roles/pubsub.subscriber None
@@ -43,7 +43,7 @@ The `sleep` avoids "concurrent policy changes" errors; rerun a failed line if on
 | Account | Roles | Why |
 | --- | --- | --- |
 | `sc-orchestrator` | `datastore.user`*, `pubsub.publisher`, `aiplatform.user` | Writes scenarios, personas and reports, publishes scenario events, calls Gemini |
-| `sc-system-one` | `datastore.viewer`*, `aiplatform.user` | Reads scenario seeds and personas, calls Gemini |
+| `sc-system-one` | `datastore.user`*, `aiplatform.user` | Reads scenario seeds and personas, reads and writes `decision_cache`, calls Gemini |
 | `sc-sim-worker` (Track B) | `datastore.user`*, `pubsub.subscriber`, `pubsub.publisher`, `run.invoker` on `system-one` | Runs the simulation |
 
 \* Conditional on `resource.name == "projects/ebc-cloud-dev-03/databases/shadow-city"`, so no

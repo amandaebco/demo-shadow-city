@@ -11,7 +11,9 @@ from app.costs import Usage
 from app.models import DecisionRequestItem, DecisionResponseItem
 
 
-def log_decision(request: DecisionRequestItem, response: DecisionResponseItem, usage: Usage | None = None) -> None:
+def log_decision(
+    request: DecisionRequestItem, response: DecisionResponseItem, usage: Usage | None = None, cache: str = "off"
+) -> None:
     entry = {
         "severity": "INFO",
         "message": f"decision {response.decision_id} by {response.decided_by.value}",
@@ -20,5 +22,7 @@ def log_decision(request: DecisionRequestItem, response: DecisionResponseItem, u
         "response": response.model_dump(mode="json"),
         # Token usage and cost of this decision (None for the rule mock).
         "usage": usage.as_dict() if usage else None,
+        # "hit": replayed from decision_cache, no model call; "miss": decided now; "off": no cache.
+        "cache": cache,
     }
     print(json.dumps(entry), file=sys.stdout, flush=True)

@@ -87,7 +87,8 @@ def test_batch_keeps_order(item):
         it = dict(item, request_id=f"q_{i}")
         items.append(DecisionRequestItem.model_validate(it))
     results = run(decider.decide_batch(items))
-    assert [r.request_id for r, _ in results] == [f"q_{i}" for i in range(10)]
+    assert [o.response.request_id for o in results] == [f"q_{i}" for i in range(10)]
+    assert {o.cache for o in results} == {"off"}
 
 
 def test_prompt_and_schema_cover_only_listed_options(item):

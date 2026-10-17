@@ -1,6 +1,6 @@
 # Shadow City — Integration Contract
 
-**Version:** v1.2 (frozen, 2026-10-17) — v1.1 adds the named Firestore database `shadow-city`; v1.2 adds the optional `population_id` field (2.1, 2.2) and clarifies the pre-Layer-5 System One decider (10.3)
+**Version:** v1.3 (frozen, 2026-10-17) — v1.1 adds the named Firestore database `shadow-city`; v1.2 adds the optional `population_id` field (2.1, 2.2) and clarifies the pre-Layer-5 System One decider (10.3); v1.3 adds the Track A-only `decision_cache` collection (5)
 **Status:** Frozen. Changes follow section 9.
 **GCP project:** `ebc-cloud-dev-03`
 **Source of truth for design:** `docs/REFERENCE.md`
@@ -300,6 +300,9 @@ All paths below live in the **named Firestore database `shadow-city`** (Native m
 | `scenarios/{scenario_id}/metrics/summary` | B | Frontend, A |
 | `personas/{persona_id}` | A creates; B appends `memory` only | Both |
 | `reports/{report_id}` | A | Frontend |
+| `decision_cache/{cache_key}` | A (`system-one`) | A only; Track B never reads or writes it |
+
+`decision_cache` makes System One deterministic (Layer 2): an identical decision request (same seed, tick, persona, options and context; `request_id` excluded) returns the stored decision instead of asking the model again. It changes nothing in the request/response shapes.
 
 Tick document IDs are zero-padded: `0000`, `0001`, …, `0203`.
 
