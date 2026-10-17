@@ -11,9 +11,10 @@ Track A — FastAPI service for scenarios, personas and Gemini agents (CONTRACT.
 | `GET` | `/v1/scenarios` | Newest first, max 100 |
 | `GET` | `/v1/scenarios/{id}` | Scenario |
 | `GET` | `/v1/scenarios/{id}/metrics` | Reads `scenarios/{id}/metrics/summary` written by Track B |
+| `GET` | `/v1/scenarios/{id}/report` | Analyst report (§2.6); see "Result summary" |
 | `GET` | `/v1/personas/{id}` | Persona |
 
-Not yet: `compare`, `report`, `verification` (Layer 3–4), persona decisions (Layer 4), backtests (Layer 7).
+Not yet: `compare`, `verification` (Layer 3–4), persona decisions (Layer 4), backtests (Layer 7).
 Errors follow CONTRACT.md §7; invalid scenario bodies return `INVALID_SCENARIO` with `details.field`.
 
 ## Scenario flow
@@ -23,6 +24,16 @@ Errors follow CONTRACT.md §7; invalid scenario bodies return `INVALID_SCENARIO`
    is created, or reused if it already exists, and `population_id` is set on the scenario (CONTRACT.md v1.2).
 3. Publishes `{"scenario_id", "seed"}` to `scenario-start`. Track B takes over and sets `running`.
 4. On failure: status `failed` and a `scenario-failed` message with `stage: "population"`.
+
+## Result summary (Layer 1)
+
+- `GET /v1/scenarios/{id}/report` returns the stored report `reports/r_analyst_{id without s_}` if it exists.
+- Otherwise, once Track B has written `scenarios/{id}/metrics/summary`, Gemini writes the report from the
+  scenario and its metrics, it is stored, and later calls return the stored copy. Before metrics exist: 404.
+  If Gemini fails: 503 `MODEL_UNAVAILABLE`, and the client can retry.
+- Gemini may quote numbers from the metrics but never derives new ones. `caveats` always includes
+  "Synthetic population; directional results only."
+- No Pub/Sub subscription is needed yet. Layer 3 adds the `scenario-completed` trigger and baseline-vs-variant comparison.
 
 ## Population (REFERENCE.md §6.1)
 

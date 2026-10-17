@@ -9,7 +9,7 @@ from app.main import app
 
 class FakeStore:
     def __init__(self):
-        self.scenarios, self.personas, self.metrics = {}, {}, {}
+        self.scenarios, self.personas, self.metrics, self.reports = {}, {}, {}, {}
 
     def create_scenario(self, scenario):
         assert scenario["scenario_id"] not in self.scenarios
@@ -26,6 +26,12 @@ class FakeStore:
 
     def get_metrics(self, scenario_id):
         return self.metrics.get(scenario_id)
+
+    def get_report(self, report_id):
+        return self.reports.get(report_id)
+
+    def save_report(self, report):
+        self.reports[report["report_id"]] = report
 
     def get_persona(self, persona_id):
         return self.personas.get(persona_id)
@@ -62,6 +68,21 @@ def fake_profile(index):
     }
 
 
+class FakeReportWriter:
+    def __init__(self, fail=False):
+        self.fail = fail
+        self.calls = 0
+
+    async def write(self, scenario, metrics):
+        self.calls += 1
+        if self.fail:
+            raise RuntimeError("Vertex AI unavailable")
+        from app.report import report_id_for
+
+        return {"report_id": report_id_for(scenario["scenario_id"]), "scenario_id": scenario["scenario_id"],
+                "headline": "Summary.", "generated_by": "gemini-system-two"}
+
+
 class FakeGeminiModels:
     """Answers every persona prompt with a valid profile for each listed index."""
 
@@ -91,13 +112,16 @@ def deps():
         publisher=FakePublisher(),
         models=models,
         generator=PersonaGenerator(fake_client(models), "fake-model"),
+        report_writer=FakeReportWriter(),
     )
 
 
 @pytest.fixture
 def client(deps):
-    app.state.store, app.state.generator, app.state.publisher = deps.store, deps.generator, deps.publisher
+    names = ("store", "generator", "publisher", "report_writer")
+    for name in names:
+        setattr(app.state, name, getattr(deps, name))
     with TestClient(app) as test_client:
         yield test_client
-    for name in ("store", "generator", "publisher"):
+    for name in names:
         delattr(app.state, name)
