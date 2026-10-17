@@ -13,6 +13,7 @@ import time
 from google.genai import types
 
 from app import rules
+from app.costs import Usage, usage_from_response
 from app.models import (
     DecidedBy,
     DecisionRequestItem,
@@ -110,28 +111,33 @@ class GeminiDecider:
         self._personas = personas
         self._semaphore = asyncio.Semaphore(concurrency)
 
-    async def decide_batch(self, items: list[DecisionRequestItem]) -> list[DecisionResponseItem]:
-        return list(await asyncio.gather(*(self.decide(item) for item in items)))
+    async def decide_batch(
+        self, items: list[DecisionRequestItem]
+    ) -> list[tuple[DecisionResponseItem, Usage | None]]:
+        return list(await asyncio.gather(*(self.decide_with_usage(item) for item in items)))
 
     async def decide(self, item: DecisionRequestItem) -> DecisionResponseItem:
+        return (await self.decide_with_usage(item))[0]
+
+    async def decide_with_usage(self, item: DecisionRequestItem) -> tuple[DecisionResponseItem, Usage | None]:
         started = time.perf_counter()
         persona = await self._personas.get(item.persona_id) if self._personas else None
         async with self._semaphore:
             for model in self._models:
                 try:
-                    raw = await self._ask(model, item, persona)
+                    raw, usage = await self._ask(model, item, persona)
                     break
                 except Exception:
                     logger.exception("Gemini model %s failed for %s", model, item.request_id)
             else:
                 # Every Gemini model failed: last-resort rule decision (decided_by: rule-fallback).
-                return rules.decide(item)
+                return rules.decide(item), None
 
         probabilities = normalize_probabilities(raw.get("probabilities") or {}, item.options)
         seed = await self._seeds.get(item.scenario_id)
         chosen = sample(probabilities, decision_rng(seed, item.tick, item.persona_id))
         reason = explain(chosen, probabilities, str(raw.get("reason_short") or "").strip())
-        return DecisionResponseItem(
+        response = DecisionResponseItem(
             request_id=item.request_id,
             decision_id=rules.decision_id_for(item.request_id),
             probabilities=probabilities,
@@ -141,8 +147,9 @@ class GeminiDecider:
             model_version=model,
             latency_ms=int((time.perf_counter() - started) * 1000),
         )
+        return response, usage
 
-    async def _ask(self, model: str, item: DecisionRequestItem, persona: dict | None) -> dict:
+    async def _ask(self, model: str, item: DecisionRequestItem, persona: dict | None) -> tuple[dict, Usage | None]:
         response = await self._client.aio.models.generate_content(
             model=model,
             contents=build_prompt(item, persona),
@@ -156,4 +163,4 @@ class GeminiDecider:
         parsed = json.loads(response.text)
         if not isinstance(parsed, dict):
             raise ValueError("Gemini returned non-object JSON")
-        return parsed
+        return parsed, usage_from_response(model, response)
