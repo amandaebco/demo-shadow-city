@@ -73,8 +73,9 @@ class FakeReportWriter:
         self.fail = fail
         self.calls = 0
 
-    async def write(self, scenario, metrics):
+    async def write(self, scenario, metrics, base_scenario=None, base_metrics=None):
         self.calls += 1
+        self.last_base = base_scenario
         if self.fail:
             raise RuntimeError("Vertex AI unavailable")
         from app.report import report_id_for
