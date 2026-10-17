@@ -32,8 +32,14 @@ From Layer 5 a Gemma decider on Cloud Run GPU replaces both (`gemma-system-one`)
   One call takes about 5 s, so a 50-item batch takes roughly 15–20 s. The p95 target in §4.1 applies from Layer 5.
 - Gemini output varies slightly between runs even at temperature 0, so the same scenario can
   differ between runs. TODO(Layer 2): cache decisions by request content to meet "identical results twice".
+- **Decision cache (Layer 2 determinism):** the key is a SHA-256 of model, seed, tick, persona, options and
+  the full context (`request_id` and `scenario_id` excluded). A hit returns the stored decision with no model
+  call, so replaying a scenario gives identical decisions and costs nothing. Identical requests within one batch
+  are decided once. Rule-fallback decisions are never cached. Stored in Firestore `decision_cache/{key}`
+  (CONTRACT.md v1.3, Track A only). Disable with `DECISION_CACHE=off`. If the cache cannot be read or
+  written, decisions still go through, just without replay.
 - Every decision is logged as one structured JSON line (`"event": "decision"`) with the full
-  request and response, picked up by Cloud Logging.
+  request and response, token usage, and cache status (`hit`, `miss`, `off`), picked up by Cloud Logging.
 
 ## Endpoints
 
