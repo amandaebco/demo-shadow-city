@@ -1,4 +1,4 @@
-"""Deterministic simulation engine for Layer 0 (placeholder) and Layer 1 (straight-line MVP)."""
+"""Deterministic simulation engine for Layer 0, Layer 1, and Layer 2 (OSM road graph & station gating)."""
 
 from __future__ import annotations
 
@@ -6,7 +6,7 @@ import hashlib
 import math
 import random
 from collections import defaultdict
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Any, Protocol
 
 from sim_worker.config import (
@@ -16,6 +16,7 @@ from sim_worker.config import (
     TOTAL_TICKS,
 )
 from sim_worker.physics import ZoneIndex, compute_options_detail
+from sim_worker.road_graph import JakartaNetwork, RoutePlan
 
 
 class DecisionProvider(Protocol):
@@ -81,6 +82,7 @@ class SimulationResult:
     tick_states: list[TickState]
     metrics_summary: dict[str, Any]
     decisions: list[dict[str, Any]]
+    scenario_memories: dict[str, list[str]] = field(default_factory=dict)
 
 
 def run_placeholder_tick_loop(
@@ -111,34 +113,64 @@ def run_placeholder_tick_loop(
     return states
 
 
-def simulate_scenario_layer1(
+def simulate_scenario_layer2(
     scenario: dict[str, Any],
     personas: list[dict[str, Any]],
     zones: ZoneIndex,
     decision_provider: DecisionProvider,
+    network: JakartaNetwork | None = None,
     total_ticks: int = TOTAL_TICKS,
 ) -> SimulationResult:
-    """Run Layer 1 straight-line simulation with System One mode_choice decisions."""
-    scenario_id = scenario["scenario_id"]
-    policies = scenario.get("policies") or []
-    events = scenario.get("events") or []
+    """Run Layer 2 deterministic simulation over the Jakarta OSM road graph.
+
+    Enforces:
+    - Byte-for-byte reproducible System One decision requests (canonical option order,
+      sorted active_policies/active_events, verbatim persona_summary, scenario-scoped memory).
+    - Operational MRT/KRL station reachability gating and access/egress walking + wait times.
+    - Multi-waypoint interpolation along the OSM road graph.
+    - Scenario-scoped persona memory (never mutating personas/{id}.memory).
+    """
+    scenario_id = str(scenario["scenario_id"])
+    policies = list(scenario.get("policies") or [])
+    events = list(scenario.get("events") or [])
+
+    if network is None:
+        network = JakartaNetwork.from_file()
 
     # Sort personas deterministically by persona_id
-    sorted_personas = sorted(personas, key=lambda p: p["persona_id"])
+    sorted_personas = sorted(personas, key=lambda p: str(p["persona_id"]))
+
+    # Per-scenario memory state initialized from each persona's starting memory (max 5, newest last)
+    # Per CONTRACT.md v1.4 sections 2.1, 4.3, 5: never write to personas/{id}.memory.
+    scenario_memories: dict[str, list[str]] = {
+        str(p["persona_id"]): [str(m) for m in list(p.get("memory") or [])[-5:]]
+        for p in sorted_personas
+    }
 
     # 1. Build mode_choice decision requests for each persona at their usual_departure_tick
     request_items: list[dict[str, Any]] = []
     persona_options_map: dict[str, dict[str, dict[str, Any]]] = {}
+    persona_routes_map: dict[str, RoutePlan] = {}
 
     for p in sorted_personas:
-        pid = p["persona_id"]
+        pid = str(p["persona_id"])
         dep_tick = max(0, min(total_ticks - 2, int(p.get("usual_departure_tick", 24))))
+
+        home_lat = float(p["home"]["lat"])
+        home_lng = float(p["home"]["lng"])
+        work_lat = float(p["work"]["lat"])
+        work_lng = float(p["work"]["lng"])
+
+        route_plan = network.route(home_lat, home_lng, work_lat, work_lng)
+        persona_routes_map[pid] = route_plan
+
         options, options_detail, active_pol_str, active_ev_str = compute_options_detail(
             persona=p,
             tick=dep_tick,
             policies=policies,
             events=events,
             zones=zones,
+            network=network,
         )
         persona_options_map[pid] = options_detail
 
@@ -149,14 +181,14 @@ def simulate_scenario_layer1(
                 "scenario_id": scenario_id,
                 "tick": dep_tick,
                 "persona_id": pid,
-                "cluster_id": p.get("cluster_id", pid),
+                "cluster_id": str(p.get("cluster_id", pid)),
                 "question_type": "mode_choice",
                 "options": options,
                 "context": {
-                    "persona_summary": p.get("profile_summary", ""),
+                    "persona_summary": str(p.get("profile_summary", "")),
                     "cost_sensitivity": float(p.get("cost_sensitivity", 0.5)),
                     "time_sensitivity": float(p.get("time_sensitivity", 0.5)),
-                    "memory": list(p.get("memory") or [])[-5:],
+                    "memory": list(scenario_memories[pid])[-5:],
                     "options_detail": options_detail,
                     "active_policies": active_pol_str,
                     "active_events": active_ev_str,
@@ -168,10 +200,10 @@ def simulate_scenario_layer1(
     responses = decision_provider.decide_batch(request_items)
     response_by_req_id = {r["request_id"]: r for r in responses}
 
-    # 3. Precompute each persona's commute schedule and metrics
+    # 3. Precompute each persona's commute schedule, road trajectory, and scenario memory
     persona_plans: list[dict[str, Any]] = []
     for p, req in zip(sorted_personas, request_items):
-        pid = p["persona_id"]
+        pid = str(p["persona_id"])
         resp = response_by_req_id.get(req["request_id"], {})
         chosen_mode = resp.get("chosen")
         options_detail = persona_options_map[pid]
@@ -189,6 +221,15 @@ def simulate_scenario_layer1(
         travel_ticks = max(1, math.ceil(est_min / MINUTES_PER_TICK))
         arr_tick = dep_tick + travel_ticks
 
+        # Update per-scenario memory after decision/commute (capped at 5, newest last)
+        mem_entry = (
+            f"Tick {dep_tick:04d}: commuted via {chosen_mode} "
+            f"({est_min} min, IDR {cost_idr}"
+            f"{', flooded route' if flooded else ''})."
+        )
+        updated_mem = (scenario_memories[pid] + [mem_entry])[-5:]
+        scenario_memories[pid] = updated_mem
+
         persona_plans.append(
             {
                 "persona": p,
@@ -200,14 +241,15 @@ def simulate_scenario_layer1(
                 "dep_tick": dep_tick,
                 "travel_ticks": travel_ticks,
                 "arr_tick": arr_tick,
-                "home_lat": float(p["home"]["lat"]),
-                "home_lng": float(p["home"]["lng"]),
-                "work_lat": float(p["work"]["lat"]),
-                "work_lng": float(p["work"]["lng"]),
+                "home_lat": round(float(p["home"]["lat"]), 5),
+                "home_lng": round(float(p["home"]["lng"]), 5),
+                "work_lat": round(float(p["work"]["lat"]), 5),
+                "work_lng": round(float(p["work"]["lng"]), 5),
+                "route_plan": persona_routes_map[pid],
             }
         )
 
-    # 4. Step through ticks 0..total_ticks-1 and interpolate straight-line positions
+    # 4. Step through ticks 0..total_ticks-1 and interpolate along the OSM road path
     tick_states: list[TickState] = []
     for tick in range(START_TICK, total_ticks):
         pids: list[str] = []
@@ -223,22 +265,21 @@ def simulate_scenario_layer1(
             arr_tick = plan["arr_tick"]
 
             if tick < dep_tick:
-                lats.append(round(plan["home_lat"], 5))
-                lngs.append(round(plan["home_lng"], 5))
+                lats.append(plan["home_lat"])
+                lngs.append(plan["home_lng"])
                 statuses.append("at_home")
             elif tick < arr_tick:
                 frac = (tick - dep_tick + 1) / (plan["travel_ticks"] + 1)
-                lat = plan["home_lat"] + (plan["work_lat"] - plan["home_lat"]) * frac
-                lng = plan["home_lng"] + (plan["work_lng"] - plan["home_lng"]) * frac
-                lats.append(round(lat, 5))
-                lngs.append(round(lng, 5))
+                lat, lng = plan["route_plan"].interpolate(frac)
+                lats.append(lat)
+                lngs.append(lng)
                 if plan["flooded"] and 0.35 <= frac <= 0.65:
                     statuses.append("stuck")
                 else:
                     statuses.append("traveling")
             else:
-                lats.append(round(plan["work_lat"], 5))
-                lngs.append(round(plan["work_lng"], 5))
+                lats.append(plan["work_lat"])
+                lngs.append(plan["work_lng"])
                 statuses.append("at_work")
 
         tick_states.append(
@@ -263,7 +304,12 @@ def simulate_scenario_layer1(
         tick_states=tick_states,
         metrics_summary=metrics_summary,
         decisions=responses,
+        scenario_memories=scenario_memories,
     )
+
+
+# Backward-compatible alias for Layer 1 callers and tests
+simulate_scenario_layer1 = simulate_scenario_layer2
 
 
 def _compute_mode_share(modes: list[str]) -> dict[str, float]:
@@ -286,8 +332,8 @@ def _compute_metrics_summary(
 
     for plan in persona_plans:
         p = plan["persona"]
-        kel = p.get("home", {}).get("kelurahan", "Unknown")
-        inc = p.get("income_band", "middle")
+        kel = str(p.get("home", {}).get("kelurahan", "Unknown"))
+        inc = str(p.get("income_band", "middle"))
         by_kel[kel].append(plan)
         by_inc[inc].append(plan)
 
