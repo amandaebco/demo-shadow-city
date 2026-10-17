@@ -1,0 +1,2626 @@
+{
+ "source": "OpenStreetMap via Overpass API; © OpenStreetMap contributors, ODbL",
+ "built": "2026-10-17",
+ "kelurahan": [
+  {
+   "kelurahan": "Cakung Barat",
+   "kecamatan": "Cakung",
+   "lat": -6.17241,
+   "lng": 106.93414,
+   "population": null,
+   "population_source": null,
+   "population_year": null,
+   "osm_relation": 5802304
+  },
+  {
+   "kelurahan": "Cakung Timur",
+   "kecamatan": "Cakung",
+   "lat": -6.17441,
+   "lng": 106.95649,
+   "population": null,
+   "population_source": null,
+   "population_year": null,
+   "osm_relation": 5802318
+  },
+  {
+   "kelurahan": "Jatinegara",
+   "kecamatan": "Cakung",
+   "lat": -6.20325,
+   "lng": 106.91687,
+   "population": null,
+   "population_source": null,
+   "population_year": null,
+   "osm_relation": 5802220
+  },
+  {
+   "kelurahan": "Penggilingan",
+   "kecamatan": "Cakung",
+   "lat": -6.20216,
+   "lng": 106.93443,
+   "population": null,
+   "population_source": null,
+   "population_year": null,
+   "osm_relation": 5802172
+  },
+  {
+   "kelurahan": "Pulo Gebang",
+   "kecamatan": "Cakung",
+   "lat": -6.20565,
+   "lng": 106.9536,
+   "population": null,
+   "population_source": null,
+   "population_year": null,
+   "osm_relation": 5802176
+  },
+  {
+   "kelurahan": "Ujung Menteng",
+   "kecamatan": "Cakung",
+   "lat": -6.18653,
+   "lng": 106.96104,
+   "population": null,
+   "population_source": null,
+   "population_year": null,
+   "osm_relation": 5802268
+  },
+  {
+   "kelurahan": "Cempaka Putih Barat",
+   "kecamatan": "Cempaka Putih",
+   "lat": -6.17947,
+   "lng": 106.86381,
+   "population": 43594,
+   "population_source": "Data Kependudukan Bersih (DKB) Ditjen Dukcapil Kemendagri RI",
+   "population_year": "2023",
+   "osm_relation": 7198389
+  },
+  {
+   "kelurahan": "Cempaka Putih Timur",
+   "kecamatan": "Cempaka Putih",
+   "lat": -6.17714,
+   "lng": 106.87155,
+   "population": 28436,
+   "population_source": "Data Kependudukan Bersih (DKB) Ditjen Dukcapil Kemendagri RI",
+   "population_year": "2023",
+   "osm_relation": 7198380
+  },
+  {
+   "kelurahan": "Rawasari",
+   "kecamatan": "Cempaka Putih",
+   "lat": -6.19097,
+   "lng": 106.86539,
+   "population": 26592,
+   "population_source": "Data Kependudukan Bersih (DKB) Ditjen Dukcapil Kemendagri RI",
+   "population_year": "2023",
+   "osm_relation": 7192893
+  },
+  {
+   "kelurahan": "Cengkareng Barat",
+   "kecamatan": "Cengkareng",
+   "lat": -6.13849,
+   "lng": 106.7236,
+   "population": 84119,
+   "population_source": "Data Kependudukan Bersih (DKB) Ditjen Dukcapil Kemendagri RI",
+   "population_year": "2023",
+   "osm_relation": 5802260
+  },
+  {
+   "kelurahan": "Cengkareng Timur",
+   "kecamatan": "Cengkareng",
+   "lat": -6.13845,
+   "lng": 106.738,
+   "population": 105405,
+   "population_source": "Data Kependudukan Bersih (DKB) Ditjen Dukcapil Kemendagri RI",
+   "population_year": "2023",
+   "osm_relation": 5802252
+  },
+  {
+   "kelurahan": "Duri Kosambi",
+   "kecamatan": "Cengkareng",
+   "lat": -6.16888,
+   "lng": 106.71605,
+   "population": 103836,
+   "population_source": "Data Kependudukan Bersih (DKB) Ditjen Dukcapil Kemendagri RI",
+   "population_year": "2023",
+   "osm_relation": 5802235
+  },
+  {
+   "kelurahan": "Kapuk",
+   "kecamatan": "Cengkareng",
+   "lat": -6.13983,
+   "lng": 106.75631,
+   "population": 174334,
+   "population_source": "Data Kependudukan Bersih (DKB) Ditjen Dukcapil Kemendagri RI",
+   "population_year": "2023",
+   "osm_relation": 5802226
+  },
+  {
+   "kelurahan": "Kedaung Kali Angke",
+   "kecamatan": "Cengkareng",
+   "lat": -6.15087,
+   "lng": 106.75987,
+   "population": 41887,
+   "population_source": "Data Kependudukan Bersih (DKB) Ditjen Dukcapil Kemendagri RI",
+   "population_year": "2023",
+   "osm_relation": 5802204
+  },
+  {
+   "kelurahan": "Rawa Buaya",
+   "kecamatan": "Cengkareng",
+   "lat": -6.16522,
+   "lng": 106.738,
+   "population": 82167,
+   "population_source": "Data Kependudukan Bersih (DKB) Ditjen Dukcapil Kemendagri RI",
+   "population_year": "2023",
+   "osm_relation": 5802150
+  },
+  {
+   "kelurahan": "Cilandak Barat",
+   "kecamatan": "Cilandak",
+   "lat": -6.29031,
+   "lng": 106.79796,
+   "population": 62979,
+   "population_source": "Data Kependudukan Bersih (DKB) Ditjen Dukcapil Kemendagri RI",
+   "population_year": "2023",
+   "osm_relation": 5802320
+  },
+  {
+   "kelurahan": "Cipete Selatan",
+   "kecamatan": "Cilandak",
+   "lat": -6.2725,
+   "lng": 106.80565,
+   "population": 32899,
+   "population_source": "Data Kependudukan Bersih (DKB) Ditjen Dukcapil Kemendagri RI",
+   "population_year": "2023",
+   "osm_relation": 5802369
+  },
+  {
+   "kelurahan": "Lebak Bulus",
+   "kecamatan": "Cilandak",
+   "lat": -6.30262,
+   "lng": 106.77853,
+   "population": 47570,
+   "population_source": "Data Kependudukan Bersih (DKB) Ditjen Dukcapil Kemendagri RI",
+   "population_year": "2023",
+   "osm_relation": 5802338
+  },
+  {
+   "kelurahan": "Pondok Labu",
+   "kecamatan": "Cilandak",
+   "lat": -6.30917,
+   "lng": 106.79525,
+   "population": 58664,
+   "population_source": "Data Kependudukan Bersih (DKB) Ditjen Dukcapil Kemendagri RI",
+   "population_year": "2023",
+   "osm_relation": 5802195
+  },
+  {
+   "kelurahan": "Cilincing",
+   "kecamatan": "Cilincing",
+   "lat": -6.11128,
+   "lng": 106.94228,
+   "population": null,
+   "population_source": null,
+   "population_year": null,
+   "osm_relation": 5802258
+  },
+  {
+   "kelurahan": "Kalibaru",
+   "kecamatan": "Cilincing",
+   "lat": -6.10263,
+   "lng": 106.92239,
+   "population": null,
+   "population_source": null,
+   "population_year": null,
+   "osm_relation": 5802157
+  },
+  {
+   "kelurahan": "Marunda",
+   "kecamatan": "Cilincing",
+   "lat": -6.11182,
+   "lng": 106.9578,
+   "population": null,
+   "population_source": null,
+   "population_year": null,
+   "osm_relation": 5802123
+  },
+  {
+   "kelurahan": "Rorotan",
+   "kecamatan": "Cilincing",
+   "lat": -6.14509,
+   "lng": 106.95449,
+   "population": null,
+   "population_source": null,
+   "population_year": null,
+   "osm_relation": 5802333
+  },
+  {
+   "kelurahan": "Semper Barat",
+   "kecamatan": "Cilincing",
+   "lat": -6.12292,
+   "lng": 106.92662,
+   "population": null,
+   "population_source": null,
+   "population_year": null,
+   "osm_relation": 5802175
+  },
+  {
+   "kelurahan": "Semper Timur",
+   "kecamatan": "Cilincing",
+   "lat": -6.12091,
+   "lng": 106.93525,
+   "population": null,
+   "population_source": null,
+   "population_year": null,
+   "osm_relation": 5802197
+  },
+  {
+   "kelurahan": "Sukapura",
+   "kecamatan": "Cilincing",
+   "lat": -6.15238,
+   "lng": 106.92783,
+   "population": null,
+   "population_source": null,
+   "population_year": null,
+   "osm_relation": 5802345
+  },
+  {
+   "kelurahan": "Bambu Apus",
+   "kecamatan": "Cipayung",
+   "lat": -6.31374,
+   "lng": 106.90382,
+   "population": null,
+   "population_source": null,
+   "population_year": null,
+   "osm_relation": 5802354
+  },
+  {
+   "kelurahan": "Ceger",
+   "kecamatan": "Cipayung",
+   "lat": -6.3122,
+   "lng": 106.88986,
+   "population": null,
+   "population_source": null,
+   "population_year": null,
+   "osm_relation": 5802217
+  },
+  {
+   "kelurahan": "Cilangkap",
+   "kecamatan": "Cipayung",
+   "lat": -6.33372,
+   "lng": 106.90736,
+   "population": null,
+   "population_source": null,
+   "population_year": null,
+   "osm_relation": 5802271
+  },
+  {
+   "kelurahan": "Cipayung",
+   "kecamatan": "Cipayung",
+   "lat": -6.32986,
+   "lng": 106.89702,
+   "population": null,
+   "population_source": null,
+   "population_year": null,
+   "osm_relation": 5802253
+  },
+  {
+   "kelurahan": "Lubang Buaya",
+   "kecamatan": "Cipayung",
+   "lat": -6.29409,
+   "lng": 106.90456,
+   "population": null,
+   "population_source": null,
+   "population_year": null,
+   "osm_relation": 5802370
+  },
+  {
+   "kelurahan": "Munjul",
+   "kecamatan": "Cipayung",
+   "lat": -6.34893,
+   "lng": 106.89572,
+   "population": null,
+   "population_source": null,
+   "population_year": null,
+   "osm_relation": 5802147
+  },
+  {
+   "kelurahan": "Pondok Ranggon",
+   "kecamatan": "Cipayung",
+   "lat": -6.3567,
+   "lng": 106.90635,
+   "population": null,
+   "population_source": null,
+   "population_year": null,
+   "osm_relation": 5802377
+  },
+  {
+   "kelurahan": "Setu",
+   "kecamatan": "Cipayung",
+   "lat": -6.31344,
+   "lng": 106.91431,
+   "population": null,
+   "population_source": null,
+   "population_year": null,
+   "osm_relation": 5802381
+  },
+  {
+   "kelurahan": "Taman Mini Indonesia Indah (TMII)",
+   "kecamatan": "Cipayung",
+   "lat": -6.30327,
+   "lng": 106.89421,
+   "population": null,
+   "population_source": null,
+   "population_year": null,
+   "osm_relation": 5802281
+  },
+  {
+   "kelurahan": "Cibubur",
+   "kecamatan": "Ciracas",
+   "lat": -6.3561,
+   "lng": 106.88222,
+   "population": null,
+   "population_source": null,
+   "population_year": null,
+   "osm_relation": 5802337
+  },
+  {
+   "kelurahan": "Ciracas",
+   "kecamatan": "Ciracas",
+   "lat": -6.32687,
+   "lng": 106.87547,
+   "population": null,
+   "population_source": null,
+   "population_year": null,
+   "osm_relation": 5802363
+  },
+  {
+   "kelurahan": "Kelapa Dua Wetan",
+   "kecamatan": "Ciracas",
+   "lat": -6.34004,
+   "lng": 106.88222,
+   "population": null,
+   "population_source": null,
+   "population_year": null,
+   "osm_relation": 5802326
+  },
+  {
+   "kelurahan": "Rambutan",
+   "kecamatan": "Ciracas",
+   "lat": -6.30309,
+   "lng": 106.87702,
+   "population": null,
+   "population_source": null,
+   "population_year": null,
+   "osm_relation": 5802365
+  },
+  {
+   "kelurahan": "Susukan",
+   "kecamatan": "Ciracas",
+   "lat": -6.31329,
+   "lng": 106.86917,
+   "population": null,
+   "population_source": null,
+   "population_year": null,
+   "osm_relation": 5802386
+  },
+  {
+   "kelurahan": "Duren Sawit",
+   "kecamatan": "Duren Sawit",
+   "lat": -6.23427,
+   "lng": 106.91403,
+   "population": null,
+   "population_source": null,
+   "population_year": null,
+   "osm_relation": 5802244
+  },
+  {
+   "kelurahan": "Klender",
+   "kecamatan": "Duren Sawit",
+   "lat": -6.21912,
+   "lng": 106.90922,
+   "population": null,
+   "population_source": null,
+   "population_year": null,
+   "osm_relation": 5802359
+  },
+  {
+   "kelurahan": "Malaka Jaya",
+   "kecamatan": "Duren Sawit",
+   "lat": -6.22469,
+   "lng": 106.93517,
+   "population": null,
+   "population_source": null,
+   "population_year": null,
+   "osm_relation": 5802330
+  },
+  {
+   "kelurahan": "Malaka Sari",
+   "kecamatan": "Duren Sawit",
+   "lat": -6.22419,
+   "lng": 106.92832,
+   "population": null,
+   "population_source": null,
+   "population_year": null,
+   "osm_relation": 5802332
+  },
+  {
+   "kelurahan": "Pondok Bambu",
+   "kecamatan": "Duren Sawit",
+   "lat": -6.23509,
+   "lng": 106.90049,
+   "population": null,
+   "population_source": null,
+   "population_year": null,
+   "osm_relation": 5802210
+  },
+  {
+   "kelurahan": "Pondok Kelapa",
+   "kecamatan": "Duren Sawit",
+   "lat": -6.24105,
+   "lng": 106.93282,
+   "population": null,
+   "population_source": null,
+   "population_year": null,
+   "osm_relation": 5802136
+  },
+  {
+   "kelurahan": "Pondok Kopi",
+   "kecamatan": "Duren Sawit",
+   "lat": -6.22784,
+   "lng": 106.94309,
+   "population": null,
+   "population_source": null,
+   "population_year": null,
+   "osm_relation": 5802340
+  },
+  {
+   "kelurahan": "Cideng",
+   "kecamatan": "Gambir",
+   "lat": -6.17534,
+   "lng": 106.80748,
+   "population": 18079,
+   "population_source": "Data Kependudukan Bersih (DKB) Ditjen Dukcapil Kemendagri RI",
+   "population_year": "2023",
+   "osm_relation": 5802249
+  },
+  {
+   "kelurahan": "Gambir",
+   "kecamatan": "Gambir",
+   "lat": -6.17538,
+   "lng": 106.82688,
+   "population": 2928,
+   "population_source": "Data Kependudukan Bersih (DKB) Ditjen Dukcapil Kemendagri RI",
+   "population_year": "2023",
+   "osm_relation": 5802247
+  },
+  {
+   "kelurahan": "Kebon Kelapa",
+   "kecamatan": "Gambir",
+   "lat": -6.16387,
+   "lng": 106.82475,
+   "population": 11935,
+   "population_source": "Data Kependudukan Bersih (DKB) Ditjen Dukcapil Kemendagri RI",
+   "population_year": "2023",
+   "osm_relation": 5802205
+  },
+  {
+   "kelurahan": "Petojo Selatan",
+   "kecamatan": "Gambir",
+   "lat": -6.17485,
+   "lng": 106.81642,
+   "population": 18029,
+   "population_source": "Data Kependudukan Bersih (DKB) Ditjen Dukcapil Kemendagri RI",
+   "population_year": "2023",
+   "osm_relation": 5802285
+  },
+  {
+   "kelurahan": "Petojo Utara",
+   "kecamatan": "Gambir",
+   "lat": -6.16534,
+   "lng": 106.81566,
+   "population": 21062,
+   "population_source": "Data Kependudukan Bersih (DKB) Ditjen Dukcapil Kemendagri RI",
+   "population_year": "2023",
+   "osm_relation": 5802319
+  },
+  {
+   "kelurahan": "Grogol",
+   "kecamatan": "Grogol Petamburan",
+   "lat": -6.16001,
+   "lng": 106.79444,
+   "population": 20114,
+   "population_source": "Data Kependudukan Bersih (DKB) Ditjen Dukcapil Kemendagri RI",
+   "population_year": "2023",
+   "osm_relation": 5802156
+  },
+  {
+   "kelurahan": "Jelambar",
+   "kecamatan": "Grogol Petamburan",
+   "lat": -6.15981,
+   "lng": 106.78635,
+   "population": 35909,
+   "population_source": "Data Kependudukan Bersih (DKB) Ditjen Dukcapil Kemendagri RI",
+   "population_year": "2023",
+   "osm_relation": 5802317
+  },
+  {
+   "kelurahan": "Jelambar Baru",
+   "kecamatan": "Grogol Petamburan",
+   "lat": -6.14936,
+   "lng": 106.78764,
+   "population": 46675,
+   "population_source": "Data Kependudukan Bersih (DKB) Ditjen Dukcapil Kemendagri RI",
+   "population_year": "2023",
+   "osm_relation": 5802347
+  },
+  {
+   "kelurahan": "Tanjung Duren Selatan",
+   "kecamatan": "Grogol Petamburan",
+   "lat": -6.17929,
+   "lng": 106.78936,
+   "population": 30669,
+   "population_source": "Data Kependudukan Bersih (DKB) Ditjen Dukcapil Kemendagri RI",
+   "population_year": "2023",
+   "osm_relation": 5802170
+  },
+  {
+   "kelurahan": "Tanjung Duren Utara",
+   "kecamatan": "Grogol Petamburan",
+   "lat": -6.17516,
+   "lng": 106.78476,
+   "population": 20142,
+   "population_source": "Data Kependudukan Bersih (DKB) Ditjen Dukcapil Kemendagri RI",
+   "population_year": "2023",
+   "osm_relation": 5802231
+  },
+  {
+   "kelurahan": "Tomang",
+   "kecamatan": "Grogol Petamburan",
+   "lat": -6.17286,
+   "lng": 106.79685,
+   "population": 35464,
+   "population_source": "Data Kependudukan Bersih (DKB) Ditjen Dukcapil Kemendagri RI",
+   "population_year": "2023",
+   "osm_relation": 5802248
+  },
+  {
+   "kelurahan": "Wijaya Kusuma",
+   "kecamatan": "Grogol Petamburan",
+   "lat": -6.15452,
+   "lng": 106.77488,
+   "population": 48394,
+   "population_source": "Data Kependudukan Bersih (DKB) Ditjen Dukcapil Kemendagri RI",
+   "population_year": "2023",
+   "osm_relation": 5802142
+  },
+  {
+   "kelurahan": "Ciganjur",
+   "kecamatan": "Jagakarsa",
+   "lat": -6.33343,
+   "lng": 106.81069,
+   "population": 51648,
+   "population_source": "Data Kependudukan Bersih (DKB) Ditjen Dukcapil Kemendagri RI",
+   "population_year": "2023",
+   "osm_relation": 5802133
+  },
+  {
+   "kelurahan": "Cipedak",
+   "kecamatan": "Jagakarsa",
+   "lat": -6.35439,
+   "lng": 106.80403,
+   "population": 52028,
+   "population_source": "Data Kependudukan Bersih (DKB) Ditjen Dukcapil Kemendagri RI",
+   "population_year": "2023",
+   "osm_relation": 5802233
+  },
+  {
+   "kelurahan": "Jagakarsa",
+   "kecamatan": "Jagakarsa",
+   "lat": -6.32454,
+   "lng": 106.82126,
+   "population": 82305,
+   "population_source": "Data Kependudukan Bersih (DKB) Ditjen Dukcapil Kemendagri RI",
+   "population_year": "2023",
+   "osm_relation": 5802221
+  },
+  {
+   "kelurahan": "Lenteng Agung",
+   "kecamatan": "Jagakarsa",
+   "lat": -6.32325,
+   "lng": 106.83641,
+   "population": 69694,
+   "population_source": "Data Kependudukan Bersih (DKB) Ditjen Dukcapil Kemendagri RI",
+   "population_year": "2023",
+   "osm_relation": 5802160
+  },
+  {
+   "kelurahan": "Srengseng Sawah",
+   "kecamatan": "Jagakarsa",
+   "lat": -6.34802,
+   "lng": 106.82344,
+   "population": 76055,
+   "population_source": "add number population (penduduk tetap) based on dukcapil Kemendagri RI data",
+   "population_year": "2023",
+   "osm_relation": 5802376
+  },
+  {
+   "kelurahan": "Tanjung Barat",
+   "kecamatan": "Jagakarsa",
+   "lat": -6.30694,
+   "lng": 106.84841,
+   "population": 51545,
+   "population_source": "Data Kependudukan Bersih (DKB) Ditjen Dukcapil Kemendagri RI",
+   "population_year": "2023",
+   "osm_relation": 5802327
+  },
+  {
+   "kelurahan": "Bali Mester",
+   "kecamatan": "Jatinegara",
+   "lat": -6.21919,
+   "lng": 106.86557,
+   "population": null,
+   "population_source": null,
+   "population_year": null,
+   "osm_relation": 5802141
+  },
+  {
+   "kelurahan": "Bidara Cina",
+   "kecamatan": "Jatinegara",
+   "lat": -6.23475,
+   "lng": 106.86651,
+   "population": null,
+   "population_source": null,
+   "population_year": null,
+   "osm_relation": 5802368
+  },
+  {
+   "kelurahan": "Cipinang Besar Selatan",
+   "kecamatan": "Jatinegara",
+   "lat": -6.2288,
+   "lng": 106.88121,
+   "population": null,
+   "population_source": null,
+   "population_year": null,
+   "osm_relation": 5802278
+  },
+  {
+   "kelurahan": "Cipinang Besar Utara",
+   "kecamatan": "Jatinegara",
+   "lat": -6.22023,
+   "lng": 106.88062,
+   "population": null,
+   "population_source": null,
+   "population_year": null,
+   "osm_relation": 5802232
+  },
+  {
+   "kelurahan": "Cipinang Cempedak",
+   "kecamatan": "Jatinegara",
+   "lat": -6.2367,
+   "lng": 106.87365,
+   "population": null,
+   "population_source": null,
+   "population_year": null,
+   "osm_relation": 5802261
+  },
+  {
+   "kelurahan": "Cipinang Muara",
+   "kecamatan": "Jatinegara",
+   "lat": -6.22637,
+   "lng": 106.88936,
+   "population": null,
+   "population_source": null,
+   "population_year": null,
+   "osm_relation": 5802234
+  },
+  {
+   "kelurahan": "Rawa Bunga",
+   "kecamatan": "Jatinegara",
+   "lat": -6.21916,
+   "lng": 106.86878,
+   "population": null,
+   "population_source": null,
+   "population_year": null,
+   "osm_relation": 5802173
+  },
+  {
+   "kelurahan": "Galur",
+   "kecamatan": "Johar Baru",
+   "lat": -6.17614,
+   "lng": 106.85533,
+   "population": 22056,
+   "population_source": "Data Kependudukan Bersih (DKB) Ditjen Dukcapil Kemendagri RI",
+   "population_year": "2023",
+   "osm_relation": 5802161
+  },
+  {
+   "kelurahan": "Johar Baru",
+   "kecamatan": "Johar Baru",
+   "lat": -6.18622,
+   "lng": 106.85744,
+   "population": 45077,
+   "population_source": "Data Kependudukan Bersih (DKB) Ditjen Dukcapil Kemendagri RI",
+   "population_year": "2023",
+   "osm_relation": 5802372
+  },
+  {
+   "kelurahan": "Kampung Rawa",
+   "kecamatan": "Johar Baru",
+   "lat": -6.17942,
+   "lng": 106.8558,
+   "population": 26428,
+   "population_source": "Data Kependudukan Bersih (DKB) Ditjen Dukcapil Kemendagri RI",
+   "population_year": "2023",
+   "osm_relation": 5802307
+  },
+  {
+   "kelurahan": "Tanah Tinggi",
+   "kecamatan": "Johar Baru",
+   "lat": -6.18053,
+   "lng": 106.8485,
+   "population": 46908,
+   "population_source": "Data Kependudukan Bersih (DKB) Ditjen Dukcapil Kemendagri RI",
+   "population_year": "2023",
+   "osm_relation": 5802264
+  },
+  {
+   "kelurahan": "Kalideres",
+   "kecamatan": "Kalideres",
+   "lat": -6.14415,
+   "lng": 106.70262,
+   "population": 93485,
+   "population_source": "Data Kependudukan Bersih (DKB) Ditjen Dukcapil Kemendagri RI",
+   "population_year": "2023",
+   "osm_relation": 5802274
+  },
+  {
+   "kelurahan": "Kamal",
+   "kecamatan": "Kalideres",
+   "lat": -6.11368,
+   "lng": 106.69994,
+   "population": 72235,
+   "population_source": "Data Kependudukan Bersih (DKB) Ditjen Dukcapil Kemendagri RI",
+   "population_year": "2023",
+   "osm_relation": 5802353
+  },
+  {
+   "kelurahan": "Pegadungan",
+   "kecamatan": "Kalideres",
+   "lat": -6.1315,
+   "lng": 106.70274,
+   "population": 99457,
+   "population_source": "Data Kependudukan Bersih (DKB) Ditjen Dukcapil Kemendagri RI",
+   "population_year": "2023",
+   "osm_relation": 5802145
+  },
+  {
+   "kelurahan": "Semanan",
+   "kecamatan": "Kalideres",
+   "lat": -6.16684,
+   "lng": 106.7025,
+   "population": 94011,
+   "population_source": "Data Kependudukan Bersih (DKB) Ditjen Dukcapil Kemendagri RI",
+   "population_year": "2023",
+   "osm_relation": 5802267
+  },
+  {
+   "kelurahan": "Tegal Alur",
+   "kecamatan": "Kalideres",
+   "lat": -6.11551,
+   "lng": 106.71663,
+   "population": 108829,
+   "population_source": "Data Kependudukan Bersih (DKB) Ditjen Dukcapil Kemendagri RI",
+   "population_year": "2023",
+   "osm_relation": 5802171
+  },
+  {
+   "kelurahan": "Cipete Utara",
+   "kecamatan": "Kebayoran Baru",
+   "lat": -6.26104,
+   "lng": 106.80491,
+   "population": 41834,
+   "population_source": "Data Kependudukan Bersih (DKB) Ditjen Dukcapil Kemendagri RI",
+   "population_year": "2023",
+   "osm_relation": 5802209
+  },
+  {
+   "kelurahan": "Gandaria Utara",
+   "kecamatan": "Kebayoran Baru",
+   "lat": -6.25665,
+   "lng": 106.79092,
+   "population": 48875,
+   "population_source": "Data Kependudukan Bersih (DKB) Ditjen Dukcapil Kemendagri RI",
+   "population_year": "2023",
+   "osm_relation": 5802238
+  },
+  {
+   "kelurahan": "Gunung",
+   "kecamatan": "Kebayoran Baru",
+   "lat": -6.2354,
+   "lng": 106.79203,
+   "population": 11140,
+   "population_source": "Data Kependudukan Bersih (DKB) Ditjen Dukcapil Kemendagri RI",
+   "population_year": "2023",
+   "osm_relation": 5802265
+  },
+  {
+   "kelurahan": "Kramat Pela",
+   "kecamatan": "Kebayoran Baru",
+   "lat": -6.24539,
+   "lng": 106.79139,
+   "population": 17415,
+   "population_source": "Data Kependudukan Bersih (DKB) Ditjen Dukcapil Kemendagri RI",
+   "population_year": "2023",
+   "osm_relation": 5802371
+  },
+  {
+   "kelurahan": "Melawai",
+   "kecamatan": "Kebayoran Baru",
+   "lat": -6.24613,
+   "lng": 106.80292,
+   "population": 2939,
+   "population_source": "Data Kependudukan Bersih (DKB) Ditjen Dukcapil Kemendagri RI",
+   "population_year": "2023",
+   "osm_relation": 5802162
+  },
+  {
+   "kelurahan": "Petogogan",
+   "kecamatan": "Kebayoran Baru",
+   "lat": -6.24423,
+   "lng": 106.81191,
+   "population": 13791,
+   "population_source": "Data Kependudukan Bersih (DKB) Ditjen Dukcapil Kemendagri RI",
+   "population_year": "2023",
+   "osm_relation": 5802198
+  },
+  {
+   "kelurahan": "Pulo",
+   "kecamatan": "Kebayoran Baru",
+   "lat": -6.25261,
+   "lng": 106.80219,
+   "population": null,
+   "population_source": null,
+   "population_year": null,
+   "osm_relation": 5802302
+  },
+  {
+   "kelurahan": "Rawa Barat",
+   "kecamatan": "Kebayoran Baru",
+   "lat": -6.23613,
+   "lng": 106.81294,
+   "population": null,
+   "population_source": null,
+   "population_year": null,
+   "osm_relation": 5802323
+  },
+  {
+   "kelurahan": "Selong",
+   "kecamatan": "Kebayoran Baru",
+   "lat": -6.23436,
+   "lng": 106.80647,
+   "population": null,
+   "population_source": null,
+   "population_year": null,
+   "osm_relation": 5802275
+  },
+  {
+   "kelurahan": "Senayan",
+   "kecamatan": "Kebayoran Baru",
+   "lat": -6.2264,
+   "lng": 106.80884,
+   "population": null,
+   "population_source": null,
+   "population_year": null,
+   "osm_relation": 5802299
+  },
+  {
+   "kelurahan": "Cipulir",
+   "kecamatan": "Kebayoran Lama",
+   "lat": -6.23799,
+   "lng": 106.77267,
+   "population": null,
+   "population_source": null,
+   "population_year": null,
+   "osm_relation": 5802293
+  },
+  {
+   "kelurahan": "Gandaria Selatan",
+   "kecamatan": "Kebayoran Lama",
+   "lat": -6.2714,
+   "lng": 106.79146,
+   "population": null,
+   "population_source": null,
+   "population_year": null,
+   "osm_relation": 5802184
+  },
+  {
+   "kelurahan": "Grogol Selatan",
+   "kecamatan": "Kebayoran Lama",
+   "lat": -6.22974,
+   "lng": 106.78027,
+   "population": null,
+   "population_source": null,
+   "population_year": null,
+   "osm_relation": 5802132
+  },
+  {
+   "kelurahan": "Grogol Utara",
+   "kecamatan": "Kebayoran Lama",
+   "lat": -6.21654,
+   "lng": 106.78713,
+   "population": null,
+   "population_source": null,
+   "population_year": null,
+   "osm_relation": 5802167
+  },
+  {
+   "kelurahan": "Kebayoran Lama Selatan",
+   "kecamatan": "Kebayoran Lama",
+   "lat": -6.25394,
+   "lng": 106.77912,
+   "population": null,
+   "population_source": null,
+   "population_year": null,
+   "osm_relation": 5802311
+  },
+  {
+   "kelurahan": "Kebayoran Lama Utara",
+   "kecamatan": "Kebayoran Lama",
+   "lat": -6.24551,
+   "lng": 106.77732,
+   "population": null,
+   "population_source": null,
+   "population_year": null,
+   "osm_relation": 5802242
+  },
+  {
+   "kelurahan": "Pondok Pinang",
+   "kecamatan": "Kebayoran Lama",
+   "lat": -6.27557,
+   "lng": 106.7793,
+   "population": null,
+   "population_source": null,
+   "population_year": null,
+   "osm_relation": 5802300
+  },
+  {
+   "kelurahan": "Duri Kepa",
+   "kecamatan": "Kebon Jeruk",
+   "lat": -6.17632,
+   "lng": 106.77477,
+   "population": 74340,
+   "population_source": "Data Kependudukan Bersih (DKB) Ditjen Dukcapil Kemendagri RI",
+   "population_year": "2023",
+   "osm_relation": 5802225
+  },
+  {
+   "kelurahan": "Kebon Jeruk",
+   "kecamatan": "Kebon Jeruk",
+   "lat": -6.19449,
+   "lng": 106.77019,
+   "population": 69918,
+   "population_source": "Data Kependudukan Bersih (DKB) Ditjen Dukcapil Kemendagri RI",
+   "population_year": "2023",
+   "osm_relation": 5802188
+  },
+  {
+   "kelurahan": "Kedoya Selatan",
+   "kecamatan": "Kebon Jeruk",
+   "lat": -6.18189,
+   "lng": 106.7591,
+   "population": 40442,
+   "population_source": "Data Kependudukan Bersih (DKB) Ditjen Dukcapil Kemendagri RI",
+   "population_year": "2023",
+   "osm_relation": 5802207
+  },
+  {
+   "kelurahan": "Kedoya Utara",
+   "kecamatan": "Kebon Jeruk",
+   "lat": -6.16781,
+   "lng": 106.76152,
+   "population": 57769,
+   "population_source": "Data Kependudukan Bersih (DKB) Ditjen Dukcapil Kemendagri RI",
+   "population_year": "2023",
+   "osm_relation": 5802321
+  },
+  {
+   "kelurahan": "Kelapa Dua",
+   "kecamatan": "Kebon Jeruk",
+   "lat": -6.20949,
+   "lng": 106.76895,
+   "population": 30075,
+   "population_source": "Data Kependudukan Bersih (DKB) Ditjen Dukcapil Kemendagri RI",
+   "population_year": "2023",
+   "osm_relation": 5802383
+  },
+  {
+   "kelurahan": "Sukabumi Selatan",
+   "kecamatan": "Kebon Jeruk",
+   "lat": -6.22173,
+   "lng": 106.77144,
+   "population": 47984,
+   "population_source": "Data Kependudukan Bersih (DKB) Ditjen Dukcapil Kemendagri RI",
+   "population_year": "2023",
+   "osm_relation": 5802310
+  },
+  {
+   "kelurahan": "Sukabumi Utara",
+   "kecamatan": "Kebon Jeruk",
+   "lat": -6.20918,
+   "lng": 106.77717,
+   "population": 49754,
+   "population_source": "Data Kependudukan Bersih (DKB) Ditjen Dukcapil Kemendagri RI",
+   "population_year": "2023",
+   "osm_relation": 5802151
+  },
+  {
+   "kelurahan": "Kelapa Gading Barat",
+   "kecamatan": "Kelapa Gading",
+   "lat": -6.15603,
+   "lng": 106.89435,
+   "population": null,
+   "population_source": null,
+   "population_year": null,
+   "osm_relation": 5802186
+  },
+  {
+   "kelurahan": "Kelapa Gading Timur",
+   "kecamatan": "Kelapa Gading",
+   "lat": -6.1667,
+   "lng": 106.90239,
+   "population": null,
+   "population_source": null,
+   "population_year": null,
+   "osm_relation": 5802129
+  },
+  {
+   "kelurahan": "Pegangsaan Dua",
+   "kecamatan": "Kelapa Gading",
+   "lat": -6.16026,
+   "lng": 106.91448,
+   "population": null,
+   "population_source": null,
+   "population_year": null,
+   "osm_relation": 5802177
+  },
+  {
+   "kelurahan": "Rawa Terate",
+   "kecamatan": "Kelapa Gading",
+   "lat": -6.17937,
+   "lng": 106.91911,
+   "population": null,
+   "population_source": null,
+   "population_year": null,
+   "osm_relation": 5802314
+  },
+  {
+   "kelurahan": "Cempaka Baru",
+   "kecamatan": "Kemayoran",
+   "lat": -6.16787,
+   "lng": 106.86398,
+   "population": 40287,
+   "population_source": "Data Kependudukan Bersih (DKB) Ditjen Dukcapil Kemendagri RI",
+   "population_year": "2023",
+   "osm_relation": 5802378
+  },
+  {
+   "kelurahan": "Gunung Sahari Selatan",
+   "kecamatan": "Kemayoran",
+   "lat": -6.16126,
+   "lng": 106.84484,
+   "population": 23095,
+   "population_source": "Data Kependudukan Bersih (DKB) Ditjen Dukcapil Kemendagri RI",
+   "population_year": "2023",
+   "osm_relation": 5802388
+  },
+  {
+   "kelurahan": "Harapan Mulya",
+   "kecamatan": "Kemayoran",
+   "lat": -6.16999,
+   "lng": 106.85603,
+   "population": 28108,
+   "population_source": "Data Kependudukan Bersih (DKB) Ditjen Dukcapil Kemendagri RI",
+   "population_year": "2023",
+   "osm_relation": 5802255
+  },
+  {
+   "kelurahan": "Kebon Kosong",
+   "kecamatan": "Kemayoran",
+   "lat": -6.15912,
+   "lng": 106.85463,
+   "population": 37860,
+   "population_source": "Data Kependudukan Bersih (DKB) Ditjen Dukcapil Kemendagri RI",
+   "population_year": "2023",
+   "osm_relation": 5802355
+  },
+  {
+   "kelurahan": "Kemayoran",
+   "kecamatan": "Kemayoran",
+   "lat": -6.16459,
+   "lng": 106.84555,
+   "population": 25046,
+   "population_source": "Data Kependudukan Bersih (DKB) Ditjen Dukcapil Kemendagri RI",
+   "population_year": "2023",
+   "osm_relation": 5802357
+  },
+  {
+   "kelurahan": "Serdang",
+   "kecamatan": "Kemayoran",
+   "lat": -6.15895,
+   "lng": 106.86107,
+   "population": 36791,
+   "population_source": "Data Kependudukan Bersih (DKB) Ditjen Dukcapil Kemendagri RI",
+   "population_year": "2023",
+   "osm_relation": 5802390
+  },
+  {
+   "kelurahan": "Sumur Batu",
+   "kecamatan": "Kemayoran",
+   "lat": -6.1628,
+   "lng": 106.87263,
+   "population": 27984,
+   "population_source": "Data Kependudukan Bersih (DKB) Ditjen Dukcapil Kemendagri RI",
+   "population_year": "2023",
+   "osm_relation": 5802292
+  },
+  {
+   "kelurahan": "Utan Panjang",
+   "kecamatan": "Kemayoran",
+   "lat": -6.16464,
+   "lng": 106.85395,
+   "population": 36461,
+   "population_source": "Data Kependudukan Bersih (DKB) Ditjen Dukcapil Kemendagri RI",
+   "population_year": "2023",
+   "osm_relation": 5802346
+  },
+  {
+   "kelurahan": "Joglo",
+   "kecamatan": "Kembangan",
+   "lat": -6.21895,
+   "lng": 106.73918,
+   "population": 52877,
+   "population_source": "Data Kependudukan Bersih (DKB) Ditjen Dukcapil Kemendagri RI",
+   "population_year": "2023",
+   "osm_relation": 5802297
+  },
+  {
+   "kelurahan": "Kembangan Selatan",
+   "kecamatan": "Kembangan",
+   "lat": -6.18401,
+   "lng": 106.73648,
+   "population": 34606,
+   "population_source": "Data Kependudukan Bersih (DKB) Ditjen Dukcapil Kemendagri RI",
+   "population_year": "2023",
+   "osm_relation": 5802366
+  },
+  {
+   "kelurahan": "Kembangan Utara",
+   "kecamatan": "Kembangan",
+   "lat": -6.17178,
+   "lng": 106.74391,
+   "population": 70267,
+   "population_source": "Data Kependudukan Bersih (DKB) Ditjen Dukcapil Kemendagri RI",
+   "population_year": "2023",
+   "osm_relation": 5802149
+  },
+  {
+   "kelurahan": "Meruya Selatan",
+   "kecamatan": "Kembangan",
+   "lat": -6.207,
+   "lng": 106.73265,
+   "population": 42455,
+   "population_source": "Data Kependudukan Bersih (DKB) Ditjen Dukcapil Kemendagri RI",
+   "population_year": "2023",
+   "osm_relation": 5802291
+  },
+  {
+   "kelurahan": "Meruya Utara",
+   "kecamatan": "Kembangan",
+   "lat": -6.1985,
+   "lng": 106.74298,
+   "population": 56440,
+   "population_source": "Data Kependudukan Bersih (DKB) Ditjen Dukcapil Kemendagri RI",
+   "population_year": "2023",
+   "osm_relation": 5802324
+  },
+  {
+   "kelurahan": "Srengseng",
+   "kecamatan": "Kembangan",
+   "lat": -6.20961,
+   "lng": 106.75495,
+   "population": 59057,
+   "population_source": "Data Kependudukan Bersih (DKB) Ditjen Dukcapil Kemendagri RI",
+   "population_year": "2023",
+   "osm_relation": 5802201
+  },
+  {
+   "kelurahan": "Koja",
+   "kecamatan": "Koja",
+   "lat": -6.10588,
+   "lng": 106.89984,
+   "population": null,
+   "population_source": null,
+   "population_year": null,
+   "osm_relation": 5802254
+  },
+  {
+   "kelurahan": "Lagoa",
+   "kecamatan": "Koja",
+   "lat": -6.11369,
+   "lng": 106.91025,
+   "population": null,
+   "population_source": null,
+   "population_year": null,
+   "osm_relation": 5802125
+  },
+  {
+   "kelurahan": "Rawa Badak Selatan",
+   "kecamatan": "Koja",
+   "lat": -6.13162,
+   "lng": 106.89883,
+   "population": null,
+   "population_source": null,
+   "population_year": null,
+   "osm_relation": 5802343
+  },
+  {
+   "kelurahan": "Rawa Badak Utara",
+   "kecamatan": "Koja",
+   "lat": -6.12153,
+   "lng": 106.89825,
+   "population": null,
+   "population_source": null,
+   "population_year": null,
+   "osm_relation": 5802286
+  },
+  {
+   "kelurahan": "Tugu Selatan",
+   "kecamatan": "Koja",
+   "lat": -6.13631,
+   "lng": 106.9116,
+   "population": null,
+   "population_source": null,
+   "population_year": null,
+   "osm_relation": 5802270
+  },
+  {
+   "kelurahan": "Tugu Utara",
+   "kecamatan": "Koja",
+   "lat": -6.12482,
+   "lng": 106.91245,
+   "population": null,
+   "population_source": null,
+   "population_year": null,
+   "osm_relation": 5802362
+  },
+  {
+   "kelurahan": "Bale Kambang",
+   "kecamatan": "Kramat Jati",
+   "lat": -6.28121,
+   "lng": 106.85333,
+   "population": null,
+   "population_source": null,
+   "population_year": null,
+   "osm_relation": 5802214
+  },
+  {
+   "kelurahan": "Batu Ampar",
+   "kecamatan": "Kramat Jati",
+   "lat": -6.28072,
+   "lng": 106.86216,
+   "population": null,
+   "population_source": null,
+   "population_year": null,
+   "osm_relation": 5802154
+  },
+  {
+   "kelurahan": "Cawang",
+   "kecamatan": "Kramat Jati",
+   "lat": -6.25063,
+   "lng": 106.86637,
+   "population": null,
+   "population_source": null,
+   "population_year": null,
+   "osm_relation": 5802203
+  },
+  {
+   "kelurahan": "Cililitan",
+   "kecamatan": "Kramat Jati",
+   "lat": -6.26227,
+   "lng": 106.8636,
+   "population": null,
+   "population_source": null,
+   "population_year": null,
+   "osm_relation": 5802349
+  },
+  {
+   "kelurahan": "Dukuh",
+   "kecamatan": "Kramat Jati",
+   "lat": -6.29335,
+   "lng": 106.87806,
+   "population": null,
+   "population_source": null,
+   "population_year": null,
+   "osm_relation": 5802130
+  },
+  {
+   "kelurahan": "Kramat Jati",
+   "kecamatan": "Kramat Jati",
+   "lat": -6.2754,
+   "lng": 106.87095,
+   "population": null,
+   "population_source": null,
+   "population_year": null,
+   "osm_relation": 5802298
+  },
+  {
+   "kelurahan": "Tengah",
+   "kecamatan": "Kramat Jati",
+   "lat": -6.28947,
+   "lng": 106.86555,
+   "population": null,
+   "population_source": null,
+   "population_year": null,
+   "osm_relation": 5802183
+  },
+  {
+   "kelurahan": "Cipinang Melayu",
+   "kecamatan": "Makasar",
+   "lat": -6.24942,
+   "lng": 106.90005,
+   "population": null,
+   "population_source": null,
+   "population_year": null,
+   "osm_relation": 5802360
+  },
+  {
+   "kelurahan": "Halim Perdana Kusuma",
+   "kecamatan": "Makasar",
+   "lat": -6.26568,
+   "lng": 106.89352,
+   "population": null,
+   "population_source": null,
+   "population_year": null,
+   "osm_relation": 5802266
+  },
+  {
+   "kelurahan": "Kebon Pala",
+   "kecamatan": "Makasar",
+   "lat": -6.25361,
+   "lng": 106.87778,
+   "population": null,
+   "population_source": null,
+   "population_year": null,
+   "osm_relation": 5802152
+  },
+  {
+   "kelurahan": "Makasar",
+   "kecamatan": "Makasar",
+   "lat": -6.27497,
+   "lng": 106.87752,
+   "population": null,
+   "population_source": null,
+   "population_year": null,
+   "osm_relation": 5802309
+  },
+  {
+   "kelurahan": "Pinang Ranti",
+   "kecamatan": "Makasar",
+   "lat": -6.28574,
+   "lng": 106.88485,
+   "population": null,
+   "population_source": null,
+   "population_year": null,
+   "osm_relation": 5802215
+  },
+  {
+   "kelurahan": "Bangka",
+   "kecamatan": "Mampang Prapatan",
+   "lat": -6.264,
+   "lng": 106.81752,
+   "population": null,
+   "population_source": null,
+   "population_year": null,
+   "osm_relation": 5802200
+  },
+  {
+   "kelurahan": "Mampang Prapatan",
+   "kecamatan": "Mampang Prapatan",
+   "lat": -6.2428,
+   "lng": 106.82839,
+   "population": null,
+   "population_source": null,
+   "population_year": null,
+   "osm_relation": 5802182
+  },
+  {
+   "kelurahan": "Pela Mampang",
+   "kecamatan": "Mampang Prapatan",
+   "lat": -6.24694,
+   "lng": 106.81624,
+   "population": null,
+   "population_source": null,
+   "population_year": null,
+   "osm_relation": 5802294
+  },
+  {
+   "kelurahan": "Tegal Parang",
+   "kecamatan": "Mampang Prapatan",
+   "lat": -6.24914,
+   "lng": 106.82903,
+   "population": null,
+   "population_source": null,
+   "population_year": null,
+   "osm_relation": 5802308
+  },
+  {
+   "kelurahan": "Kayu Manis",
+   "kecamatan": "Matraman",
+   "lat": -6.20196,
+   "lng": 106.86237,
+   "population": null,
+   "population_source": null,
+   "population_year": null,
+   "osm_relation": 5802295
+  },
+  {
+   "kelurahan": "Kebon Manggis",
+   "kecamatan": "Matraman",
+   "lat": -6.20634,
+   "lng": 106.85495,
+   "population": null,
+   "population_source": null,
+   "population_year": null,
+   "osm_relation": 5802163
+  },
+  {
+   "kelurahan": "Palmeriam",
+   "kecamatan": "Matraman",
+   "lat": -6.20412,
+   "lng": 106.85878,
+   "population": null,
+   "population_source": null,
+   "population_year": null,
+   "osm_relation": 5802193
+  },
+  {
+   "kelurahan": "Pisangan Baru",
+   "kecamatan": "Matraman",
+   "lat": -6.21172,
+   "lng": 106.86824,
+   "population": null,
+   "population_source": null,
+   "population_year": null,
+   "osm_relation": 5802259
+  },
+  {
+   "kelurahan": "Utan Kayu Selatan",
+   "kecamatan": "Matraman",
+   "lat": -6.20378,
+   "lng": 106.86848,
+   "population": null,
+   "population_source": null,
+   "population_year": null,
+   "osm_relation": 5802180
+  },
+  {
+   "kelurahan": "Utan Kayu Utara",
+   "kecamatan": "Matraman",
+   "lat": -6.19627,
+   "lng": 106.86785,
+   "population": null,
+   "population_source": null,
+   "population_year": null,
+   "osm_relation": 5802283
+  },
+  {
+   "kelurahan": "Cikini",
+   "kecamatan": "Menteng",
+   "lat": -6.1917,
+   "lng": 106.8391,
+   "population": 9952,
+   "population_source": "Data Kependudukan Bersih (DKB) Ditjen Dukcapil Kemendagri RI",
+   "population_year": "2023",
+   "osm_relation": 7212839
+  },
+  {
+   "kelurahan": "Gondangdia",
+   "kecamatan": "Menteng",
+   "lat": -6.19188,
+   "lng": 106.83049,
+   "population": 4665,
+   "population_source": "Data Kependudukan Bersih (DKB) Ditjen Dukcapil Kemendagri RI",
+   "population_year": "2023",
+   "osm_relation": 5802325
+  },
+  {
+   "kelurahan": "Kebon Sirih",
+   "kecamatan": "Menteng",
+   "lat": -6.18486,
+   "lng": 106.83223,
+   "population": 14611,
+   "population_source": "Data Kependudukan Bersih (DKB) Ditjen Dukcapil Kemendagri RI",
+   "population_year": "2023",
+   "osm_relation": 5802159
+  },
+  {
+   "kelurahan": "Menteng",
+   "kecamatan": "Menteng",
+   "lat": -6.20174,
+   "lng": 106.83452,
+   "population": 30707,
+   "population_source": "Data Kependudukan Bersih (DKB) Ditjen Dukcapil Kemendagri RI",
+   "population_year": "2023",
+   "osm_relation": 7212530
+  },
+  {
+   "kelurahan": "Pegangsaan",
+   "kecamatan": "Menteng",
+   "lat": -6.202,
+   "lng": 106.84802,
+   "population": 28029,
+   "population_source": "Data Kependudukan Bersih (DKB) Ditjen Dukcapil Kemendagri RI",
+   "population_year": "2023",
+   "osm_relation": 7212612
+  },
+  {
+   "kelurahan": "Ancol",
+   "kecamatan": "Pademangan",
+   "lat": -6.12296,
+   "lng": 106.84047,
+   "population": null,
+   "population_source": null,
+   "population_year": null,
+   "osm_relation": 5802121
+  },
+  {
+   "kelurahan": "Pademangan Barat",
+   "kecamatan": "Pademangan",
+   "lat": -6.13691,
+   "lng": 106.83796,
+   "population": null,
+   "population_source": null,
+   "population_year": null,
+   "osm_relation": 5802379
+  },
+  {
+   "kelurahan": "Pademangan Timur",
+   "kecamatan": "Pademangan",
+   "lat": -6.14048,
+   "lng": 106.8498,
+   "population": null,
+   "population_source": null,
+   "population_year": null,
+   "osm_relation": 5802280
+  },
+  {
+   "kelurahan": "Pinangsia",
+   "kecamatan": "Pademangan",
+   "lat": -6.13621,
+   "lng": 106.81717,
+   "population": 12572,
+   "population_source": "Data Kependudukan Bersih (DKB) Ditjen Dukcapil Kemendagri RI",
+   "population_year": "2023",
+   "osm_relation": 5802222
+  },
+  {
+   "kelurahan": "Jati Pulo",
+   "kecamatan": "Palmerah",
+   "lat": -6.17818,
+   "lng": 106.80281,
+   "population": 35686,
+   "population_source": "Data Kependudukan Bersih (DKB) Ditjen Dukcapil Kemendagri RI",
+   "population_year": "2023",
+   "osm_relation": 5802239
+  },
+  {
+   "kelurahan": "Kemanggisan",
+   "kecamatan": "Palmerah",
+   "lat": -6.18909,
+   "lng": 106.7901,
+   "population": 39071,
+   "population_source": "Data Kependudukan Bersih (DKB) Ditjen Dukcapil Kemendagri RI",
+   "population_year": "2023",
+   "osm_relation": 5802279
+  },
+  {
+   "kelurahan": "Kota Bambu Selatan",
+   "kecamatan": "Palmerah",
+   "lat": -6.18684,
+   "lng": 106.80382,
+   "population": 28260,
+   "population_source": "Data Kependudukan Bersih (DKB) Ditjen Dukcapil Kemendagri RI",
+   "population_year": "2023",
+   "osm_relation": 5802178
+  },
+  {
+   "kelurahan": "Kota Bambu Utara",
+   "kecamatan": "Palmerah",
+   "lat": -6.18336,
+   "lng": 106.80354,
+   "population": 31611,
+   "population_source": "Data Kependudukan Bersih (DKB) Ditjen Dukcapil Kemendagri RI",
+   "population_year": "2023",
+   "osm_relation": 5802139
+  },
+  {
+   "kelurahan": "Palmerah",
+   "kecamatan": "Palmerah",
+   "lat": -6.2008,
+   "lng": 106.79083,
+   "population": 78593,
+   "population_source": "Data Kependudukan Bersih (DKB) Ditjen Dukcapil Kemendagri RI",
+   "population_year": "2023",
+   "osm_relation": 5802216
+  },
+  {
+   "kelurahan": "Slipi",
+   "kecamatan": "Palmerah",
+   "lat": -6.19521,
+   "lng": 106.80187,
+   "population": 20565,
+   "population_source": "Data Kependudukan Bersih (DKB) Ditjen Dukcapil Kemendagri RI",
+   "population_year": "2023",
+   "osm_relation": 5802137
+  },
+  {
+   "kelurahan": "Cikoko",
+   "kecamatan": "Pancoran",
+   "lat": -6.24515,
+   "lng": 106.8547,
+   "population": null,
+   "population_source": null,
+   "population_year": null,
+   "osm_relation": 5802284
+  },
+  {
+   "kelurahan": "Duren Tiga",
+   "kecamatan": "Pancoran",
+   "lat": -6.25587,
+   "lng": 106.83675,
+   "population": null,
+   "population_source": null,
+   "population_year": null,
+   "osm_relation": 5802128
+  },
+  {
+   "kelurahan": "Kalibata",
+   "kecamatan": "Pancoran",
+   "lat": -6.26532,
+   "lng": 106.83913,
+   "population": null,
+   "population_source": null,
+   "population_year": null,
+   "osm_relation": 5802194
+  },
+  {
+   "kelurahan": "Pancoran",
+   "kecamatan": "Pancoran",
+   "lat": -6.24738,
+   "lng": 106.84108,
+   "population": null,
+   "population_source": null,
+   "population_year": null,
+   "osm_relation": 5802341
+  },
+  {
+   "kelurahan": "Pengadegan",
+   "kecamatan": "Pancoran",
+   "lat": -6.25022,
+   "lng": 106.85532,
+   "population": null,
+   "population_source": null,
+   "population_year": null,
+   "osm_relation": 5802191
+  },
+  {
+   "kelurahan": "Rawajati",
+   "kecamatan": "Pancoran",
+   "lat": -6.25886,
+   "lng": 106.855,
+   "population": null,
+   "population_source": null,
+   "population_year": null,
+   "osm_relation": 5802146
+  },
+  {
+   "kelurahan": "Cilandak Timur",
+   "kecamatan": "Pasar Minggu",
+   "lat": -6.29233,
+   "lng": 106.81303,
+   "population": null,
+   "population_source": null,
+   "population_year": null,
+   "osm_relation": 5802229
+  },
+  {
+   "kelurahan": "Jati Padang",
+   "kecamatan": "Pasar Minggu",
+   "lat": -6.28901,
+   "lng": 106.8309,
+   "population": null,
+   "population_source": null,
+   "population_year": null,
+   "osm_relation": 5802316
+  },
+  {
+   "kelurahan": "Kebagusan",
+   "kecamatan": "Pasar Minggu",
+   "lat": -6.30912,
+   "lng": 106.83106,
+   "population": null,
+   "population_source": null,
+   "population_year": null,
+   "osm_relation": 5802223
+  },
+  {
+   "kelurahan": "Pasar Minggu",
+   "kecamatan": "Pasar Minggu",
+   "lat": -6.2894,
+   "lng": 106.83924,
+   "population": null,
+   "population_source": null,
+   "population_year": null,
+   "osm_relation": 5802344
+  },
+  {
+   "kelurahan": "Pejaten Barat",
+   "kecamatan": "Pasar Minggu",
+   "lat": -6.27267,
+   "lng": 106.8336,
+   "population": null,
+   "population_source": null,
+   "population_year": null,
+   "osm_relation": 5802350
+  },
+  {
+   "kelurahan": "Pejaten Timur",
+   "kecamatan": "Pasar Minggu",
+   "lat": -6.28022,
+   "lng": 106.84879,
+   "population": null,
+   "population_source": null,
+   "population_year": null,
+   "osm_relation": 5802313
+  },
+  {
+   "kelurahan": "Ragunan",
+   "kecamatan": "Pasar Minggu",
+   "lat": -6.29686,
+   "lng": 106.82133,
+   "population": null,
+   "population_source": null,
+   "population_year": null,
+   "osm_relation": 5802374
+  },
+  {
+   "kelurahan": "Baru",
+   "kecamatan": "Pasar Rebo",
+   "lat": -6.32311,
+   "lng": 106.84714,
+   "population": null,
+   "population_source": null,
+   "population_year": null,
+   "osm_relation": 5802187
+  },
+  {
+   "kelurahan": "Cijantung",
+   "kecamatan": "Pasar Rebo",
+   "lat": -6.32201,
+   "lng": 106.85839,
+   "population": null,
+   "population_source": null,
+   "population_year": null,
+   "osm_relation": 5802189
+  },
+  {
+   "kelurahan": "Gedong",
+   "kecamatan": "Pasar Rebo",
+   "lat": -6.30389,
+   "lng": 106.85956,
+   "population": null,
+   "population_source": null,
+   "population_year": null,
+   "osm_relation": 5802303
+  },
+  {
+   "kelurahan": "Kalisari",
+   "kecamatan": "Pasar Rebo",
+   "lat": -6.33611,
+   "lng": 106.85125,
+   "population": null,
+   "population_source": null,
+   "population_year": null,
+   "osm_relation": 5802367
+  },
+  {
+   "kelurahan": "Pekayon",
+   "kecamatan": "Pasar Rebo",
+   "lat": -6.34469,
+   "lng": 106.86425,
+   "population": null,
+   "population_source": null,
+   "population_year": null,
+   "osm_relation": 5802208
+  },
+  {
+   "kelurahan": "Kamal Muara",
+   "kecamatan": "Penjaringan",
+   "lat": -6.11212,
+   "lng": 106.73294,
+   "population": null,
+   "population_source": null,
+   "population_year": null,
+   "osm_relation": 5802192
+  },
+  {
+   "kelurahan": "Kapuk Muara",
+   "kecamatan": "Penjaringan",
+   "lat": -6.12131,
+   "lng": 106.76409,
+   "population": null,
+   "population_source": null,
+   "population_year": null,
+   "osm_relation": 5802243
+  },
+  {
+   "kelurahan": "Pejagalan",
+   "kecamatan": "Penjaringan",
+   "lat": -6.13346,
+   "lng": 106.78698,
+   "population": null,
+   "population_source": null,
+   "population_year": null,
+   "osm_relation": 5802328
+  },
+  {
+   "kelurahan": "Penjaringan",
+   "kecamatan": "Penjaringan",
+   "lat": -6.11482,
+   "lng": 106.79723,
+   "population": null,
+   "population_source": null,
+   "population_year": null,
+   "osm_relation": 5802387
+  },
+  {
+   "kelurahan": "Pluit",
+   "kecamatan": "Penjaringan",
+   "lat": -6.1098,
+   "lng": 106.785,
+   "population": null,
+   "population_source": null,
+   "population_year": null,
+   "osm_relation": 5802288
+  },
+  {
+   "kelurahan": "Bintaro",
+   "kecamatan": "Pesanggrahan",
+   "lat": -6.27155,
+   "lng": 106.76198,
+   "population": null,
+   "population_source": null,
+   "population_year": null,
+   "osm_relation": 5802352
+  },
+  {
+   "kelurahan": "Pesanggrahan",
+   "kecamatan": "Pesanggrahan",
+   "lat": -6.25851,
+   "lng": 106.75973,
+   "population": null,
+   "population_source": null,
+   "population_year": null,
+   "osm_relation": 5802138
+  },
+  {
+   "kelurahan": "Petukangan Selatan",
+   "kecamatan": "Pesanggrahan",
+   "lat": -6.24287,
+   "lng": 106.75368,
+   "population": null,
+   "population_source": null,
+   "population_year": null,
+   "osm_relation": 5802228
+  },
+  {
+   "kelurahan": "Petukangan Utara",
+   "kecamatan": "Pesanggrahan",
+   "lat": -6.23007,
+   "lng": 106.7491,
+   "population": null,
+   "population_source": null,
+   "population_year": null,
+   "osm_relation": 5802263
+  },
+  {
+   "kelurahan": "Ulujami",
+   "kecamatan": "Pesanggrahan",
+   "lat": -6.2361,
+   "lng": 106.76384,
+   "population": null,
+   "population_source": null,
+   "population_year": null,
+   "osm_relation": 5802306
+  },
+  {
+   "kelurahan": "Cipinang",
+   "kecamatan": "Pulo Gadung",
+   "lat": -6.20789,
+   "lng": 106.89124,
+   "population": null,
+   "population_source": null,
+   "population_year": null,
+   "osm_relation": 5802224
+  },
+  {
+   "kelurahan": "Jati",
+   "kecamatan": "Pulo Gadung",
+   "lat": -6.19452,
+   "lng": 106.89767,
+   "population": null,
+   "population_source": null,
+   "population_year": null,
+   "osm_relation": 5802230
+  },
+  {
+   "kelurahan": "Jatinegara Kaum",
+   "kecamatan": "Pulo Gadung",
+   "lat": -6.19978,
+   "lng": 106.9011,
+   "population": null,
+   "population_source": null,
+   "population_year": null,
+   "osm_relation": 5802315
+  },
+  {
+   "kelurahan": "Kayu Putih",
+   "kecamatan": "Pulo Gadung",
+   "lat": -6.17817,
+   "lng": 106.8848,
+   "population": null,
+   "population_source": null,
+   "population_year": null,
+   "osm_relation": 5802124
+  },
+  {
+   "kelurahan": "Pisangan Timur",
+   "kecamatan": "Pulo Gadung",
+   "lat": -6.20843,
+   "lng": 106.88137,
+   "population": null,
+   "population_source": null,
+   "population_year": null,
+   "osm_relation": 5802289
+  },
+  {
+   "kelurahan": "Pulo Gadung",
+   "kecamatan": "Pulo Gadung",
+   "lat": -6.18237,
+   "lng": 106.90065,
+   "population": null,
+   "population_source": null,
+   "population_year": null,
+   "osm_relation": 5802336
+  },
+  {
+   "kelurahan": "Rawamangun",
+   "kecamatan": "Pulo Gadung",
+   "lat": -6.19586,
+   "lng": 106.88223,
+   "population": null,
+   "population_source": null,
+   "population_year": null,
+   "osm_relation": 5802236
+  },
+  {
+   "kelurahan": "Gunung Sahari Utara",
+   "kecamatan": "Sawah Besar",
+   "lat": -6.15041,
+   "lng": 106.83865,
+   "population": 19788,
+   "population_source": "Data Kependudukan Bersih (DKB) Ditjen Dukcapil Kemendagri RI",
+   "population_year": "2023",
+   "osm_relation": 5802164
+  },
+  {
+   "kelurahan": "Karang Anyar",
+   "kecamatan": "Sawah Besar",
+   "lat": -6.15388,
+   "lng": 106.82916,
+   "population": 31419,
+   "population_source": "Data Kependudukan Bersih (DKB) Ditjen Dukcapil Kemendagri RI",
+   "population_year": "2023",
+   "osm_relation": 5802237
+  },
+  {
+   "kelurahan": "Kartini",
+   "kecamatan": "Sawah Besar",
+   "lat": -6.15308,
+   "lng": 106.8333,
+   "population": 26325,
+   "population_source": "Data Kependudukan Bersih (DKB) Ditjen Dukcapil Kemendagri RI",
+   "population_year": "2023",
+   "osm_relation": 5802329
+  },
+  {
+   "kelurahan": "Mangga Dua Selatan",
+   "kecamatan": "Sawah Besar",
+   "lat": -6.14208,
+   "lng": 106.82794,
+   "population": 33991,
+   "population_source": "Data Kependudukan Bersih (DKB) Ditjen Dukcapil Kemendagri RI",
+   "population_year": "2023",
+   "osm_relation": 5802196
+  },
+  {
+   "kelurahan": "Pasar Baru",
+   "kecamatan": "Sawah Besar",
+   "lat": -6.16636,
+   "lng": 106.83405,
+   "population": 14496,
+   "population_source": "Data Kependudukan Bersih (DKB) Ditjen Dukcapil Kemendagri RI",
+   "population_year": "2023",
+   "osm_relation": 5802134
+  },
+  {
+   "kelurahan": "Bungur",
+   "kecamatan": "Senen",
+   "lat": -6.17167,
+   "lng": 106.84797,
+   "population": 21920,
+   "population_source": "Data Kependudukan Bersih (DKB) Ditjen Dukcapil Kemendagri RI",
+   "population_year": "2023",
+   "osm_relation": 5802331
+  },
+  {
+   "kelurahan": "Kenari",
+   "kecamatan": "Senen",
+   "lat": -6.19323,
+   "lng": 106.84733,
+   "population": 11456,
+   "population_source": "Data Kependudukan Bersih (DKB) Ditjen Dukcapil Kemendagri RI",
+   "population_year": "2023",
+   "osm_relation": 5802342
+  },
+  {
+   "kelurahan": "Kramat",
+   "kecamatan": "Senen",
+   "lat": -6.18269,
+   "lng": 106.84686,
+   "population": 35334,
+   "population_source": "Data Kependudukan Bersih (DKB) Ditjen Dukcapil Kemendagri RI",
+   "population_year": "2023",
+   "osm_relation": 5802385
+  },
+  {
+   "kelurahan": "Kwitang",
+   "kecamatan": "Senen",
+   "lat": -6.18305,
+   "lng": 106.84013,
+   "population": 18742,
+   "population_source": "Data Kependudukan Bersih (DKB) Ditjen Dukcapil Kemendagri RI",
+   "population_year": "2023",
+   "osm_relation": 5802389
+  },
+  {
+   "kelurahan": "Paseban",
+   "kecamatan": "Senen",
+   "lat": -6.19334,
+   "lng": 106.85272,
+   "population": 28815,
+   "population_source": "Data Kependudukan Bersih (DKB) Ditjen Dukcapil Kemendagri RI",
+   "population_year": "2023",
+   "osm_relation": 5802339
+  },
+  {
+   "kelurahan": "Senen",
+   "kecamatan": "Senen",
+   "lat": -6.176,
+   "lng": 106.83895,
+   "population": 8074,
+   "population_source": "Data Kependudukan Bersih (DKB) Ditjen Dukcapil Kemendagri RI",
+   "population_year": "2023",
+   "osm_relation": 5802272
+  },
+  {
+   "kelurahan": "Guntur",
+   "kecamatan": "Setiabudi",
+   "lat": -6.20834,
+   "lng": 106.83336,
+   "population": null,
+   "population_source": null,
+   "population_year": null,
+   "osm_relation": 5802296
+  },
+  {
+   "kelurahan": "Karet",
+   "kecamatan": "Setiabudi",
+   "lat": -6.21324,
+   "lng": 106.82733,
+   "population": null,
+   "population_source": null,
+   "population_year": null,
+   "osm_relation": 5802257
+  },
+  {
+   "kelurahan": "Karet Kuningan",
+   "kecamatan": "Setiabudi",
+   "lat": -6.22033,
+   "lng": 106.82751,
+   "population": null,
+   "population_source": null,
+   "population_year": null,
+   "osm_relation": 5802361
+  },
+  {
+   "kelurahan": "Karet Semanggi",
+   "kecamatan": "Setiabudi",
+   "lat": -6.22318,
+   "lng": 106.81719,
+   "population": null,
+   "population_source": null,
+   "population_year": null,
+   "osm_relation": 5802301
+  },
+  {
+   "kelurahan": "Kuningan Barat",
+   "kecamatan": "Setiabudi",
+   "lat": -6.23404,
+   "lng": 106.8244,
+   "population": null,
+   "population_source": null,
+   "population_year": null,
+   "osm_relation": 5802276
+  },
+  {
+   "kelurahan": "Kuningan Timur",
+   "kecamatan": "Setiabudi",
+   "lat": -6.23246,
+   "lng": 106.82882,
+   "population": null,
+   "population_source": null,
+   "population_year": null,
+   "osm_relation": 5802131
+  },
+  {
+   "kelurahan": "Menteng Atas",
+   "kecamatan": "Setiabudi",
+   "lat": -6.21773,
+   "lng": 106.84024,
+   "population": null,
+   "population_source": null,
+   "population_year": null,
+   "osm_relation": 5802382
+  },
+  {
+   "kelurahan": "Pasar Manggis",
+   "kecamatan": "Setiabudi",
+   "lat": -6.21087,
+   "lng": 106.84126,
+   "population": null,
+   "population_source": null,
+   "population_year": null,
+   "osm_relation": 5802356
+  },
+  {
+   "kelurahan": "Setiabudi",
+   "kecamatan": "Setiabudi",
+   "lat": -6.2072,
+   "lng": 106.82596,
+   "population": null,
+   "population_source": null,
+   "population_year": null,
+   "osm_relation": 5802348
+  },
+  {
+   "kelurahan": "Glodok",
+   "kecamatan": "Taman Sari",
+   "lat": -6.14466,
+   "lng": 106.81348,
+   "population": 8823,
+   "population_source": "Data Kependudukan Bersih (DKB) Ditjen Dukcapil Kemendagri RI",
+   "population_year": "2023",
+   "osm_relation": 5802262
+  },
+  {
+   "kelurahan": "Keagungan",
+   "kecamatan": "Taman Sari",
+   "lat": -6.15123,
+   "lng": 106.8143,
+   "population": 21058,
+   "population_source": "Data Kependudukan Bersih (DKB) Ditjen Dukcapil Kemendagri RI",
+   "population_year": "2023",
+   "osm_relation": 5802185
+  },
+  {
+   "kelurahan": "Krukut",
+   "kecamatan": "Taman Sari",
+   "lat": -6.15686,
+   "lng": 106.81502,
+   "population": 23627,
+   "population_source": "Data Kependudukan Bersih (DKB) Ditjen Dukcapil Kemendagri RI",
+   "population_year": "2023",
+   "osm_relation": 5802166
+  },
+  {
+   "kelurahan": "Mangga Besar",
+   "kecamatan": "Taman Sari",
+   "lat": -6.14493,
+   "lng": 106.81794,
+   "population": 8779,
+   "population_source": "Data Kependudukan Bersih (DKB) Ditjen Dukcapil Kemendagri RI",
+   "population_year": "2023",
+   "osm_relation": 5802126
+  },
+  {
+   "kelurahan": "Maphar",
+   "kecamatan": "Taman Sari",
+   "lat": -6.15604,
+   "lng": 106.82266,
+   "population": 19403,
+   "population_source": "Data Kependudukan Bersih (DKB) Ditjen Dukcapil Kemendagri RI",
+   "population_year": "2023",
+   "osm_relation": 5802384
+  },
+  {
+   "kelurahan": "Taman Sari",
+   "kecamatan": "Taman Sari",
+   "lat": -6.15411,
+   "lng": 106.82395,
+   "population": 17042,
+   "population_source": "Data Kependudukan Bersih (DKB) Ditjen Dukcapil Kemendagri RI",
+   "population_year": "2023",
+   "osm_relation": 5802282
+  },
+  {
+   "kelurahan": "Tangki",
+   "kecamatan": "Taman Sari",
+   "lat": -6.14594,
+   "lng": 106.82354,
+   "population": 15432,
+   "population_source": "Data Kependudukan Bersih (DKB) Ditjen Dukcapil Kemendagri RI",
+   "population_year": "2023",
+   "osm_relation": 5802269
+  },
+  {
+   "kelurahan": "Angke",
+   "kecamatan": "Tambora",
+   "lat": -6.14596,
+   "lng": 106.79498,
+   "population": 35163,
+   "population_source": "Data Kependudukan Bersih (DKB) Ditjen Dukcapil Kemendagri RI",
+   "population_year": "2023",
+   "osm_relation": 5802375
+  },
+  {
+   "kelurahan": "Duri Pulo",
+   "kecamatan": "Tambora",
+   "lat": -6.16169,
+   "lng": 106.80455,
+   "population": 23774,
+   "population_source": "Data Kependudukan Bersih (DKB) Ditjen Dukcapil Kemendagri RI",
+   "population_year": "2023",
+   "osm_relation": 5802246
+  },
+  {
+   "kelurahan": "Duri Selatan",
+   "kecamatan": "Tambora",
+   "lat": -6.15912,
+   "lng": 106.80477,
+   "population": 17212,
+   "population_source": "Data Kependudukan Bersih (DKB) Ditjen Dukcapil Kemendagri RI",
+   "population_year": "2023",
+   "osm_relation": 5802287
+  },
+  {
+   "kelurahan": "Duri Utara",
+   "kecamatan": "Tambora",
+   "lat": -6.15416,
+   "lng": 106.80466,
+   "population": 23912,
+   "population_source": "Data Kependudukan Bersih (DKB) Ditjen Dukcapil Kemendagri RI",
+   "population_year": "2023",
+   "osm_relation": 5802179
+  },
+  {
+   "kelurahan": "Jembatan Besi",
+   "kecamatan": "Tambora",
+   "lat": -6.15193,
+   "lng": 106.79703,
+   "population": 36476,
+   "population_source": "Data Kependudukan Bersih (DKB) Ditjen Dukcapil Kemendagri RI",
+   "population_year": "2023",
+   "osm_relation": 5802168
+  },
+  {
+   "kelurahan": "Jembatan Lima",
+   "kecamatan": "Tambora",
+   "lat": -6.14513,
+   "lng": 106.80391,
+   "population": 25420,
+   "population_source": "Data Kependudukan Bersih (DKB) Ditjen Dukcapil Kemendagri RI",
+   "population_year": "2023",
+   "osm_relation": 5802127
+  },
+  {
+   "kelurahan": "Kalianyar",
+   "kecamatan": "Tambora",
+   "lat": -6.15807,
+   "lng": 106.79852,
+   "population": 29231,
+   "population_source": "Data Kependudukan Bersih (DKB) Ditjen Dukcapil Kemendagri RI",
+   "population_year": "2023",
+   "osm_relation": 5802174
+  },
+  {
+   "kelurahan": "Krendang",
+   "kecamatan": "Tambora",
+   "lat": -6.15079,
+   "lng": 106.80435,
+   "population": 24737,
+   "population_source": "Data Kependudukan Bersih (DKB) Ditjen Dukcapil Kemendagri RI",
+   "population_year": "2023",
+   "osm_relation": 5802351
+  },
+  {
+   "kelurahan": "Pekojan",
+   "kecamatan": "Tambora",
+   "lat": -6.13697,
+   "lng": 106.80406,
+   "population": 27926,
+   "population_source": "Data Kependudukan Bersih (DKB) Ditjen Dukcapil Kemendagri RI",
+   "population_year": "2023",
+   "osm_relation": 5802122
+  },
+  {
+   "kelurahan": "Roa Malaka",
+   "kecamatan": "Tambora",
+   "lat": -6.13625,
+   "lng": 106.80936,
+   "population": 3775,
+   "population_source": "Data Kependudukan Bersih (DKB) Ditjen Dukcapil Kemendagri RI",
+   "population_year": "2023",
+   "osm_relation": 5802364
+  },
+  {
+   "kelurahan": "Tambora",
+   "kecamatan": "Tambora",
+   "lat": -6.14476,
+   "lng": 106.80906,
+   "population": 12324,
+   "population_source": "Data Kependudukan Bersih (DKB) Ditjen Dukcapil Kemendagri RI",
+   "population_year": "2023",
+   "osm_relation": 5802250
+  },
+  {
+   "kelurahan": "Tanah Sereal",
+   "kecamatan": "Tambora",
+   "lat": -6.15426,
+   "lng": 106.81007,
+   "population": 31701,
+   "population_source": "Data Kependudukan Bersih (DKB) Ditjen Dukcapil Kemendagri RI",
+   "population_year": "2023",
+   "osm_relation": 5802335
+  },
+  {
+   "kelurahan": "Bendungan Hilir",
+   "kecamatan": "Tanah Abang",
+   "lat": -6.20865,
+   "lng": 106.8089,
+   "population": 25484,
+   "population_source": "Data Kependudukan Bersih (DKB) Ditjen Dukcapil Kemendagri RI",
+   "population_year": "2023",
+   "osm_relation": 5802169
+  },
+  {
+   "kelurahan": "Gelora",
+   "kecamatan": "Tanah Abang",
+   "lat": -6.21535,
+   "lng": 106.8021,
+   "population": 3720,
+   "population_source": "Data Kependudukan Bersih (DKB) Ditjen Dukcapil Kemendagri RI",
+   "population_year": "2023",
+   "osm_relation": 5802334
+  },
+  {
+   "kelurahan": "Kampung Bali",
+   "kecamatan": "Tanah Abang",
+   "lat": -6.18513,
+   "lng": 106.81682,
+   "population": 13285,
+   "population_source": "Data Kependudukan Bersih (DKB) Ditjen Dukcapil Kemendagri RI",
+   "population_year": "2023",
+   "osm_relation": 5802218
+  },
+  {
+   "kelurahan": "Karet Tengsin",
+   "kecamatan": "Tanah Abang",
+   "lat": -6.20816,
+   "lng": 106.81636,
+   "population": 23904,
+   "population_source": "Data Kependudukan Bersih (DKB) Ditjen Dukcapil Kemendagri RI",
+   "population_year": "2023",
+   "osm_relation": 5802190
+  },
+  {
+   "kelurahan": "Kebon Kacang",
+   "kecamatan": "Tanah Abang",
+   "lat": -6.19065,
+   "lng": 106.81624,
+   "population": 26081,
+   "population_source": "Data Kependudukan Bersih (DKB) Ditjen Dukcapil Kemendagri RI",
+   "population_year": "2023",
+   "osm_relation": 5802202
+  },
+  {
+   "kelurahan": "Kebon Melati",
+   "kecamatan": "Tanah Abang",
+   "lat": -6.19679,
+   "lng": 106.8164,
+   "population": 39638,
+   "population_source": "Data Kependudukan Bersih (DKB) Ditjen Dukcapil Kemendagri RI",
+   "population_year": "2023",
+   "osm_relation": 5802290
+  },
+  {
+   "kelurahan": "Petamburan",
+   "kecamatan": "Tanah Abang",
+   "lat": -6.19638,
+   "lng": 106.805,
+   "population": 41086,
+   "population_source": "Data Kependudukan Bersih (DKB) Ditjen Dukcapil Kemendagri RI",
+   "population_year": "2023",
+   "osm_relation": 5802181
+  },
+  {
+   "kelurahan": "Kebon Bawang",
+   "kecamatan": "Tanjung Priok",
+   "lat": -6.11935,
+   "lng": 106.88889,
+   "population": null,
+   "population_source": null,
+   "population_year": null,
+   "osm_relation": 5802213
+  },
+  {
+   "kelurahan": "Papanggo",
+   "kecamatan": "Tanjung Priok",
+   "lat": -6.12984,
+   "lng": 106.87089,
+   "population": null,
+   "population_source": null,
+   "population_year": null,
+   "osm_relation": 5802305
+  },
+  {
+   "kelurahan": "Sungai Bambu",
+   "kecamatan": "Tanjung Priok",
+   "lat": -6.1268,
+   "lng": 106.88687,
+   "population": null,
+   "population_source": null,
+   "population_year": null,
+   "osm_relation": 5802206
+  },
+  {
+   "kelurahan": "Sunter Agung",
+   "kecamatan": "Tanjung Priok",
+   "lat": -6.13636,
+   "lng": 106.86339,
+   "population": null,
+   "population_source": null,
+   "population_year": null,
+   "osm_relation": 5802240
+  },
+  {
+   "kelurahan": "Sunter Jaya",
+   "kecamatan": "Tanjung Priok",
+   "lat": -6.15116,
+   "lng": 106.87473,
+   "population": null,
+   "population_source": null,
+   "population_year": null,
+   "osm_relation": 5802256
+  },
+  {
+   "kelurahan": "Tanjung Priok",
+   "kecamatan": "Tanjung Priok",
+   "lat": -6.10854,
+   "lng": 106.87848,
+   "population": null,
+   "population_source": null,
+   "population_year": null,
+   "osm_relation": 5802140
+  },
+  {
+   "kelurahan": "Warakas",
+   "kecamatan": "Tanjung Priok",
+   "lat": -6.12078,
+   "lng": 106.87778,
+   "population": null,
+   "population_source": null,
+   "population_year": null,
+   "osm_relation": 5802165
+  },
+  {
+   "kelurahan": "Bukit Duri",
+   "kecamatan": "Tebet",
+   "lat": -6.22009,
+   "lng": 106.85874,
+   "population": null,
+   "population_source": null,
+   "population_year": null,
+   "osm_relation": 7210655
+  },
+  {
+   "kelurahan": "Kampung Melayu",
+   "kecamatan": "Tebet",
+   "lat": -6.2185,
+   "lng": 106.86133,
+   "population": null,
+   "population_source": null,
+   "population_year": null,
+   "osm_relation": 5802251
+  },
+  {
+   "kelurahan": "Kebon Baru",
+   "kecamatan": "Tebet",
+   "lat": -6.23419,
+   "lng": 106.86267,
+   "population": null,
+   "population_source": null,
+   "population_year": null,
+   "osm_relation": 5802158
+  },
+  {
+   "kelurahan": "Manggarai",
+   "kecamatan": "Tebet",
+   "lat": -6.21334,
+   "lng": 106.85117,
+   "population": null,
+   "population_source": null,
+   "population_year": null,
+   "osm_relation": 5802245
+  },
+  {
+   "kelurahan": "Manggarai Selatan",
+   "kecamatan": "Tebet",
+   "lat": -6.21955,
+   "lng": 106.84827,
+   "population": null,
+   "population_source": null,
+   "population_year": null,
+   "osm_relation": 5802219
+  },
+  {
+   "kelurahan": "Menteng Dalam",
+   "kecamatan": "Tebet",
+   "lat": -6.2321,
+   "lng": 106.84112,
+   "population": null,
+   "population_source": null,
+   "population_year": null,
+   "osm_relation": 7198542
+  },
+  {
+   "kelurahan": "Tebet Barat",
+   "kecamatan": "Tebet",
+   "lat": -6.23372,
+   "lng": 106.84867,
+   "population": null,
+   "population_source": null,
+   "population_year": null,
+   "osm_relation": 7152610
+  },
+  {
+   "kelurahan": "Tebet Timur",
+   "kecamatan": "Tebet",
+   "lat": -6.2336,
+   "lng": 106.85527,
+   "population": null,
+   "population_source": null,
+   "population_year": null,
+   "osm_relation": 7152644
+  }
+ ]
+}
