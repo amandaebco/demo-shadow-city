@@ -39,6 +39,13 @@ class FakeStore:
     def count_personas(self, population_id):
         return sum(1 for p in self.personas.values() if p["population_id"] == population_id)
 
+    def home_counts(self, population_id):
+        counts = {}
+        for p in self.personas.values():
+            if p["population_id"] == population_id:
+                counts[p["home"]["kelurahan"]] = counts.get(p["home"]["kelurahan"], 0) + 1
+        return counts
+
     def write_personas(self, personas):
         for p in personas:
             self.personas[p["persona_id"]] = p
@@ -73,9 +80,10 @@ class FakeReportWriter:
         self.fail = fail
         self.calls = 0
 
-    async def write(self, scenario, metrics, base_scenario=None, base_metrics=None):
+    async def write(self, scenario, metrics, base_scenario=None, base_metrics=None, counts=None):
         self.calls += 1
         self.last_base = base_scenario
+        self.last_counts = counts
         if self.fail:
             raise RuntimeError("Vertex AI unavailable")
         from app.report import report_id_for

@@ -114,3 +114,16 @@ def test_comparable_baseline_has_no_extra_caveat():
     report = asyncio.run(w.write(VARIANT_SCENARIO, VARIANT_METRICS, BASE_SCENARIO, BASE_METRICS))
     assert NOT_COMPARABLE_CAVEAT not in report["caveats"] and NO_BASELINE_CAVEAT not in report["caveats"]
     assert "Baseline scenario" in models.prompts[0]
+
+
+def test_area_instruction_and_caveat_with_counts():
+    from app.report import build_comparison_prompt
+
+    counts = {"Pluit": 12, "Gambir": 3}
+    prompt = build_comparison_prompt(VARIANT_SCENARIO, VARIANT_METRICS, BASE_SCENARIO, BASE_METRICS, counts)
+    assert "kecamatan level" in prompt and '"by_kecamatan"' in prompt
+    single = build_prompt(SCENARIO, {"citywide": {}, "by_kelurahan": [{"kelurahan": "Gambir"}]}, counts)
+    assert '"by_kelurahan"' not in single and "kelurahan_with_enough_residents" in single
+    w, _ = writer({"headline": "h", "winners": [], "losers": [], "recommendations": [], "caveats": []})
+    report = asyncio.run(w.write(VARIANT_SCENARIO, VARIANT_METRICS, BASE_SCENARIO, BASE_METRICS, counts))
+    assert any("15 simulated residents" in c for c in report["caveats"])

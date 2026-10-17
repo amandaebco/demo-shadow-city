@@ -8,7 +8,7 @@ import json
 
 from google.genai import types
 
-from app.compare import comparable, compute_deltas, scenario_changes
+from app.compare import MIN_AREA_RESIDENTS, area_view, comparable, compute_deltas, scenario_changes
 from app.costs import log_usage, usage_from_response
 
 GENERATED_BY = "gemini-system-two"
@@ -16,6 +16,22 @@ STANDARD_CAVEAT = "Synthetic population; directional results only."
 NOT_COMPARABLE_CAVEAT = (
     "The baseline uses a different population or seed, so differences mix policy effects with population differences."
 )
+AREA_INSTRUCTION = (
+    "Areas: residents are spread thinly over kelurahan, so describe places at kecamatan level using "
+    "the by_kecamatan rows and the kecamatan_* rankings, which are weighted by residents. Name a kelurahan "
+    "only if it appears in kelurahan_with_enough_residents. Whenever you name an area, give its number of "
+    "residents, e.g. 'Cilincing (31 residents)'."
+)
+
+
+def area_caveat(counts: dict[str, int]) -> str:
+    residents = sum(counts.values())
+    return (
+        f"Area results come from {residents:,} simulated residents; kelurahan with fewer than "
+        f"{MIN_AREA_RESIDENTS} residents are only reported within their kecamatan."
+    )
+
+
 NO_BASELINE_CAVEAT = "No baseline scenario was compared, so these results cannot be attributed to the policies or events."
 
 SYSTEM_INSTRUCTION = (
@@ -60,7 +76,9 @@ def _facts(scenario: dict) -> dict:
     }
 
 
-def build_comparison_prompt(scenario: dict, metrics: dict, base_scenario: dict, base_metrics: dict) -> str:
+def build_comparison_prompt(
+    scenario: dict, metrics: dict, base_scenario: dict, base_metrics: dict, counts: dict[str, int] | None = None
+) -> str:
     """Layer 3: the variant against its baseline. Every difference is precomputed by code."""
     problems = comparable(base_scenario, scenario)
     parts = [
@@ -70,8 +88,10 @@ def build_comparison_prompt(scenario: dict, metrics: dict, base_scenario: dict, 
         "Baseline citywide metrics:\n" + json.dumps(base_metrics.get("citywide", {}), ensure_ascii=False),
         "Variant citywide metrics:\n" + json.dumps(metrics.get("citywide", {}), ensure_ascii=False),
         "Differences, variant minus baseline, computed by code (minutes, IDR, counts; mode share in "
-        "percentage points):\n" + json.dumps(compute_deltas(base_metrics, metrics), ensure_ascii=False),
+        "percentage points):\n" + json.dumps(compute_deltas(base_metrics, metrics, counts), ensure_ascii=False),
     ]
+    if counts is not None:
+        parts.append(AREA_INSTRUCTION)
     if problems:
         parts.append(
             "The two runs are NOT a clean counterfactual (" + "; ".join(problems) + "). Describe the differences, "
@@ -87,17 +107,21 @@ def build_comparison_prompt(scenario: dict, metrics: dict, base_scenario: dict, 
     return "\n\n".join(parts)
 
 
-def build_prompt(scenario: dict, metrics: dict) -> str:
+def build_prompt(scenario: dict, metrics: dict, counts: dict[str, int] | None = None) -> str:
     facts = {
         "name": scenario.get("name"),
         "population_size": scenario.get("population_size"),
         "policies": scenario.get("policies", []),
         "events": scenario.get("events", []),
     }
+    if counts is not None:
+        metrics = {k: v for k, v in metrics.items() if k != "by_kelurahan"} | area_view(metrics, counts)
     prompt = (
         "Scenario:\n" + json.dumps(facts, ensure_ascii=False)
         + "\n\nMetrics from the simulation engine:\n" + json.dumps(metrics, ensure_ascii=False)
     )
+    if counts is not None:
+        prompt += "\n\n" + AREA_INSTRUCTION
     if not scenario.get("base_scenario_id"):
         prompt += (
             "\n\nThere is no baseline scenario to compare against. Describe the outcomes only. "
@@ -120,12 +144,13 @@ class ReportWriter:
         self._model = model
 
     async def write(
-        self, scenario: dict, metrics: dict, base_scenario: dict | None = None, base_metrics: dict | None = None
+        self, scenario: dict, metrics: dict, base_scenario: dict | None = None, base_metrics: dict | None = None,
+        counts: dict[str, int] | None = None,
     ) -> dict:
         if base_scenario is not None and base_metrics is not None:
-            prompt = build_comparison_prompt(scenario, metrics, base_scenario, base_metrics)
+            prompt = build_comparison_prompt(scenario, metrics, base_scenario, base_metrics, counts)
         else:
-            prompt = build_prompt(scenario, metrics)
+            prompt = build_prompt(scenario, metrics, counts)
         response = await self._client.aio.models.generate_content(
             model=self._model,
             contents=prompt,
@@ -147,6 +172,8 @@ class ReportWriter:
                 caveats.insert(0, NO_BASELINE_CAVEAT)
         elif comparable(base_scenario, scenario) and NOT_COMPARABLE_CAVEAT not in caveats:
             caveats.insert(0, NOT_COMPARABLE_CAVEAT)
+        if counts:
+            caveats.insert(0, area_caveat(counts))
         if STANDARD_CAVEAT not in caveats:
             caveats.insert(0, STANDARD_CAVEAT)
         return {

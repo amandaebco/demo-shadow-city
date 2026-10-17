@@ -68,3 +68,39 @@ def test_scenario_changes():
     assert changes["policies_added"] == variant["policies"]
     assert changes["events_added"] == variant["events"]
     assert changes["policies_removed"] == [] and changes["events_removed"] == []
+
+
+def test_kecamatan_rollup_is_resident_weighted():
+    from app.compare import KECAMATAN_OF, kecamatan_metrics
+
+    a, b = [k for k, kec in KECAMATAN_OF.items() if kec == "Penjaringan"][:2]
+    metrics = {"by_kelurahan": [
+        {"kelurahan": a, "avg_travel_min": 60.0, "avg_cost_idr": 10000, "stuck_count": 2, "mode_share": {"car": 1.0}},
+        {"kelurahan": b, "avg_travel_min": 30.0, "avg_cost_idr": 4000, "stuck_count": 1, "mode_share": {"krl": 1.0}},
+        {"kelurahan": "Nowhere", "avg_travel_min": 99.0, "avg_cost_idr": 1, "stuck_count": 9},
+    ]}
+    (row,) = kecamatan_metrics(metrics, {a: 3, b: 1, "Nowhere": 5})
+    assert row["kecamatan"] == "Penjaringan" and row["residents"] == 4
+    assert row["avg_travel_min"] == 52.5  # (60*3 + 30*1) / 4
+    assert row["avg_cost_idr"] == 8500
+    assert row["stuck_count"] == 3
+    assert row["mode_share"] == {"car": 0.75, "krl": 0.25}
+
+
+def test_small_kelurahan_are_not_ranked_but_kecamatan_are():
+    from app.compare import KECAMATAN_OF
+
+    small, big = [k for k, kec in KECAMATAN_OF.items() if kec == "Cilincing"][:2]
+    base = {"citywide": {}, "by_kelurahan": [
+        {"kelurahan": small, "avg_travel_min": 30.0, "avg_cost_idr": 5000, "stuck_count": 0},
+        {"kelurahan": big, "avg_travel_min": 40.0, "avg_cost_idr": 5000, "stuck_count": 0}]}
+    variant = {"citywide": {}, "by_kelurahan": [
+        {"kelurahan": small, "avg_travel_min": 90.0, "avg_cost_idr": 5000, "stuck_count": 1},
+        {"kelurahan": big, "avg_travel_min": 50.0, "avg_cost_idr": 5000, "stuck_count": 4}]}
+    d = compute_deltas(base, variant, {small: 2, big: 12})
+    assert [r["kelurahan"] for r in d["kelurahan_with_enough_residents"]] == [big]
+    assert "largest_travel_time_increase" not in d  # no unweighted kelurahan ranking
+    (top,) = d["kecamatan_largest_travel_time_increase"]
+    assert top["kecamatan"] == "Cilincing" and top["residents"] == 14
+    assert top["avg_travel_min"] == round((2 * 90 + 12 * 50) / 14 - (2 * 30 + 12 * 40) / 14, 1)
+    assert d["kecamatan_largest_stuck_increase"][0]["stuck_count"] == 5

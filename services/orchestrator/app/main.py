@@ -199,8 +199,11 @@ async def get_report(scenario_id: str, request: Request) -> dict:
         base_scenario, base_metrics = await load_with_metrics(state.store, scenario["base_scenario_id"])
         if not base_metrics:
             raise ApiError(404, "NOT_FOUND", f"Report for '{scenario_id}' is not available until its baseline's metrics exist")
+    counts = None
+    if scenario.get("population_id"):
+        counts = await asyncio.to_thread(state.store.home_counts, scenario["population_id"]) or None
     try:
-        report = await state.report_writer.write(scenario, metrics, base_scenario, base_metrics)
+        report = await state.report_writer.write(scenario, metrics, base_scenario, base_metrics, counts)
     except Exception as exc:
         logger.exception("Writing report for %s failed", scenario_id)
         raise ApiError(503, "MODEL_UNAVAILABLE", "Could not generate the report; retry later") from exc
