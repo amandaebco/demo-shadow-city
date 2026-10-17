@@ -1,0 +1,25 @@
+# Shadow City CI on Cloud Build: runs each service's tests in parallel.
+# Run manually:  infra/ci.sh
+# Each track adds steps for its own services.
+
+steps:
+  # Track A
+  - id: test-system-one
+    name: python:3.12-slim
+    dir: services/system-one
+    entrypoint: bash
+    args: ["-c", "pip install -q --disable-pip-version-check -r requirements-dev.txt && python -m pytest -q"]
+    waitFor: ["-"]
+
+  - id: test-orchestrator
+    name: python:3.12-slim
+    dir: services/orchestrator
+    entrypoint: bash
+    args: ["-c", "pip install -q --disable-pip-version-check -r requirements-dev.txt && python -m pytest -q"]
+    waitFor: ["-"]
+
+  # Track B: add steps for services/sim-worker and frontend here.
+
+options:
+  logging: CLOUD_LOGGING_ONLY
+timeout: 900s

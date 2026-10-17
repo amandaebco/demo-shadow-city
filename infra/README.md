@@ -72,3 +72,19 @@ TODO: BigQuery dataset script (Layer 4).
 | --- | --- |
 | `orchestrator` | https://orchestrator-697653429683.asia-southeast2.run.app |
 | `system-one` | https://system-one-697653429683.asia-southeast2.run.app (private) |
+
+## CI (Cloud Build in `ebc-source-code`)
+
+Company policy centralizes Cloud Build in `ebc-source-code` (AGENTS.md, "Exception — CI builds").
+The repo is linked there as `ebc-demo-app-demo-shadow-city` on connection `ebc-gitlab` (`asia-southeast2`).
+
+| Trigger | Fires on | Runs |
+| --- | --- | --- |
+| `shadow-city-ci-mr` | Merge requests into `main` | `ci/cloudbuild-tests.yaml` |
+| `shadow-city-ci-main` | Pushes to `main` | `ci/cloudbuild-tests.yaml` |
+
+Both run as `ebc-devops-sa@ebc-source-code` and only when `services/system-one/**`,
+`services/orchestrator/**` or `ci/**` change. Track B adds its steps to `ci/cloudbuild-tests.yaml`
+and its paths to the triggers' included files.
+
+Run the same tests on demand against your working tree: `infra/ci.sh`.

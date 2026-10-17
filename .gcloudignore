@@ -1,0 +1,9 @@
+# Files not uploaded by `gcloud builds submit` / `gcloud run deploy --source` from the repo root.
+.git/
+.gitignore
+**/.venv/
+**/__pycache__/
+**/.pytest_cache/
+**/node_modules/
+frontend/.next/
+.env
