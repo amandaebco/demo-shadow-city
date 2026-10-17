@@ -9,6 +9,16 @@ MAX_MEMORY_ITEMS = 5
 MAX_REASON_CHARS = 140
 
 
+def truncate_reason(text: str, limit: int = MAX_REASON_CHARS) -> str:
+    """Cut at a word boundary and mark the cut with an ellipsis."""
+    if len(text) <= limit:
+        return text
+    cut = text[: limit - 1]
+    if " " in cut:
+        cut = cut.rsplit(" ", 1)[0]
+    return cut.rstrip(" ,.;:") + "…"
+
+
 class Mode(str, Enum):
     walk = "walk"
     motorcycle = "motorcycle"
