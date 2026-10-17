@@ -1,0 +1,10 @@
+node_modules/
+.next/
+dist/
+out/
+.firebase/
+.env
+.env.local
+next-env.d.ts
+*.tsbuildinfo
+
