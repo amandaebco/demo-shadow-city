@@ -1,6 +1,6 @@
 # Shadow City — Integration Contract
 
-**Version:** v1.1 (frozen, 2026-10-17) — v1.1 adds the named Firestore database `shadow-city`
+**Version:** v1.2 (frozen, 2026-10-17) — v1.1 adds the named Firestore database `shadow-city`; v1.2 adds the optional `population_id` field (2.1, 2.2) and clarifies the pre-Layer-5 System One decider (10.3)
 **Status:** Frozen. Changes follow section 9.
 **GCP project:** `ebc-cloud-dev-03`
 **Source of truth for design:** `docs/REFERENCE.md`
@@ -54,6 +54,7 @@ Adding a value to an enum is a **minor** change (section 9). Removing or renamin
 {
   "persona_id": "p_00421",
   "cluster_id": "c_017",
+  "population_id": "pop_s42_n5000",
   "home": {"kelurahan": "Penjaringan", "lat": -6.1214, "lng": 106.7923},
   "work": {"kelurahan": "Setiabudi", "lat": -6.2088, "lng": 106.8302},
   "age": 34,
@@ -70,6 +71,7 @@ Adding a value to an enum is a **minor** change (section 9). Removing or renamin
 ```
 
 - `cost_sensitivity`, `time_sensitivity`: 0–1.
+- `population_id` (optional, added in v1.2): the population this persona belongs to. Track B loads a scenario's personas by querying `personas` where `population_id` equals the scenario's `population_id`.
 - `memory`: short strings, max 5 items, newest last. Written by Track B during simulation (section 4.3), read by Track A when asking for decisions.
 - `usual_departure_tick`: the tick the persona normally leaves home.
 
@@ -82,6 +84,7 @@ Adding a value to an enum is a **minor** change (section 9). Removing or renamin
   "base_scenario_id": "s_baseline_weekday",
   "seed": 42,
   "population_size": 5000,
+  "population_id": "pop_s42_n5000",
   "policies": [
     {"type": "parking_tariff", "zone": "central", "change_ratio": 1.0}
   ],
@@ -98,6 +101,7 @@ Adding a value to an enum is a **minor** change (section 9). Removing or renamin
 - `change_ratio`: relative change. `1.0` = +100%, `-0.5` = −50%.
 - `zone` and `area_id` refer to polygons defined in `data/zones.geojson` (owner: Track B).
 - `base_scenario_id`: `null` for a baseline scenario.
+- `population_id` (optional, added in v1.2): set by Track A when the population is ready, before `scenario-start` is published. Scenarios with the same `seed` and `population_size` share one population, so a baseline and its variant use identical personas.
 
 ### 2.3 Decision request and response — System One (owner: Track A serves, Track B calls)
 
@@ -396,7 +400,7 @@ The API accepts 10–20,000 (section 7). Above 15,000, the tick document split i
 ### 10.3 System One model and regions
 
 - **Model:** the smallest instruction-tuned Gemma variant that Vertex AI supports for tuning at setup time. Track A records the exact model name in `model_version` and in `services/system-one/README.md`.
-- **Until Layer 5:** `system-one` runs the rule mock (4.4) on CPU in `asia-southeast2`.
+- **Until Layer 5:** `system-one` runs on CPU in `asia-southeast2`. Layer 0 uses the rule mock (4.4). Layers 1–4 use Gemini as the decider (`decided_by: gemini-system-two`), as the roadmap's Gemini-only MVP requires, and these decisions become the distillation data for Gemma. The rule mock stays as the last-resort fallback (`decided_by: rule-fallback`). Request and response shapes do not change.
 - **From Layer 5:** `system-one` runs Gemma on Cloud Run GPU in `us-central1`. If Cloud Run GPU becomes available in an Asia-Pacific region, moving it is a minor change; the URL is read from config, never hard-coded.
 - **Fallback:** if GPU quota or tuning is blocked, `system-one` uses Gemini Flash-Lite with structured output and sets `decided_by` to `gemini-system-two`.
 - **Firestore:** the project already has a `(default)` Native database in `asia-southeast2` (created 2022, possibly used by other applications). Shadow City uses its own named database `shadow-city`, Native mode, `asia-southeast2` (section 5).
