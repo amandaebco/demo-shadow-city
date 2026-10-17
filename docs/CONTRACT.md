@@ -1,7 +1,8 @@
 # Shadow City — Integration Contract
 
-**Version:** v0.1 (draft, 2026-10-17)
-**Status:** Draft — review together, then freeze as v1.0.
+**Version:** v1.0 (frozen, 2026-10-17)
+**Status:** Frozen. Changes follow section 9.
+**GCP project:** `ebc-cloud-dev-03`
 **Source of truth for design:** `docs/REFERENCE.md`
 
 This contract defines everything that crosses the boundary between the two tracks:
@@ -27,6 +28,7 @@ If it is not in this file, either track may change it freely. If it is in this f
 | Duration | Minutes, field suffix `_min` |
 | Probabilities | Floats 0–1, summing to 1 within a decision |
 | Randomness | Every scenario has an integer `seed`. Same scenario + same seed = identical results. |
+| Regions | Cloud Run services, Firestore, BigQuery, Pub/Sub: `asia-southeast2` (Jakarta). GPU service `system-one` (Gemma): `us-central1`. Gemini calls: Vertex AI in the nearest supported region. See section 10. |
 
 ### Enums
 
@@ -364,10 +366,47 @@ Coding agents must not change this file without explicit human approval.
 
 ---
 
-## 10. Open questions (resolve before freezing v1.0)
+## 10. Decisions for v1.0
 
-- [ ] Final list of zones in `data/zones.geojson` (central parking zone boundary, flood areas)
-- [ ] Population size for the demo (proposal: 5,000)
-- [ ] Gemma model size and Cloud Run GPU region availability
-- [ ] Whether `departure_shift` and `trip_cancel` are in scope for the first demo or only `mode_choice`
-- [ ] Reference data sources for backtest
+These were the open questions in v0.1. Each is now decided; revisiting one follows section 9.
+
+### 10.1 Zones in `data/zones.geojson` (owner: Track B)
+
+Zones are defined by **kecamatan**, built from OpenStreetMap administrative boundaries, so no one has to hand-draw polygons.
+
+| `zone` / `area_id` | Type | Kecamatan included |
+| --- | --- | --- |
+| `central` | Parking zone (`parking_tariff` policies) | Gambir, Menteng, Tanah Abang (Jakarta Pusat); Setiabudi (Jakarta Selatan) |
+| `jakarta_utara` | Flood area (`flood` events) | Penjaringan, Pademangan, Tanjung Priok, Koja, Cilincing (coastal Jakarta Utara) |
+
+Each GeoJSON feature carries `properties.zone_id` (the value above), `properties.type` (`parking_zone` or `flood_area`), and `properties.kecamatan` (list of names). Adding a new zone is a minor change.
+
+### 10.2 Population size
+
+| Stage | `population_size` |
+| --- | --- |
+| Layer 1 | 50 |
+| Layers 2–5 (development) | 1,000 |
+| Layer 6 onward and the demo | 5,000 |
+
+The API accepts 10–20,000 (section 7). Above 15,000, the tick document split in 2.4 must be decided first.
+
+### 10.3 System One model and regions
+
+- **Model:** the smallest instruction-tuned Gemma variant that Vertex AI supports for tuning at setup time. Track A records the exact model name in `model_version` and in `services/system-one/README.md`.
+- **Until Layer 5:** `system-one` runs the rule mock (4.4) on CPU in `asia-southeast2`.
+- **From Layer 5:** `system-one` runs Gemma on Cloud Run GPU in `us-central1`. If Cloud Run GPU becomes available in an Asia-Pacific region, moving it is a minor change; the URL is read from config, never hard-coded.
+- **Fallback:** if GPU quota or tuning is blocked, `system-one` uses Gemini Flash-Lite with structured output and sets `decided_by` to `gemini-system-two`.
+- **Firestore location** cannot be changed after creation. Before creating the database, check whether `ebc-cloud-dev-03` already has a Firestore database; if it does, use it and record its location here.
+
+### 10.4 Decision types in scope for the first demo
+
+- **In scope:** `mode_choice` only.
+- **Deferred:** `departure_shift`, `trip_cancel`, `route_choice`. They stay in the enum so adding them later is not a breaking change, but neither track implements them before Layer 7.
+- Consequence: in the first demo, `status` values `cancelled` (2.4) and `cancelled_count` (2.5) are always empty or zero.
+
+### 10.5 Backtest reference
+
+- **Backtest `b_0001`:** Jakarta's special Rp1 fare day for Transjakarta, MRT Jakarta, and LRT Jakarta on 24 April 2026. Metric: direction and rough size of the change in transit mode share versus a normal weekday.
+- **Reference value:** must come from a published ridership figure for that day. Until one is found, `reference_value` stays `null` and `reference_source` stays `TODO`; the backtest panel shows "reference pending" instead of a number.
+- **Plausibility checks (verifier, not backtest):** baseline mode share and population distributions are compared against published aggregate statistics; every reference used is cited in the verifier report's `detail`.
