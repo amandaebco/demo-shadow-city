@@ -8,6 +8,8 @@ import json
 
 from google.genai import types
 
+from app.costs import log_usage, usage_from_response
+
 GENERATED_BY = "gemini-system-two"
 STANDARD_CAVEAT = "Synthetic population; directional results only."
 
@@ -75,6 +77,7 @@ class ReportWriter:
                 response_schema=report_schema(),
             ),
         )
+        log_usage("report", usage_from_response(self._model, response), scenario_id=scenario["scenario_id"])
         parsed = json.loads(response.text)
         if not isinstance(parsed, dict) or not str(parsed.get("headline") or "").strip():
             raise ValueError("Gemini returned no headline")

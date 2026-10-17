@@ -22,6 +22,7 @@ Read both fully before doing anything.
 - Always pass the project explicitly (`--project=ebc-cloud-dev-03` for `gcloud`, `bq`, `gsutil`; `--project ebc-cloud-dev-03` for the Firebase CLI; `project="ebc-cloud-dev-03"` in SDK clients). Do not rely on the active gcloud configuration.
 - Read the project ID from a single config value (`GCP_PROJECT_ID=ebc-cloud-dev-03` in `.env.example` and deploy scripts), not hard-coded in many places.
 - If a command or tool reports a different active project, stop and tell the developer before continuing.
+- **Exception — CI builds:** company policy centralizes Cloud Build in project `ebc-source-code`, which holds the GitLab connection `ebc-gitlab` (`asia-southeast2`). Shadow City's CI triggers (`shadow-city-ci-mr`, `shadow-city-ci-main`) and manual CI runs (`infra/ci.sh`) run there, as `ebc-devops-sa@ebc-source-code.iam.gserviceaccount.com`, using `ci/cloudbuild-tests.yaml`. CI builds only run tests; they never deploy or touch resources in `ebc-cloud-dev-03`. Read this project ID from `CI_PROJECT_ID`. Do not create anything else in `ebc-source-code`.
 
 ## Engineering rules
 

@@ -17,6 +17,7 @@ import random
 
 from google.genai import types
 
+from app.costs import log_usage, usage_from_response
 from app.kelurahan import HOME_KELURAHAN, WORK_KELURAHAN
 from app.models import LAST_TICK, IncomeBand, Mode, Persona
 
@@ -186,5 +187,7 @@ class PersonaGenerator:
                 response_schema=profile_schema(),
             ),
         )
+        population_id = next(iter(pending.values()))["population_id"]
+        log_usage("population", usage_from_response(self._model, response), population_id=population_id)
         parsed = json.loads(response.text)
         return parsed if isinstance(parsed, list) else []

@@ -1,34 +1,26 @@
-"""Placeholder kelurahan list for Layer 1 population skeletons.
+"""Kelurahan used for population skeletons, from app/data/kelurahan.json.
 
-TODO(data): coordinates are approximate centroids and must be verified against
-OpenStreetMap boundaries; replace with BPS population weights per kelurahan
-(REFERENCE.md §8). Until then every kelurahan is weighted equally — these are
-not statistics.
+The data file is built from OpenStreetMap by tools/build_kelurahan.py: all 262 mainland
+kelurahan of DKI Jakarta with OSM centroids. Data © OpenStreetMap contributors, ODbL.
+
+TODO(data): homes are drawn uniformly over kelurahan because official population is in
+the data for only part of them (Dukcapil 2023 via OSM, missing for 22 kecamatan). Replace
+with complete Dukcapil/BPS figures before treating the population as realistic.
+TODO(data): workplaces use a short list of business districts as a placeholder for
+employment data.
 """
 
-# (kelurahan, kecamatan, lat, lng)
-HOME_KELURAHAN = [
-    ("Penjaringan", "Penjaringan", -6.1260, 106.7960),
-    ("Pluit", "Penjaringan", -6.1160, 106.7900),
-    ("Pademangan Barat", "Pademangan", -6.1330, 106.8330),
-    ("Sunter Agung", "Tanjung Priok", -6.1440, 106.8560),
-    ("Koja", "Koja", -6.1150, 106.9020),
-    ("Cilincing", "Cilincing", -6.1180, 106.9450),
-    ("Cengkareng Barat", "Cengkareng", -6.1450, 106.7300),
-    ("Kebon Jeruk", "Kebon Jeruk", -6.1930, 106.7700),
-    ("Duren Sawit", "Duren Sawit", -6.2320, 106.9140),
-    ("Ciracas", "Ciracas", -6.3250, 106.8730),
-    ("Pasar Minggu", "Pasar Minggu", -6.2840, 106.8420),
-    ("Cempaka Putih Timur", "Cempaka Putih", -6.1780, 106.8730),
-]
+import json
+from pathlib import Path
 
-WORK_KELURAHAN = [
-    ("Setiabudi", "Setiabudi", -6.2090, 106.8300),
-    ("Karet Kuningan", "Setiabudi", -6.2190, 106.8290),
-    ("Kuningan Timur", "Setiabudi", -6.2290, 106.8320),
-    ("Gambir", "Gambir", -6.1750, 106.8230),
-    ("Menteng", "Menteng", -6.1960, 106.8320),
-    ("Kebon Melati", "Tanah Abang", -6.2000, 106.8150),
-    ("Gelora", "Tanah Abang", -6.2180, 106.8020),
-    ("Kelapa Gading Barat", "Kelapa Gading", -6.1600, 106.9000),
+_DATA = json.loads((Path(__file__).parent / "data" / "kelurahan.json").read_text())
+
+# (kelurahan, kecamatan, lat, lng)
+HOME_KELURAHAN = [(r["kelurahan"], r["kecamatan"], r["lat"], r["lng"]) for r in _DATA["kelurahan"]]
+
+WORK_DISTRICTS = [
+    "Setiabudi", "Karet Kuningan", "Kuningan Timur", "Gambir",
+    "Menteng", "Kebon Melati", "Gelora", "Kelapa Gading Barat",
 ]
+WORK_KELURAHAN = [k for k in HOME_KELURAHAN if k[0] in WORK_DISTRICTS]
+assert len(WORK_KELURAHAN) == len(WORK_DISTRICTS), "a work district is missing from the kelurahan data"
