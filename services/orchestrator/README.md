@@ -40,8 +40,12 @@ Errors follow CONTRACT.md §7; invalid scenario bodies return `INVALID_SCENARIO`
 - `population_id = pop_s{seed}_n{size}`, persona IDs `p_s{seed}_n{size}_{index:05d}`.
   `cluster_id` is the same per persona until clustering in Layer 6.
 - **Deterministic skeleton** from the seed: home and work kelurahan with jittered coordinates, age, income band.
-  TODO(data): these are uniform placeholders over a short kelurahan list (`app/kelurahan.py`, approximate
-  centroids). Replace them with BPS distributions and OSM centroids before showing results as realistic.
+  Homes are drawn from all 262 mainland kelurahan in `app/data/kelurahan.json` (OSM centroids, built by
+  `tools/build_kelurahan.py`; © OpenStreetMap contributors, ODbL). Workplaces use eight business districts.
+  TODO(data): homes are weighted uniformly, because official population (Dukcapil 2023, carried in OSM) covers
+  only 116 of 262 kelurahan and none in 22 kecamatan. Age, income and workplaces are placeholders too.
+  Replace them with complete Dukcapil/BPS and employment data before presenting results as realistic.
+  Populations already stored (e.g. `pop_s42_n50`) keep their original skeletons; new seeds or sizes use the new data.
 - **Gemini** (`GEMINI_MODEL`) fills in occupation, vehicles, usual mode, departure tick, sensitivities
   and summary, in batches of 25. Values are clamped and made consistent: a persona who usually
   drives owns a car. 50 personas take about 25 s.
