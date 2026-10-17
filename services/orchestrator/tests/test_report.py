@@ -4,7 +4,7 @@ from types import SimpleNamespace
 
 import pytest
 
-from app.report import STANDARD_CAVEAT, ReportWriter, build_prompt, report_id_for
+from app.report import NO_BASELINE_CAVEAT, STANDARD_CAVEAT, ReportWriter, build_prompt, report_id_for
 
 SCENARIO = {
     "scenario_id": "s_parking_up_abc123",
@@ -54,7 +54,7 @@ def test_report_shape_and_cleanup():
     assert report["headline"] == "Commuters shift to transit."
     assert report["winners"] == ["a", "b", "c", "d"]
     assert report["losers"] == []
-    assert report["caveats"] == [STANDARD_CAVEAT]
+    assert report["caveats"] == [STANDARD_CAVEAT, NO_BASELINE_CAVEAT]
     assert report["generated_by"] == "gemini-system-two"
     assert report["base_scenario_id"] is None
 
@@ -63,3 +63,16 @@ def test_missing_headline_raises():
     w, _ = writer({"headline": "", "winners": [], "losers": [], "recommendations": [], "caveats": []})
     with pytest.raises(ValueError):
         asyncio.run(w.write(SCENARIO, METRICS))
+
+
+def test_prompt_forbids_causal_claims_without_baseline():
+    assert "no baseline scenario" in build_prompt(SCENARIO, METRICS)
+    with_base = SCENARIO | {"base_scenario_id": "s_baseline_weekday"}
+    assert "no baseline scenario" not in build_prompt(with_base, METRICS)
+
+
+def test_no_baseline_caveat_only_without_baseline():
+    reply = {"headline": "h", "winners": [], "losers": [], "recommendations": [], "caveats": []}
+    w, _ = writer(reply)
+    report = asyncio.run(w.write(SCENARIO | {"base_scenario_id": "s_base"}, METRICS))
+    assert NO_BASELINE_CAVEAT not in report["caveats"]

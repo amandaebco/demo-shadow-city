@@ -12,12 +12,15 @@ from app.costs import log_usage, usage_from_response
 
 GENERATED_BY = "gemini-system-two"
 STANDARD_CAVEAT = "Synthetic population; directional results only."
+NO_BASELINE_CAVEAT = "No baseline scenario was compared, so these results cannot be attributed to the policies or events."
 
 SYSTEM_INSTRUCTION = (
     "You are a transport-policy analyst for Jakarta. You receive one simulated scenario "
     "(its policies and events) and the metrics computed by a deterministic simulation engine. "
     "Write a short, plain-English analyst report for city planners. "
     "Only quote numbers that appear in the metrics; never calculate, estimate or invent numbers. "
+    "Write numbers in plain language with units, e.g. '27 minutes', 'Rp 9,320', '4% of trips' "
+    "(a fraction may be written as a percentage); never write metric field names such as avg_travel_min. "
     "Name which groups (kelurahan, income bands) fare better or worse and why, based on the metrics. "
     "Headline: one sentence. winners, losers, recommendations, caveats: 1-4 short items each."
 )
@@ -49,10 +52,18 @@ def build_prompt(scenario: dict, metrics: dict) -> str:
         "policies": scenario.get("policies", []),
         "events": scenario.get("events", []),
     }
-    return (
+    prompt = (
         "Scenario:\n" + json.dumps(facts, ensure_ascii=False)
         + "\n\nMetrics from the simulation engine:\n" + json.dumps(metrics, ensure_ascii=False)
     )
+    if not scenario.get("base_scenario_id"):
+        prompt += (
+            "\n\nThere is no baseline scenario to compare against. Describe the outcomes only. "
+            "Do not claim that any policy or event caused, raised, lowered, kept, reduced or prevented "
+            "any value, and do not recommend policy changes based on assumed effects. "
+            "A caveat about the missing baseline is added automatically; do not repeat it."
+        )
+    return prompt
 
 
 def _strings(value, limit: int = 4) -> list[str]:
@@ -82,6 +93,9 @@ class ReportWriter:
         if not isinstance(parsed, dict) or not str(parsed.get("headline") or "").strip():
             raise ValueError("Gemini returned no headline")
         caveats = _strings(parsed.get("caveats"))
+        # Fixed caveats are added by code, never left to the model.
+        if not scenario.get("base_scenario_id") and NO_BASELINE_CAVEAT not in caveats:
+            caveats.insert(0, NO_BASELINE_CAVEAT)
         if STANDARD_CAVEAT not in caveats:
             caveats.insert(0, STANDARD_CAVEAT)
         return {
