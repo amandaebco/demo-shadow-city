@@ -11,7 +11,8 @@ from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from app.config import Settings, load_settings
 from app.evidence import log_decision
-from app.models import DecideRequest, DecideResponse, DecisionRequestItem, DecisionResponseItem
+from app.models import DecideRequest, DecideResponse, DecisionRequestItem
+from app.outcome import Outcome
 from app.rules import MODEL_VERSION, decide
 
 logger = logging.getLogger("system-one")
@@ -22,8 +23,8 @@ class RuleDecider:
 
     model_version = MODEL_VERSION
 
-    async def decide_batch(self, items: list[DecisionRequestItem]) -> list[tuple[DecisionResponseItem, None]]:
-        return [(decide(item), None) for item in items]
+    async def decide_batch(self, items: list[DecisionRequestItem]) -> list[Outcome]:
+        return [Outcome(decide(item), None, "off") for item in items]
 
 
 def build_decider(settings: Settings):
@@ -34,6 +35,7 @@ def build_decider(settings: Settings):
         from google import genai
         from google.cloud import firestore
 
+        from app.cache import FirestoreDecisionCache
         from app.gemini_decider import GeminiDecider
         from app.personas import PersonaLookup
         from app.seeds import SeedLookup
@@ -43,6 +45,7 @@ def build_decider(settings: Settings):
         decider = GeminiDecider(
             client, settings.gemini_model, settings.gemini_fallback_model, SeedLookup(db),
             settings.gemini_concurrency, PersonaLookup(db),
+            cache=FirestoreDecisionCache(db) if settings.decision_cache else None,
         )
         decider.model_version = settings.gemini_model
         return decider
@@ -96,7 +99,7 @@ def health(request: Request) -> dict:
 
 @app.post("/v1/decide", response_model=DecideResponse)
 async def decide_batch(body: DecideRequest, request: Request) -> DecideResponse:
-    results = await request.app.state.decider.decide_batch(body.items)
-    for item, (response, usage) in zip(body.items, results):
-        log_decision(item, response, usage)
-    return DecideResponse(items=[response for response, _ in results])
+    outcomes = await request.app.state.decider.decide_batch(body.items)
+    for item, outcome in zip(body.items, outcomes):
+        log_decision(item, outcome.response, outcome.usage, outcome.cache)
+    return DecideResponse(items=[outcome.response for outcome in outcomes])

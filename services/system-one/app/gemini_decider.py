@@ -13,6 +13,7 @@ import time
 from google.genai import types
 
 from app import rules
+from app.cache import cache_key
 from app.costs import Usage, usage_from_response
 from app.models import (
     DecidedBy,
@@ -21,6 +22,7 @@ from app.models import (
     Mode,
     truncate_reason,
 )
+from app.outcome import Outcome
 from app.sampling import decision_rng, normalize_probabilities, sample
 
 logger = logging.getLogger("system-one")
@@ -103,18 +105,83 @@ def explain(chosen: Mode, probabilities: dict[Mode, float], model_reason: str) -
     ).strip()
 
 
+def stored_decision(response: DecisionResponseItem) -> dict:
+    """The parts of a decision that do not depend on request_id."""
+    return {
+        "probabilities": {option.value: p for option, p in response.probabilities.items()},
+        "chosen": response.chosen.value,
+        "reason_short": response.reason_short,
+        "decided_by": response.decided_by.value,
+        "model_version": response.model_version,
+    }
+
+
+def from_stored(item: DecisionRequestItem, stored: dict, latency_ms: int) -> DecisionResponseItem:
+    return DecisionResponseItem(
+        request_id=item.request_id,
+        decision_id=rules.decision_id_for(item.request_id),
+        probabilities=stored["probabilities"],
+        chosen=stored["chosen"],
+        reason_short=stored["reason_short"],
+        decided_by=stored["decided_by"],
+        model_version=stored["model_version"],
+        latency_ms=latency_ms,
+    )
+
+
 class GeminiDecider:
-    def __init__(self, client, model: str, fallback_model: str, seeds, concurrency: int, personas=None):
+    def __init__(self, client, model: str, fallback_model: str, seeds, concurrency: int, personas=None, cache=None):
         self._client = client
+        self._cache = cache
         self._models = [m for m in (model, fallback_model) if m]
         self._seeds = seeds
         self._personas = personas
         self._semaphore = asyncio.Semaphore(concurrency)
 
-    async def decide_batch(
-        self, items: list[DecisionRequestItem]
-    ) -> list[tuple[DecisionResponseItem, Usage | None]]:
-        return list(await asyncio.gather(*(self.decide_with_usage(item) for item in items)))
+    async def decide_batch(self, items: list[DecisionRequestItem]) -> list[Outcome]:
+        if self._cache is None:
+            fresh = await asyncio.gather(*(self.decide_with_usage(item) for item in items))
+            return [Outcome(response, usage, "off") for response, usage in fresh]
+
+        started = time.perf_counter()
+        seeds = [await self._seeds.get(item.scenario_id) for item in items]
+        keys = [cache_key(item, seed, self._models[0]) for item, seed in zip(items, seeds)]
+        try:
+            cached = await self._cache.get_many(keys)
+        except Exception:
+            logger.exception("Decision cache read failed; deciding without it")
+            cached = {}
+        lookup_ms = int((time.perf_counter() - started) * 1000)
+
+        # Decide each distinct missing key once, so identical requests in one batch agree.
+        first_index: dict[str, int] = {}
+        for index, key in enumerate(keys):
+            if key not in cached and key not in first_index:
+                first_index[key] = index
+        fresh = await asyncio.gather(*(self.decide_with_usage(items[i]) for i in first_index.values()))
+        fresh_by_key = dict(zip(first_index, fresh))
+
+        to_store = {
+            key: stored_decision(response)
+            for key, (response, _) in fresh_by_key.items()
+            if response.decided_by is DecidedBy.gemini_system_two  # never cache fallbacks
+        }
+        try:
+            await self._cache.put_many(to_store)
+        except Exception:
+            logger.exception("Decision cache write failed")
+
+        outcomes = []
+        for index, (item, key) in enumerate(zip(items, keys)):
+            if key in cached:
+                outcomes.append(Outcome(from_stored(item, cached[key], lookup_ms), None, "hit"))
+            elif first_index[key] == index:
+                response, usage = fresh_by_key[key]
+                outcomes.append(Outcome(response, usage, "miss"))
+            else:
+                stored = stored_decision(fresh_by_key[key][0])
+                outcomes.append(Outcome(from_stored(item, stored, lookup_ms), None, "hit"))
+        return outcomes
 
     async def decide(self, item: DecisionRequestItem) -> DecisionResponseItem:
         return (await self.decide_with_usage(item))[0]
