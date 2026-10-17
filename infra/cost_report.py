@@ -63,8 +63,9 @@ def main() -> None:
         f'{service}"orchestrator" AND jsonPayload.event="gemini_usage" AND jsonPayload.stage="report" '
         f'AND jsonPayload.scenario_id="{args.scenario_id}"', args.days)
 
+    hits = sum(1 for d in decisions if d.get("cache") == "hit")
     rows = [
-        summarize("decisions", [d.get("usage") for d in decisions]),
+        summarize("decisions", [d.get("usage") for d in decisions if d.get("cache") != "hit"]),
         summarize("population", [p.get("usage") for p in population]),
         summarize("report", [r.get("usage") for r in report]),
     ]
@@ -75,6 +76,7 @@ def main() -> None:
     total = sum(r["cost_usd"] for r in rows)
     priced_decisions = rows[0]["calls"] - rows[0]["no_usage"] - rows[0]["unpriced"]
     print(f"{'total':12s} {'':6s} {'':9s} {'':9s} {sum(r['tokens'] for r in rows):10d} {total:10.4f}")
+    print(f"Decisions replayed from the cache (no model call, no cost): {hits}")
     if priced_decisions:
         decision_cost = rows[0]["cost_usd"] / priced_decisions
         print(f"Average cost per priced decision: ${decision_cost:.6f}")
