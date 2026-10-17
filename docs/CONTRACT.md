@@ -1,6 +1,6 @@
 # Shadow City — Integration Contract
 
-**Version:** v1.3 (frozen, 2026-10-17) — v1.1 adds the named Firestore database `shadow-city`; v1.2 adds the optional `population_id` field (2.1, 2.2) and clarifies the pre-Layer-5 System One decider (10.3); v1.3 adds the Track A-only `decision_cache` collection (5)
+**Version:** v1.4 (frozen, 2026-10-17) — v1.1 adds the named Firestore database `shadow-city`; v1.2 adds the optional `population_id` field (2.1, 2.2) and clarifies the pre-Layer-5 System One decider (10.3); v1.3 adds the Track A-only `decision_cache` collection (5); v1.4 makes memory produced during a scenario scenario-scoped (2.1, 4.3, 5)
 **Status:** Frozen. Changes follow section 9.
 **GCP project:** `ebc-cloud-dev-03`
 **Source of truth for design:** `docs/REFERENCE.md`
@@ -72,7 +72,7 @@ Adding a value to an enum is a **minor** change (section 9). Removing or renamin
 
 - `cost_sensitivity`, `time_sensitivity`: 0–1.
 - `population_id` (optional, added in v1.2): the population this persona belongs to. Track B loads a scenario's personas by querying `personas` where `population_id` equals the scenario's `population_id`.
-- `memory`: short strings, max 5 items, newest last. Written by Track B during simulation (section 4.3), read by Track A when asking for decisions.
+- `memory`: short strings, max 5 items, newest last. The persona's starting memory for every scenario; not changed during simulation (section 4.3).
 - `usual_departure_tick`: the tick the persona normally leaves home.
 
 ### 2.2 Scenario (owner: Track A creates, Track B updates status/progress)
@@ -281,7 +281,12 @@ Returns `{"status": "ok", "model_version": "..."}`.
 
 ### 4.3 Memory updates
 
-Track B appends memory strings to personas through Firestore (`personas/{persona_id}.memory`), max 5 items. Examples: `"stuck in flood near Pluit yesterday"`, `"transjakarta was crowded this morning"`. Short, factual, English.
+Memory produced during a scenario belongs to that scenario only, so that two runs of the same scenario start from the same state and replay identically (Layer 2).
+
+- Each scenario starts from the persona's stored `personas/{persona_id}.memory`. Neither track changes that field during simulation.
+- Track B keeps the memory produced during the scenario in its own per-scenario state, max 5 items, newest last, and sends it in each decision request's `context.memory`.
+- Track B may persist it at `scenarios/{scenario_id}/memory/{persona_id}` as `{"persona_id": "...", "memory": [...]}` for the evidence chain.
+- Examples: `"stuck in flood near Pluit yesterday"`, `"transjakarta was crowded this morning"`. Short, factual, English.
 
 ### 4.4 Mock for parallel work
 
@@ -298,7 +303,8 @@ All paths below live in the **named Firestore database `shadow-city`** (Native m
 | `scenarios/{scenario_id}` | A creates; B updates `status`, `progress`, `updated_at` | Frontend, A |
 | `scenarios/{scenario_id}/ticks/{tick}` | B | Frontend |
 | `scenarios/{scenario_id}/metrics/summary` | B | Frontend, A |
-| `personas/{persona_id}` | A creates; B appends `memory` only | Both |
+| `personas/{persona_id}` | A | Both |
+| `scenarios/{scenario_id}/memory/{persona_id}` | B (optional, 4.3) | Frontend, A |
 | `reports/{report_id}` | A | Frontend |
 | `decision_cache/{cache_key}` | A (`system-one`) | A only; Track B never reads or writes it |
 
