@@ -16,7 +16,7 @@ import requests
 logger = logging.getLogger("sim_worker.system_one")
 
 MAX_BATCH_SIZE = 256
-DEFAULT_TIMEOUT_SEC = 120
+DEFAULT_TIMEOUT_SEC = 300
 
 
 def _is_cloud_run_environment() -> bool:

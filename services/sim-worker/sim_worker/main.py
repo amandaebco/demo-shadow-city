@@ -99,7 +99,7 @@ def main(argv: list[str] | None = None) -> int:
         return 0
 
     logger.info(
-        "Running Layer 1 scenario | project=%s firestore_db=%s scenario_id=%s",
+        "Running Layer 2 scenario | project=%s firestore_db=%s scenario_id=%s",
         config.gcp_project_id,
         config.firestore_database,
         args.scenario_id,

@@ -11,8 +11,9 @@ from google.api_core.exceptions import AlreadyExists, NotFound
 from google.cloud import firestore, pubsub_v1
 
 from sim_worker.config import TOTAL_TICKS, WorkerConfig
-from sim_worker.engine import DecisionProvider, SimulationResult, simulate_scenario_layer1
+from sim_worker.engine import DecisionProvider, SimulationResult, simulate_scenario_layer2
 from sim_worker.physics import ZoneIndex
+from sim_worker.road_graph import JakartaNetwork
 from sim_worker.system_one import SystemOneClient
 
 logger = logging.getLogger("sim_worker.runner")
@@ -21,7 +22,8 @@ TOPIC_SCENARIO_START = "scenario-start"
 TOPIC_SCENARIO_COMPLETED = "scenario-completed"
 TOPIC_SCENARIO_FAILED = "scenario-failed"
 
-TICK_WRITE_BATCH_SIZE = 50
+TICK_WRITE_BATCH_SIZE = 10
+MEMORY_WRITE_BATCH_SIZE = 200
 
 
 def utc_now_iso() -> str:
@@ -38,6 +40,7 @@ class SimulationRunner:
         db: firestore.Client | None = None,
         publisher: pubsub_v1.PublisherClient | None = None,
         decision_provider: DecisionProvider | None = None,
+        network: JakartaNetwork | None = None,
     ) -> None:
         self.config = config
         self.db = db or firestore.Client(
@@ -49,6 +52,7 @@ class SimulationRunner:
             base_url=config.system_one_url
         )
         self.zones = ZoneIndex.from_file(config.zones_geojson_path)
+        self.network = network or JakartaNetwork.from_file(config.network_json_path)
 
     def _publish_event(self, topic_name: str, payload: dict[str, Any]) -> None:
         topic_path = self.publisher.topic_path(self.config.gcp_project_id, topic_name)
@@ -113,13 +117,14 @@ class SimulationRunner:
                 }
             )
 
-            # 2. Load personas and run simulation
+            # 2. Load personas and run Layer 2 simulation
             personas = self.load_personas(scenario)
-            result = simulate_scenario_layer1(
+            result = simulate_scenario_layer2(
                 scenario=scenario,
                 personas=personas,
                 zones=self.zones,
                 decision_provider=self.decision_provider,
+                network=self.network,
                 total_ticks=total_ticks,
             )
 
@@ -150,7 +155,27 @@ class SimulationRunner:
                     scenario_id,
                 )
 
-            # 4. Write scenarios/{id}/metrics/summary
+            # 4. Write scenario-scoped persona memory (CONTRACT.md v1.4 section 5)
+            # Never write to personas/{id}.memory; persist at scenarios/{scenario_id}/memory/{persona_id}.
+            if result.scenario_memories:
+                mem_col = scenario_ref.collection("memory")
+                mem_items = sorted(result.scenario_memories.items(), key=lambda kv: kv[0])
+                for start in range(0, len(mem_items), MEMORY_WRITE_BATCH_SIZE):
+                    chunk = mem_items[start : start + MEMORY_WRITE_BATCH_SIZE]
+                    batch = self.db.batch()
+                    for pid, mem_list in chunk:
+                        batch.set(
+                            mem_col.document(pid),
+                            {"persona_id": pid, "memory": list(mem_list)[-5:]},
+                        )
+                    batch.commit()
+                logger.info(
+                    "Wrote %d scenario-scoped memory docs under scenarios/%s/memory",
+                    len(mem_items),
+                    scenario_id,
+                )
+
+            # 5. Write scenarios/{id}/metrics/summary
             metrics_ref = scenario_ref.collection("metrics").document("summary")
             metrics_ref.set(result.metrics_summary)
             logger.info("Wrote scenarios/%s/metrics/summary", scenario_id)
@@ -230,12 +255,19 @@ def listen_for_scenarios(
     subscriber = pubsub_v1.SubscriberClient()
     processed = 0
 
+    from google.api_core.exceptions import DeadlineExceeded
+
     logger.info("Listening for scenario-start messages on %s...", sub_path)
     while True:
-        response = subscriber.pull(
-            request={"subscription": sub_path, "max_messages": 1},
-            timeout=timeout_sec,
-        )
+        try:
+            response = subscriber.pull(
+                request={"subscription": sub_path, "max_messages": 1},
+                timeout=timeout_sec,
+            )
+        except DeadlineExceeded:
+            if max_messages is not None:
+                break
+            continue
         if not response.received_messages:
             if max_messages is not None:
                 break
