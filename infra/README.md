@@ -21,25 +21,33 @@ Granting IAM roles is done by a human, not by scripts in this repo:
 
 ```bash
 P=ebc-cloud-dev-03
+COND='expression=resource.name=="projects/ebc-cloud-dev-03/databases/shadow-city",title=shadow-city-db-only'
 gcloud iam service-accounts create sc-orchestrator --project=$P --display-name="Shadow City orchestrator"
 gcloud iam service-accounts create sc-system-one  --project=$P --display-name="Shadow City system-one"
-for r in roles/datastore.user roles/pubsub.publisher roles/aiplatform.user; do
-  gcloud projects add-iam-policy-binding $P --member=serviceAccount:sc-orchestrator@$P.iam.gserviceaccount.com --role=$r --condition=None
-done
-for r in roles/datastore.viewer roles/aiplatform.user; do
-  gcloud projects add-iam-policy-binding $P --member=serviceAccount:sc-system-one@$P.iam.gserviceaccount.com --role=$r --condition=None
-done
+gcloud iam service-accounts create sc-sim-worker  --project=$P --display-name="Shadow City sim-worker"
+bind() { gcloud projects add-iam-policy-binding $P --member=serviceAccount:$1@$P.iam.gserviceaccount.com --role=$2 --condition="$3" --quiet >/dev/null; sleep 3; }
+bind sc-orchestrator roles/datastore.user "$COND"
+bind sc-orchestrator roles/pubsub.publisher None
+bind sc-orchestrator roles/aiplatform.user None
+bind sc-system-one   roles/datastore.viewer "$COND"
+bind sc-system-one   roles/aiplatform.user None
+bind sc-sim-worker   roles/datastore.user "$COND"
+bind sc-sim-worker   roles/pubsub.subscriber None
+bind sc-sim-worker   roles/pubsub.publisher None
+gcloud run services add-iam-policy-binding system-one --project=$P --region=asia-southeast2 \
+  --member=serviceAccount:sc-sim-worker@$P.iam.gserviceaccount.com --role=roles/run.invoker
 ```
+
+The `sleep` avoids "concurrent policy changes" errors; rerun a failed line if one still appears.
 
 | Account | Roles | Why |
 | --- | --- | --- |
-| `sc-orchestrator` | `datastore.user`, `pubsub.publisher`, `aiplatform.user` | Writes scenarios and personas, publishes scenario events, calls Gemini |
-| `sc-system-one` | `datastore.viewer`, `aiplatform.user` | Reads scenario seeds, calls Gemini |
+| `sc-orchestrator` | `datastore.user`*, `pubsub.publisher`, `aiplatform.user` | Writes scenarios, personas and reports, publishes scenario events, calls Gemini |
+| `sc-system-one` | `datastore.viewer`*, `aiplatform.user` | Reads scenario seeds and personas, calls Gemini |
+| `sc-sim-worker` (Track B) | `datastore.user`*, `pubsub.subscriber`, `pubsub.publisher`, `run.invoker` on `system-one` | Runs the simulation |
 
-TODO: `roles/datastore.*` covers every Firestore database in the project, including `(default)`.
-Narrow it with an IAM condition on database `shadow-city`.
-
-Track B's worker account also needs `roles/run.invoker` on `system-one`.
+\* Conditional on `resource.name == "projects/ebc-cloud-dev-03/databases/shadow-city"`, so no
+Shadow City account can read or write the project's `(default)` Firestore database.
 
 ## Deploy to Cloud Run
 
