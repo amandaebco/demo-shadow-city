@@ -8,7 +8,7 @@ export const APP_CONFIG = {
     "https://orchestrator-697653429683.asia-southeast2.run.app"
   ).replace(/\/$/, ""),
   googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || "",
-  defaultScenarioId: "s_layer_1_smoke_test_803984",
+  defaultScenarioId: "s_central_parking_100_af902a",
   jakartaCenter: {
     lat: -6.195,
     lng: 106.835,
