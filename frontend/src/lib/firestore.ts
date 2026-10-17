@@ -4,8 +4,10 @@ import {
   Firestore,
   getDocs,
   getFirestore,
+  onSnapshot,
   orderBy,
   query,
+  Unsubscribe,
 } from "firebase/firestore";
 import { APP_CONFIG } from "./config";
 import type { TickData } from "./api";
@@ -57,3 +59,37 @@ export async function fetchTicksViaFirestoreSdk(scenarioId: string): Promise<Tic
   return ticks;
 }
 
+/**
+ * Subscribe in real time to `scenarios/{scenarioId}/ticks` on database `shadow-city`.
+ */
+export function subscribeScenarioTicks(
+  scenarioId: string,
+  onTicks: (ticks: TickData[]) => void,
+  onError?: (err: Error) => void
+): Unsubscribe {
+  const db = getShadowCityFirestore();
+  const ticksCol = collection(db, "scenarios", scenarioId, "ticks");
+  const q = query(ticksCol, orderBy("tick", "asc"));
+  return onSnapshot(
+    q,
+    (snap) => {
+      const ticks: TickData[] = [];
+      snap.forEach((docSnap) => {
+        const d = docSnap.data();
+        ticks.push({
+          scenario_id: String(d.scenario_id || scenarioId),
+          tick: Number(d.tick ?? 0),
+          persona_ids: Array.isArray(d.persona_ids) ? d.persona_ids : [],
+          lat: Array.isArray(d.lat) ? d.lat : [],
+          lng: Array.isArray(d.lng) ? d.lng : [],
+          mode: Array.isArray(d.mode) ? d.mode : [],
+          status: Array.isArray(d.status) ? d.status : [],
+        });
+      });
+      onTicks(ticks);
+    },
+    (err) => {
+      if (onError) onError(err);
+    }
+  );
+}

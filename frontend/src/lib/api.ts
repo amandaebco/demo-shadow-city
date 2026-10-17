@@ -108,10 +108,17 @@ export function tickToLocalTime(tick: number): string {
 }
 
 async function fetchOrchestrator(path: string, init?: RequestInit): Promise<Response> {
-  if (typeof window !== "undefined" && window.location.hostname !== "localhost" && window.location.hostname !== "127.0.0.1") {
+  if (
+    typeof window !== "undefined" &&
+    window.location.hostname !== "localhost" &&
+    window.location.hostname !== "127.0.0.1"
+  ) {
     try {
       const sameOriginRes = await fetch(path, init);
-      if (sameOriginRes.status !== 404 || sameOriginRes.headers.get("content-type")?.includes("application/json")) {
+      if (
+        sameOriginRes.status !== 404 ||
+        sameOriginRes.headers.get("content-type")?.includes("application/json")
+      ) {
         return sameOriginRes;
       }
     } catch {
@@ -197,157 +204,50 @@ function parseFirestoreValue(val: Record<string, unknown>): unknown {
 }
 
 /**
- * Load all 204 tick documents for a scenario:
- * 1. Try Firebase Web SDK `getFirestore(app, "shadow-city")` (`scenarios/{scenarioId}/ticks`)
- * 2. Try static cached bundle `/ticks/${scenarioId}.json` if bundled
- * 3. Fallback: reconstruct deterministic straight-line ticks from Orchestrator personas + metrics
+ * Load all tick documents (`0000`..`0203`) for a scenario directly from the
+ * named Firestore database `shadow-city` in project `ebc-cloud-dev-03` (CONTRACT.md §3, §5).
  */
 export async function loadScenarioTicks(
   scenario: Scenario,
-  metrics: ScenarioMetrics | null
+  _metrics: ScenarioMetrics | null
 ): Promise<TickData[]> {
   const scenarioId = scenario.scenario_id;
 
-  // 1. Try Firebase Web SDK on named database `shadow-city` in project `ebc-cloud-dev-03`
+  // 1. Primary: Firebase Web SDK `getFirestore(app, "shadow-city")` (`scenarios/{scenarioId}/ticks`)
   try {
     const { fetchTicksViaFirestoreSdk } = await import("./firestore");
     const sdkTicks = await fetchTicksViaFirestoreSdk(scenarioId);
     if (sdkTicks.length > 0) {
       return sdkTicks;
     }
-  } catch {
-    // Ignore if rules are not yet deployed or offline, and fall back to static/REST
+  } catch (err) {
+    console.warn("Firestore Web SDK tick query fell back to Firestore REST:", err);
   }
 
-  // 2. Check bundled static snapshot (instant load for pre-baked scenarios)
-  try {
-    const staticRes = await fetch(`/ticks/${scenarioId}.json`, { cache: "no-store" });
-    if (staticRes.ok) {
-      const staticTicks: TickData[] = await staticRes.json();
-      if (Array.isArray(staticTicks) && staticTicks.length > 0) {
-        return staticTicks;
-      }
-    }
-  } catch {
-    // Ignore and try REST / Orchestrator fallback next
-  }
-
-  // 3. Try Firestore REST API on database `shadow-city` in project `ebc-cloud-dev-03`
-  try {
-    const fsUrl = `https://firestore.googleapis.com/v1/projects/${APP_CONFIG.gcpProjectId}/databases/${APP_CONFIG.firestoreDatabase}/documents/scenarios/${scenarioId}/ticks?pageSize=250`;
-    const fsRes = await fetch(fsUrl, { cache: "no-store" });
-    if (fsRes.ok) {
-      const body = await fsRes.json();
-      const docs = body.documents || [];
-      if (docs.length > 0) {
-        const ticks: TickData[] = docs.map((doc: { fields?: Record<string, Record<string, unknown>> }) => {
-          const f = doc.fields || {};
-          return {
-            scenario_id: String(parseFirestoreValue(f.scenario_id || {}) || scenarioId),
-            tick: Number(parseFirestoreValue(f.tick || {}) ?? 0),
-            persona_ids: (parseFirestoreValue(f.persona_ids || {}) as string[]) || [],
-            lat: (parseFirestoreValue(f.lat || {}) as number[]) || [],
-            lng: (parseFirestoreValue(f.lng || {}) as number[]) || [],
-            mode: (parseFirestoreValue(f.mode || {}) as string[]) || [],
-            status: (parseFirestoreValue(f.status || {}) as string[]) || [],
-          };
-        });
-        ticks.sort((a, b) => a.tick - b.tick);
-        return ticks;
-      }
-    }
-  } catch {
-    // Ignore and fall back to Orchestrator persona interpolation
-  }
-
-  // 3. Reconstruct from Orchestrator personas if Firestore direct browser read is restricted
-  const popSize = Math.min(scenario.population_size || 50, 100);
-  const seed = scenario.seed ?? 42;
-  const personaIds = Array.from(
-    { length: popSize },
-    (_, i) => `p_s${seed}_n${scenario.population_size}_${String(i).padStart(5, "0")}`
-  );
-
-  const personas: Persona[] = [];
-  const batchSize = 10;
-  for (let i = 0; i < personaIds.length; i += batchSize) {
-    const batch = personaIds.slice(i, i + batchSize);
-    const fetched = await Promise.all(
-      batch.map(async (pid) => {
-        try {
-          const r = await fetch(`${APP_CONFIG.orchestratorUrl}/v1/personas/${pid}`);
-          return r.ok ? ((await r.json()) as Persona) : null;
-        } catch {
-          return null;
-        }
-      })
+  // 2. Direct Firestore v1 REST API on named database `shadow-city` in project `ebc-cloud-dev-03`
+  const fsUrl = `https://firestore.googleapis.com/v1/projects/${APP_CONFIG.gcpProjectId}/databases/${APP_CONFIG.firestoreDatabase}/documents/scenarios/${scenarioId}/ticks?pageSize=250`;
+  const fsRes = await fetch(fsUrl, { cache: "no-store" });
+  if (!fsRes.ok) {
+    throw new Error(
+      `Failed to read scenarios/${scenarioId}/ticks from Firestore database ${APP_CONFIG.firestoreDatabase}: HTTP ${fsRes.status}`
     );
-    for (const p of fetched) {
-      if (p) personas.push(p);
+  }
+  const body = await fsRes.json();
+  const docs = body.documents || [];
+  const ticks: TickData[] = docs.map(
+    (doc: { fields?: Record<string, Record<string, unknown>> }) => {
+      const f = doc.fields || {};
+      return {
+        scenario_id: String(parseFirestoreValue(f.scenario_id || {}) || scenarioId),
+        tick: Number(parseFirestoreValue(f.tick || {}) ?? 0),
+        persona_ids: (parseFirestoreValue(f.persona_ids || {}) as string[]) || [],
+        lat: (parseFirestoreValue(f.lat || {}) as number[]) || [],
+        lng: (parseFirestoreValue(f.lng || {}) as number[]) || [],
+        mode: (parseFirestoreValue(f.mode || {}) as string[]) || [],
+        status: (parseFirestoreValue(f.status || {}) as string[]) || [],
+      };
     }
-  }
-
-  if (personas.length === 0) return [];
-
-  // Assign modes matching kelurahan mode_share if metrics exist, else usual_mode
-  const kelShareMap = new Map<string, string[]>();
-  if (metrics?.by_kelurahan) {
-    for (const row of metrics.by_kelurahan) {
-      const expanded: string[] = [];
-      for (const [m, share] of Object.entries(row.mode_share || {})) {
-        const count = Math.max(1, Math.round(share * 20));
-        for (let k = 0; k < count; k++) expanded.push(m);
-      }
-      kelShareMap.set(row.kelurahan, expanded);
-    }
-  }
-
-  const totalTicks = scenario.progress?.total_ticks || 204;
-  const ticks: TickData[] = [];
-  for (let tick = 0; tick < totalTicks; tick++) {
-    const pids: string[] = [];
-    const lats: number[] = [];
-    const lngs: number[] = [];
-    const modes: string[] = [];
-    const statuses: string[] = [];
-
-    personas.forEach((p, idx) => {
-      pids.push(p.persona_id);
-      const kelList = kelShareMap.get(p.home.kelurahan);
-      const mode = kelList && kelList.length > 0 ? kelList[idx % kelList.length] : p.usual_mode;
-      modes.push(mode);
-
-      const depTick = p.usual_departure_tick ?? 24;
-      const travelTicks = 12;
-      const arrTick = depTick + travelTicks;
-
-      if (tick < depTick) {
-        lats.push(p.home.lat);
-        lngs.push(p.home.lng);
-        statuses.push("at_home");
-      } else if (tick < arrTick) {
-        const frac = (tick - depTick + 1) / (travelTicks + 1);
-        lats.push(Number((p.home.lat + (p.work.lat - p.home.lat) * frac).toFixed(5)));
-        lngs.push(Number((p.home.lng + (p.work.lng - p.home.lng) * frac).toFixed(5)));
-        statuses.push("traveling");
-      } else {
-        lats.push(p.work.lat);
-        lngs.push(p.work.lng);
-        statuses.push("at_work");
-      }
-    });
-
-    ticks.push({
-      scenario_id: scenarioId,
-      tick,
-      persona_ids: pids,
-      lat: lats,
-      lng: lngs,
-      mode: modes,
-      status: statuses,
-    });
-  }
-
+  );
+  ticks.sort((a, b) => a.tick - b.tick);
   return ticks;
 }
-

@@ -366,6 +366,28 @@ export default function JakartaMap() {
     loadScenarioBundle(selectedScenarioId);
   }, [selectedScenarioId, loadScenarioBundle]);
 
+  // Real-time Firestore subscription on database shadow-city while scenario is running
+  useEffect(() => {
+    if (!selectedScenarioId || !activeScenario || activeScenario.status !== "running") {
+      return;
+    }
+    let unsubscribe: (() => void) | undefined;
+    import("@/lib/firestore")
+      .then(({ subscribeScenarioTicks }) => {
+        unsubscribe = subscribeScenarioTicks(selectedScenarioId, (liveTicks) => {
+          if (liveTicks.length > 0) {
+            setTicks(liveTicks);
+          }
+        });
+      })
+      .catch(() => {
+        // Ignore if subscription cannot attach
+      });
+    return () => {
+      if (unsubscribe) unsubscribe();
+    };
+  }, [selectedScenarioId, activeScenario]);
+
   // Update GeoJSON source whenever currentTick or ticks change
   const currentTickData = useMemo(() => {
     if (!ticks.length) return undefined;

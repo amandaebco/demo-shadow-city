@@ -54,11 +54,6 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         default=None,
         help="When used with --listen, exit after processing N messages (or first empty pull).",
     )
-    parser.add_argument(
-        "--export-ticks-json",
-        default=None,
-        help="Optional file path to also export the 204 tick dicts as JSON.",
-    )
     return parser.parse_args(argv)
 
 
@@ -95,7 +90,6 @@ def main(argv: list[str] | None = None) -> int:
         print(json.dumps(summary, indent=2))
         return 0
 
-    from pathlib import Path
     from sim_worker.runner import SimulationRunner, listen_for_scenarios
 
     runner = SimulationRunner(config=config)
@@ -111,15 +105,6 @@ def main(argv: list[str] | None = None) -> int:
         args.scenario_id,
     )
     result = runner.run_scenario(args.scenario_id)
-    if args.export_ticks_json:
-        out_path = Path(args.export_ticks_json)
-        out_path.parent.mkdir(parents=True, exist_ok=True)
-        out_path.write_text(
-            json.dumps([t.to_firestore_dict() for t in result.tick_states]),
-            encoding="utf-8",
-        )
-        logger.info("Exported %d ticks to %s", len(result.tick_states), out_path)
-
     print(
         json.dumps(
             {
