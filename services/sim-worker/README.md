@@ -1,27 +1,34 @@
 # `sim-worker` — Deterministic Simulation Worker (Track B)
 
-**Current Layer:** Layer 1 — Gemini-only MVP (`docs/REFERENCE.md` §9, `docs/CONTRACT.md` v1.2).
+**Current Layer:** Layer 2 — Real simulation engine (`docs/REFERENCE.md` §9, `docs/CONTRACT.md` v1.4).
 
-`sim-worker` is the deterministic simulation engine for **Shadow City**. In Layer 1, it loads a scenario and its synthetic population (`population_id`) from the named Firestore database `shadow-city` in `ebc-cloud-dev-03`, computes straight-line distances, travel times, IDR costs, and policy/flood impacts (`options_detail`), batches `mode_choice` requests to Track A's `system-one` service (`POST /v1/decide`), writes interpolated agent trajectories (`scenarios/{id}/ticks/0000..0203`) and `scenarios/{id}/metrics/summary` to Firestore, and publishes completion events to Pub/Sub (`scenario-completed` / `scenario-failed`).
+`sim-worker` is the deterministic simulation engine for **Shadow City**. In Layer 2, it routes agents across an OpenStreetMap road graph of mainland DKI Jakarta (`NetworkX`), gates `mrt` and `krl` availability on real operational OSM rail stations (with walking access/egress and headway wait times), centralizes all model assumptions with explicit source `TODO`s in `sim_worker/assumptions.py`, preserves scenario-scoped persona memory (`scenarios/{id}/memory/{persona_id}` without mutating `personas/{id}.memory`), and produces byte-for-byte reproducible requests for Track A's `system-one` `decision_cache` (`POST /v1/decide`).
 
 ## Directory Structure
 
 ```text
 services/sim-worker/
-├── .env.example           # Environment variable defaults
-├── Dockerfile             # Container image for Cloud Run Jobs / Worker
-├── pyproject.toml         # Python package metadata & pytest config
-├── requirements.txt       # Python dependencies
+├── .env.example                    # Environment variable defaults
+├── Dockerfile                      # Container image for Cloud Run Jobs / Worker
+├── pyproject.toml                  # Python package metadata & pytest config
+├── requirements.txt                # Python dependencies (pydantic, networkx, firestore, pubsub)
 ├── sim_worker/
 │   ├── __init__.py
-│   ├── config.py          # Enforces ebc-cloud-dev-03 and shadow-city database
-│   ├── physics.py         # Haversine distance, zone polygons, options_detail math
-│   ├── system_one.py      # Authenticated client for POST /v1/decide (<= 256 batch)
-│   ├── engine.py          # Deterministic tick simulation & metrics aggregation
-│   ├── runner.py          # Firestore + Pub/Sub scenario lifecycle runner
-│   └── main.py            # CLI entry point (--scenario-id, --listen, --dry-run)
+│   ├── assumptions.py              # Centralized model assumptions labeled with TODOs
+│   ├── config.py                   # Enforces ebc-cloud-dev-03 and shadow-city database
+│   ├── data/
+│   │   └── jakarta_network.json    # OSM road graph (7,232 nodes, 9,662 edges) + operational MRT/KRL stations
+│   ├── road_graph.py               # NetworkX shortest-path router & rail station catchment index
+│   ├── physics.py                  # Deterministic travel times, IDR tariffs, flood path checks
+│   ├── system_one.py               # Authenticated client for POST /v1/decide (<= 256 batch)
+│   ├── engine.py                   # Layer 2 road-graph tick simulation & metrics aggregation
+│   ├── runner.py                   # Firestore + Pub/Sub scenario lifecycle runner
+│   └── main.py                     # CLI entry point (--scenario-id, --listen, --dry-run)
+├── tools/
+│   ├── build_network.py            # Extracts OSM road network & operational stations via Overpass API
+│   └── run_determinism_check.py    # Creates and compares two identical scenarios in Firestore
 └── tests/
-    └── test_engine.py     # Unit tests for config, physics, and simulation engine
+    └── test_engine.py              # Unit tests for config, road graph, station gating, and determinism
 ```
 
 ## Configuration
@@ -52,10 +59,14 @@ pip install -r requirements.txt
 # 3. Run unit tests (no GCP connection required)
 python -m pytest -v
 
-# 4. Run the Layer 1 smoke test scenario against Firestore shadow-city & System One
-python -m sim_worker.main --scenario-id s_layer_1_smoke_test_803984
+# 4. Run a scenario against Firestore shadow-city & System One
+python -m sim_worker.main --scenario-id <scenario_id>
 
-# 5. Listen for incoming Pub/Sub scenario-start messages
+# 5. Run the Layer 2 two-scenario determinism check (50 or 1,000 personas)
+python tools/run_determinism_check.py --population-size 50 --seed 42
+python tools/run_determinism_check.py --population-size 1000 --seed 42
+
+# 6. Listen for incoming Pub/Sub scenario-start messages
 python -m sim_worker.main --listen --max-messages 1
 ```
 
