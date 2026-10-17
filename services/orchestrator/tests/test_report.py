@@ -74,5 +74,43 @@ def test_prompt_forbids_causal_claims_without_baseline():
 def test_no_baseline_caveat_only_without_baseline():
     reply = {"headline": "h", "winners": [], "losers": [], "recommendations": [], "caveats": []}
     w, _ = writer(reply)
-    report = asyncio.run(w.write(SCENARIO | {"base_scenario_id": "s_base"}, METRICS))
+    report = asyncio.run(w.write(SCENARIO | {"base_scenario_id": "s_base"}, METRICS,
+                                 SCENARIO | {"scenario_id": "s_base"}, METRICS))
     assert NO_BASELINE_CAVEAT not in report["caveats"]
+
+
+BASE_SCENARIO = SCENARIO | {"scenario_id": "s_base", "name": "Baseline", "policies": [], "seed": 42,
+                            "population_size": 50, "population_id": "pop_s42_n50"}
+VARIANT_SCENARIO = SCENARIO | {"base_scenario_id": "s_base", "seed": 42, "population_id": "pop_s42_n50"}
+BASE_METRICS = {"citywide": {"avg_travel_min": 40.0, "mode_share": {"car": 0.10}}, "by_kelurahan": []}
+VARIANT_METRICS = {"citywide": {"avg_travel_min": 43.5, "mode_share": {"car": 0.04}}, "by_kelurahan": []}
+
+
+def test_comparison_prompt_has_code_computed_deltas_and_allows_attribution():
+    from app.report import build_comparison_prompt
+
+    prompt = build_comparison_prompt(VARIANT_SCENARIO, VARIANT_METRICS, BASE_SCENARIO, BASE_METRICS)
+    assert '"avg_travel_min": 3.5' in prompt and '"car": -6.0' in prompt
+    assert '"policies_added"' in prompt and "parking_tariff" in prompt
+    assert "come from the policy and event changes" in prompt
+    assert "no baseline scenario" not in prompt
+
+
+def test_comparison_with_different_population_is_flagged():
+    from app.report import NOT_COMPARABLE_CAVEAT, build_comparison_prompt
+
+    other = BASE_SCENARIO | {"seed": 7}
+    assert "NOT a clean counterfactual" in build_comparison_prompt(VARIANT_SCENARIO, VARIANT_METRICS, other, BASE_METRICS)
+    w, _ = writer({"headline": "h", "winners": [], "losers": [], "recommendations": [], "caveats": []})
+    report = asyncio.run(w.write(VARIANT_SCENARIO, VARIANT_METRICS, other, BASE_METRICS))
+    assert NOT_COMPARABLE_CAVEAT in report["caveats"]
+    assert NO_BASELINE_CAVEAT not in report["caveats"]
+
+
+def test_comparable_baseline_has_no_extra_caveat():
+    from app.report import NOT_COMPARABLE_CAVEAT
+
+    w, models = writer({"headline": "h", "winners": [], "losers": [], "recommendations": [], "caveats": []})
+    report = asyncio.run(w.write(VARIANT_SCENARIO, VARIANT_METRICS, BASE_SCENARIO, BASE_METRICS))
+    assert NOT_COMPARABLE_CAVEAT not in report["caveats"] and NO_BASELINE_CAVEAT not in report["caveats"]
+    assert "Baseline scenario" in models.prompts[0]

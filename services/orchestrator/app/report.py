@@ -8,10 +8,14 @@ import json
 
 from google.genai import types
 
+from app.compare import comparable, compute_deltas, scenario_changes
 from app.costs import log_usage, usage_from_response
 
 GENERATED_BY = "gemini-system-two"
 STANDARD_CAVEAT = "Synthetic population; directional results only."
+NOT_COMPARABLE_CAVEAT = (
+    "The baseline uses a different population or seed, so differences mix policy effects with population differences."
+)
 NO_BASELINE_CAVEAT = "No baseline scenario was compared, so these results cannot be attributed to the policies or events."
 
 SYSTEM_INSTRUCTION = (
@@ -43,6 +47,44 @@ def report_schema() -> dict:
         },
         "required": ["headline", "winners", "losers", "recommendations", "caveats"],
     }
+
+
+def _facts(scenario: dict) -> dict:
+    return {
+        "scenario_id": scenario.get("scenario_id"),
+        "name": scenario.get("name"),
+        "seed": scenario.get("seed"),
+        "population_size": scenario.get("population_size"),
+        "policies": scenario.get("policies", []),
+        "events": scenario.get("events", []),
+    }
+
+
+def build_comparison_prompt(scenario: dict, metrics: dict, base_scenario: dict, base_metrics: dict) -> str:
+    """Layer 3: the variant against its baseline. Every difference is precomputed by code."""
+    problems = comparable(base_scenario, scenario)
+    parts = [
+        "Policy scenario (variant):\n" + json.dumps(_facts(scenario), ensure_ascii=False),
+        "Baseline scenario:\n" + json.dumps(_facts(base_scenario), ensure_ascii=False),
+        "What differs between them:\n" + json.dumps(scenario_changes(base_scenario, scenario), ensure_ascii=False),
+        "Baseline citywide metrics:\n" + json.dumps(base_metrics.get("citywide", {}), ensure_ascii=False),
+        "Variant citywide metrics:\n" + json.dumps(metrics.get("citywide", {}), ensure_ascii=False),
+        "Differences, variant minus baseline, computed by code (minutes, IDR, counts; mode share in "
+        "percentage points):\n" + json.dumps(compute_deltas(base_metrics, metrics), ensure_ascii=False),
+    ]
+    if problems:
+        parts.append(
+            "The two runs are NOT a clean counterfactual (" + "; ".join(problems) + "). Describe the differences, "
+            "but do not attribute them to the policies or events. A caveat about this is added automatically."
+        )
+    else:
+        parts.append(
+            "Both runs use the same synthetic population and random seed, so the differences come from the "
+            "policy and event changes listed above. Explain who gains and who loses because of them, quoting "
+            "the precomputed differences. Winners: groups whose travel time or cost fell most. Losers: groups "
+            "whose travel time, cost or stuck count rose most. Recommendations should follow from these differences."
+        )
+    return "\n\n".join(parts)
 
 
 def build_prompt(scenario: dict, metrics: dict) -> str:
@@ -77,10 +119,16 @@ class ReportWriter:
         self._client = client
         self._model = model
 
-    async def write(self, scenario: dict, metrics: dict) -> dict:
+    async def write(
+        self, scenario: dict, metrics: dict, base_scenario: dict | None = None, base_metrics: dict | None = None
+    ) -> dict:
+        if base_scenario is not None and base_metrics is not None:
+            prompt = build_comparison_prompt(scenario, metrics, base_scenario, base_metrics)
+        else:
+            prompt = build_prompt(scenario, metrics)
         response = await self._client.aio.models.generate_content(
             model=self._model,
-            contents=build_prompt(scenario, metrics),
+            contents=prompt,
             config=types.GenerateContentConfig(
                 system_instruction=SYSTEM_INSTRUCTION,
                 temperature=0.2,
@@ -94,8 +142,11 @@ class ReportWriter:
             raise ValueError("Gemini returned no headline")
         caveats = _strings(parsed.get("caveats"))
         # Fixed caveats are added by code, never left to the model.
-        if not scenario.get("base_scenario_id") and NO_BASELINE_CAVEAT not in caveats:
-            caveats.insert(0, NO_BASELINE_CAVEAT)
+        if base_scenario is None:
+            if NO_BASELINE_CAVEAT not in caveats:
+                caveats.insert(0, NO_BASELINE_CAVEAT)
+        elif comparable(base_scenario, scenario) and NOT_COMPARABLE_CAVEAT not in caveats:
+            caveats.insert(0, NOT_COMPARABLE_CAVEAT)
         if STANDARD_CAVEAT not in caveats:
             caveats.insert(0, STANDARD_CAVEAT)
         return {
