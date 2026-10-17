@@ -33,6 +33,7 @@ class WorkerConfig:
     orchestrator_url: str
     pubsub_subscription: str
     zones_geojson_path: Path
+    network_json_path: Path
 
     @classmethod
     def from_env(cls) -> WorkerConfig:
@@ -53,6 +54,9 @@ class WorkerConfig:
         default_zones = Path(__file__).resolve().parents[3] / "data" / "zones.geojson"
         zones_path = Path(os.getenv("ZONES_GEOJSON_PATH", str(default_zones)))
 
+        default_network = Path(__file__).resolve().parent / "data" / "jakarta_network.json"
+        network_path = Path(os.getenv("NETWORK_JSON_PATH", str(default_network)))
+
         return cls(
             gcp_project_id=project_id,
             gcp_region=os.getenv("GCP_REGION", "asia-southeast2"),
@@ -62,4 +66,5 @@ class WorkerConfig:
             orchestrator_url=os.getenv("ORCHESTRATOR_URL", DEFAULT_ORCHESTRATOR_URL).rstrip("/"),
             pubsub_subscription=os.getenv("PUBSUB_SUBSCRIPTION", DEFAULT_PUBSUB_SUBSCRIPTION),
             zones_geojson_path=zones_path,
+            network_json_path=network_path,
         )
