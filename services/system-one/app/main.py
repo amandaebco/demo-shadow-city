@@ -22,8 +22,8 @@ class RuleDecider:
 
     model_version = MODEL_VERSION
 
-    async def decide_batch(self, items: list[DecisionRequestItem]) -> list[DecisionResponseItem]:
-        return [decide(item) for item in items]
+    async def decide_batch(self, items: list[DecisionRequestItem]) -> list[tuple[DecisionResponseItem, None]]:
+        return [(decide(item), None) for item in items]
 
 
 def build_decider(settings: Settings):
@@ -97,6 +97,6 @@ def health(request: Request) -> dict:
 @app.post("/v1/decide", response_model=DecideResponse)
 async def decide_batch(body: DecideRequest, request: Request) -> DecideResponse:
     results = await request.app.state.decider.decide_batch(body.items)
-    for item, result in zip(body.items, results):
-        log_decision(item, result)
-    return DecideResponse(items=results)
+    for item, (response, usage) in zip(body.items, results):
+        log_decision(item, response, usage)
+    return DecideResponse(items=[response for response, _ in results])

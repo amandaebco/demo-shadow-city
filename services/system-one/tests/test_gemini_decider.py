@@ -87,7 +87,7 @@ def test_batch_keeps_order(item):
         it = dict(item, request_id=f"q_{i}")
         items.append(DecisionRequestItem.model_validate(it))
     results = run(decider.decide_batch(items))
-    assert [r.request_id for r in results] == [f"q_{i}" for i in range(10)]
+    assert [r.request_id for r, _ in results] == [f"q_{i}" for i in range(10)]
 
 
 def test_prompt_and_schema_cover_only_listed_options(item):
@@ -158,3 +158,25 @@ def test_decider_passes_persona_into_prompt(item):
     decider = GeminiDecider(client, "primary", "", FakeSeeds(), concurrency=1, personas=Personas())
     run(decider.decide(DecisionRequestItem.model_validate(item)))
     assert "Usual commute mode: krl" in models.prompt
+
+
+def test_usage_is_reported_with_cost(item):
+    class UsageModels(FakeModels):
+        async def generate_content(self, model, contents, config):
+            response = await super().generate_content(model, contents, config)
+            response.usage_metadata = SimpleNamespace(
+                prompt_token_count=400, candidates_token_count=60, thoughts_token_count=100)
+            return response
+
+    client = SimpleNamespace(aio=SimpleNamespace(models=UsageModels({"gemini-3.8-flash": GOOD})))
+    decider = GeminiDecider(client, "gemini-3.8-flash", "", FakeSeeds(), concurrency=1)
+    _, usage = run(decider.decide_with_usage(DecisionRequestItem.model_validate(item)))
+    assert (usage.prompt_tokens, usage.output_tokens, usage.thoughts_tokens) == (400, 60, 100)
+    assert usage.cost_usd > 0
+
+
+def test_rule_fallback_has_no_usage(item):
+    decider, _ = make_decider({"primary": RuntimeError("down"), "fallback": RuntimeError("down")})
+    response, usage = run(decider.decide_with_usage(DecisionRequestItem.model_validate(item)))
+    assert response.decided_by is DecidedBy.rule_fallback
+    assert usage is None

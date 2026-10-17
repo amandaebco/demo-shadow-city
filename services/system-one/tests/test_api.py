@@ -75,3 +75,11 @@ def test_unknown_path_uses_contract_error_shape(client):
     response = client.get("/v1/nope")
     assert response.status_code == 404
     assert response.json()["error"]["code"] == "NOT_FOUND"
+
+
+def test_decision_log_includes_usage_field(client, item, capsys):
+    import json as _json
+
+    client.post("/v1/decide", json={"items": [item]})
+    line = [l for l in capsys.readouterr().out.splitlines() if '"event": "decision"' in l][0]
+    assert _json.loads(line)["usage"] is None  # rule mock makes no model call
