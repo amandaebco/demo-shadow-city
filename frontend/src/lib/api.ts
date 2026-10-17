@@ -180,6 +180,11 @@ export async function fetchScenarioMetrics(scenarioId: string): Promise<Scenario
   return res.json();
 }
 
+export interface ScenarioCompareResponse {
+  base: ScenarioMetrics;
+  variant: ScenarioMetrics;
+}
+
 export async function fetchScenarioReport(scenarioId: string): Promise<AnalystReport | null> {
   const res = await fetchOrchestrator(`/v1/scenarios/${scenarioId}/report`, {
     cache: "no-store",
@@ -187,6 +192,21 @@ export async function fetchScenarioReport(scenarioId: string): Promise<AnalystRe
   if (res.status === 404) return null;
   if (!res.ok) {
     throw new Error(`Failed to fetch report for ${scenarioId}: HTTP ${res.status}`);
+  }
+  return res.json();
+}
+
+export async function fetchScenarioCompare(
+  scenarioId: string,
+  baseScenarioId?: string | null
+): Promise<ScenarioCompareResponse | null> {
+  const query = baseScenarioId ? `?base=${encodeURIComponent(baseScenarioId)}` : "";
+  const res = await fetchOrchestrator(`/v1/scenarios/${scenarioId}/compare${query}`, {
+    cache: "no-store",
+  });
+  if (res.status === 400 || res.status === 404) return null;
+  if (!res.ok) {
+    throw new Error(`Failed to fetch comparison for ${scenarioId}: HTTP ${res.status}`);
   }
   return res.json();
 }

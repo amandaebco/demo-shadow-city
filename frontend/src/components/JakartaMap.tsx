@@ -8,11 +8,13 @@ import {
   AnalystReport,
   createScenario,
   fetchScenario,
+  fetchScenarioCompare,
   fetchScenarioMetrics,
   fetchScenarioReport,
   fetchScenarios,
   loadScenarioTicks,
   Scenario,
+  ScenarioCompareResponse,
   ScenarioMetrics,
   TickData,
   tickToLocalTime,
@@ -37,6 +39,16 @@ const MODE_LABELS: Record<string, string> = {
   ojol: "Ojol",
   walk: "Walk",
 };
+
+const CANONICAL_MODE_ORDER = [
+  "transjakarta",
+  "motorcycle",
+  "ojol",
+  "car",
+  "krl",
+  "mrt",
+  "walk",
+];
 
 function buildResidentsGeoJSON(tickData: TickData | undefined): GeoJSON.FeatureCollection {
   if (!tickData || !tickData.persona_ids) {
@@ -64,6 +76,20 @@ function buildResidentsGeoJSON(tickData: TickData | undefined): GeoJSON.FeatureC
   return { type: "FeatureCollection", features };
 }
 
+function formatSignedDelta(val: number, decimals = 1, unit = ""): string {
+  const rounded = Number(val.toFixed(decimals));
+  if (Math.abs(rounded) < 1e-6) return `0${unit}`;
+  const sign = rounded > 0 ? "+" : "";
+  return `${sign}${rounded.toFixed(decimals)}${unit}`;
+}
+
+function formatSignedIdr(val: number): string {
+  const rounded = Math.round(val);
+  if (rounded === 0) return "Rp 0";
+  const sign = rounded > 0 ? "+" : "-";
+  return `${sign}Rp ${Math.abs(rounded).toLocaleString()}`;
+}
+
 export default function JakartaMap() {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<maplibregl.Map | null>(null);
@@ -73,13 +99,17 @@ export default function JakartaMap() {
   const [showZones, setShowZones] = useState<boolean>(true);
   const [showReportDrawer, setShowReportDrawer] = useState<boolean>(true);
   const [showCreateModal, setShowCreateModal] = useState<boolean>(false);
+  const [drawerTab, setDrawerTab] = useState<"report" | "breakdown">("report");
+  const [kelurahanSearch, setKelurahanSearch] = useState<string>("");
 
   const [scenarios, setScenarios] = useState<Scenario[]>([]);
   const [selectedScenarioId, setSelectedScenarioId] = useState<string>(
     APP_CONFIG.defaultScenarioId
   );
+  const [compareBaseOverride, setCompareBaseOverride] = useState<string>("");
   const [activeScenario, setActiveScenario] = useState<Scenario | null>(null);
   const [metrics, setMetrics] = useState<ScenarioMetrics | null>(null);
+  const [comparison, setComparison] = useState<ScenarioCompareResponse | null>(null);
   const [report, setReport] = useState<AnalystReport | null>(null);
   const [ticks, setTicks] = useState<TickData[]>([]);
   const [currentTick, setCurrentTick] = useState<number>(22);
@@ -90,7 +120,9 @@ export default function JakartaMap() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   // New scenario form state
-  const [newName, setNewName] = useState<string>("Central Parking +100% (50 Personas)");
+  const [newName, setNewName] = useState<string>("Central parking +100%");
+  const [newBaseId, setNewBaseId] = useState<string>("");
+  const [newPopSize, setNewPopSize] = useState<number>(1000);
   const [newParkingRatio, setNewParkingRatio] = useState<number>(1.0);
   const [includeFlood, setIncludeFlood] = useState<boolean>(false);
   const [creatingScenario, setCreatingScenario] = useState<boolean>(false);
@@ -183,10 +215,10 @@ export default function JakartaMap() {
             "match",
             ["get", "status"],
             "traveling",
-            11,
+            10,
             "stuck",
-            13,
-            7,
+            12,
+            6.5,
           ],
           "circle-color": [
             "match",
@@ -211,10 +243,10 @@ export default function JakartaMap() {
             "match",
             ["get", "status"],
             "traveling",
-            0.35,
+            0.32,
             "stuck",
-            0.5,
-            0.18,
+            0.48,
+            0.16,
           ],
           "circle-blur": 0.6,
         },
@@ -229,10 +261,10 @@ export default function JakartaMap() {
             "match",
             ["get", "status"],
             "traveling",
-            6,
+            5.2,
             "stuck",
-            7,
-            4.5,
+            6.5,
+            4.0,
           ],
           "circle-color": [
             "match",
@@ -253,7 +285,7 @@ export default function JakartaMap() {
             MODE_COLORS.walk,
             "#38bdf8",
           ],
-          "circle-stroke-width": 1.5,
+          "circle-stroke-width": 1.2,
           "circle-stroke-color": [
             "match",
             ["get", "status"],
@@ -314,57 +346,114 @@ export default function JakartaMap() {
   }, [showZones, mapReady]);
 
   // Load scenario list on mount
-  const refreshScenarioList = useCallback(async () => {
+  const refreshScenarioList = useCallback(async (selectPreferredOnFirstLoad = false) => {
     try {
       const list = await fetchScenarios();
       setScenarios(list);
+      if (selectPreferredOnFirstLoad && list.length > 0) {
+        // Prefer a completed Layer 3 variant (with base_scenario_id) so the comparison view is immediately visible
+        const preferredVariant = list.find(
+          (s) =>
+            s.status === "completed" &&
+            s.base_scenario_id &&
+            s.name.toLowerCase().includes("central parking")
+        );
+        const preferredBase = list.find(
+          (s) =>
+            s.status === "completed" &&
+            s.name.toLowerCase() === "baseline weekday"
+        );
+        if (preferredBase) {
+          setNewBaseId(preferredBase.scenario_id);
+        }
+        if (preferredVariant) {
+          setSelectedScenarioId(preferredVariant.scenario_id);
+        } else if (preferredBase) {
+          setSelectedScenarioId(preferredBase.scenario_id);
+        }
+      }
     } catch (err) {
       console.warn("Could not list scenarios:", err);
     }
   }, []);
 
   useEffect(() => {
-    refreshScenarioList();
+    refreshScenarioList(true);
   }, [refreshScenarioList]);
 
-  // Load selected scenario details, ticks, metrics, and analyst report
-  const loadScenarioBundle = useCallback(async (scenarioId: string) => {
-    if (!scenarioId) return;
-    setLoadingScenario(true);
-    setErrorMessage(null);
-    try {
-      const scen = await fetchScenario(scenarioId);
-      setActiveScenario(scen);
+  // Load selected scenario details, ticks, metrics, comparison, and analyst report
+  const loadScenarioBundle = useCallback(
+    async (scenarioId: string, baseOverride?: string) => {
+      if (!scenarioId) return;
+      setLoadingScenario(true);
+      setErrorMessage(null);
+      try {
+        const scen = await fetchScenario(scenarioId);
+        setActiveScenario(scen);
 
-      const scenMetrics = await fetchScenarioMetrics(scenarioId);
-      setMetrics(scenMetrics);
+        const scenMetrics = await fetchScenarioMetrics(scenarioId);
+        setMetrics(scenMetrics);
 
-      const loadedTicks = await loadScenarioTicks(scen, scenMetrics);
-      setTicks(loadedTicks);
+        const effectiveBaseId =
+          baseOverride !== undefined
+            ? baseOverride || null
+            : scen.base_scenario_id || null;
 
-      if (scen.status === "completed" || scenMetrics) {
-        setLoadingReport(true);
-        try {
-          const rep = await fetchScenarioReport(scenarioId);
-          setReport(rep);
-        } catch {
-          setReport(null);
-        } finally {
-          setLoadingReport(false);
+        if (effectiveBaseId && effectiveBaseId !== scenarioId && scenMetrics) {
+          try {
+            const cmp = await fetchScenarioCompare(scenarioId, effectiveBaseId);
+            setComparison(cmp);
+          } catch {
+            setComparison(null);
+          }
+        } else {
+          setComparison(null);
         }
-      } else {
-        setReport(null);
+
+        const loadedTicks = await loadScenarioTicks(scen, scenMetrics);
+        setTicks(loadedTicks);
+
+        if (scen.status === "completed" || scenMetrics) {
+          setLoadingReport(true);
+          try {
+            const rep = await fetchScenarioReport(scenarioId);
+            setReport(rep);
+          } catch {
+            setReport(null);
+          } finally {
+            setLoadingReport(false);
+          }
+        } else {
+          setReport(null);
+        }
+      } catch (err) {
+        setErrorMessage(err instanceof Error ? err.message : "Failed to load scenario");
+      } finally {
+        setLoadingScenario(false);
       }
-    } catch (err) {
-      setErrorMessage(err instanceof Error ? err.message : "Failed to load scenario");
-    } finally {
-      setLoadingScenario(false);
-    }
-  }, []);
+    },
+    []
+  );
 
   useEffect(() => {
+    setCompareBaseOverride("");
     loadScenarioBundle(selectedScenarioId);
   }, [selectedScenarioId, loadScenarioBundle]);
+
+  const handleBaseOverrideChange = async (newBase: string) => {
+    setCompareBaseOverride(newBase);
+    if (!selectedScenarioId) return;
+    if (!newBase || newBase === selectedScenarioId) {
+      setComparison(null);
+      return;
+    }
+    try {
+      const cmp = await fetchScenarioCompare(selectedScenarioId, newBase);
+      setComparison(cmp);
+    } catch {
+      setComparison(null);
+    }
+  };
 
   // Real-time Firestore subscription on database shadow-city while scenario is running
   useEffect(() => {
@@ -425,6 +514,91 @@ export default function JakartaMap() {
     return counts;
   }, [currentTickData]);
 
+  // Compute combined mode list for side-by-side mode share comparison
+  const comparedModes = useMemo(() => {
+    if (!comparison) return [];
+    const baseShare = comparison.base.citywide?.mode_share || {};
+    const varShare = comparison.variant.citywide?.mode_share || {};
+    const allModes = Array.from(
+      new Set([...CANONICAL_MODE_ORDER, ...Object.keys(baseShare), ...Object.keys(varShare)])
+    ).filter((m) => (baseShare[m] ?? 0) > 0 || (varShare[m] ?? 0) > 0);
+    return allModes.map((m) => {
+      const bPct = (baseShare[m] ?? 0) * 100;
+      const vPct = (varShare[m] ?? 0) * 100;
+      return {
+        mode: m,
+        label: MODE_LABELS[m] || m,
+        color: MODE_COLORS[m] || "#64748b",
+        basePct: bPct,
+        varPct: vPct,
+        deltaPp: vPct - bPct,
+      };
+    });
+  }, [comparison]);
+
+  // Compute per-income-band comparison rows
+  const incomeComparisonRows = useMemo(() => {
+    const varBands = comparison?.variant?.by_income_band || metrics?.by_income_band || [];
+    const baseByBand = new Map(
+      (comparison?.base?.by_income_band || []).map((row) => [row.income_band, row])
+    );
+    return varBands.map((vRow) => {
+      const bRow = baseByBand.get(vRow.income_band);
+      return {
+        income_band: vRow.income_band,
+        base_min: bRow?.avg_travel_min ?? null,
+        var_min: vRow.avg_travel_min,
+        delta_min: bRow ? vRow.avg_travel_min - bRow.avg_travel_min : null,
+        base_cost: bRow?.avg_cost_idr ?? null,
+        var_cost: vRow.avg_cost_idr,
+        delta_cost: bRow ? vRow.avg_cost_idr - bRow.avg_cost_idr : null,
+        base_stuck: bRow?.stuck_count ?? null,
+        var_stuck: vRow.stuck_count,
+      };
+    });
+  }, [comparison, metrics]);
+
+  // Compute per-kelurahan comparison rows sorted by largest absolute travel time or cost delta
+  const kelurahanComparisonRows = useMemo(() => {
+    const varKel = comparison?.variant?.by_kelurahan || metrics?.by_kelurahan || [];
+    const baseByKel = new Map(
+      (comparison?.base?.by_kelurahan || []).map((row) => [row.kelurahan, row])
+    );
+    const query = kelurahanSearch.trim().toLowerCase();
+    const rows = varKel
+      .filter((r) => !query || r.kelurahan.toLowerCase().includes(query))
+      .map((vRow) => {
+        const bRow = baseByKel.get(vRow.kelurahan);
+        const deltaMin = bRow ? vRow.avg_travel_min - bRow.avg_travel_min : 0;
+        const deltaCost = bRow ? vRow.avg_cost_idr - bRow.avg_cost_idr : 0;
+        return {
+          kelurahan: vRow.kelurahan,
+          base_min: bRow?.avg_travel_min ?? null,
+          var_min: vRow.avg_travel_min,
+          delta_min: bRow ? deltaMin : null,
+          base_cost: bRow?.avg_cost_idr ?? null,
+          var_cost: vRow.avg_cost_idr,
+          delta_cost: bRow ? deltaCost : null,
+          var_stuck: vRow.stuck_count,
+          sortScore: Math.abs(deltaMin) * 1000 + Math.abs(deltaCost),
+        };
+      });
+    if (comparison) {
+      rows.sort((a, b) => b.sortScore - a.sortScore || a.kelurahan.localeCompare(b.kelurahan));
+    }
+    return rows;
+  }, [comparison, metrics, kelurahanSearch]);
+
+  const effectiveCompareBaseId =
+    compareBaseOverride !== ""
+      ? compareBaseOverride
+      : activeScenario?.base_scenario_id || "";
+
+  const baseScenarioObj = useMemo(
+    () => scenarios.find((s) => s.scenario_id === comparison?.base?.scenario_id),
+    [scenarios, comparison]
+  );
+
   const handleResetView = () => {
     mapRef.current?.flyTo({
       center: [APP_CONFIG.jakartaCenter.lng, APP_CONFIG.jakartaCenter.lat],
@@ -439,31 +613,35 @@ export default function JakartaMap() {
     e.preventDefault();
     setCreatingScenario(true);
     try {
+      const policies =
+        Math.abs(Number(newParkingRatio)) > 1e-6
+          ? [
+              {
+                type: "parking_tariff" as const,
+                zone: "central",
+                change_ratio: Number(newParkingRatio),
+              },
+            ]
+          : [];
       const created = await createScenario({
-        name: newName.trim() || "Custom Layer 1 Scenario",
-        base_scenario_id: null,
+        name: newName.trim() || "Custom Scenario",
+        base_scenario_id: newBaseId || null,
         seed: 42,
-        population_size: 50,
-        policies: [
-          {
-            type: "parking_tariff",
-            zone: "central",
-            change_ratio: Number(newParkingRatio),
-          },
-        ],
+        population_size: newPopSize,
+        policies,
         events: includeFlood
           ? [
               {
                 type: "flood",
                 area_id: "jakarta_utara",
-                start_tick: 16,
-                end_tick: 80,
-                depth_cm: 40,
+                start_tick: 12,
+                end_tick: 72,
+                depth_cm: 45,
               },
             ]
           : [],
       });
-      await refreshScenarioList();
+      await refreshScenarioList(false);
       setSelectedScenarioId(created.scenario_id);
       setShowCreateModal(false);
     } catch (err) {
@@ -481,7 +659,9 @@ export default function JakartaMap() {
           <span className="status-dot" aria-hidden="true" />
           <div>
             <h1>Shadow City</h1>
-            <p className="subtitle">Jakarta Policy Simulator &middot; Layer 1 (Gemini MVP)</p>
+            <p className="subtitle">
+              Jakarta Policy &amp; Flood Simulator &middot; Layer 3 Comparison View
+            </p>
           </div>
         </div>
 
@@ -500,7 +680,7 @@ export default function JakartaMap() {
               )}
               {scenarios.map((s) => (
                 <option key={s.scenario_id} value={s.scenario_id}>
-                  {s.name} ({s.status})
+                  {s.name} ({s.population_size}p &middot; {s.status})
                 </option>
               ))}
             </select>
@@ -515,7 +695,7 @@ export default function JakartaMap() {
           <button
             type="button"
             className="hud-button"
-            onClick={() => loadScenarioBundle(selectedScenarioId)}
+            onClick={() => loadScenarioBundle(selectedScenarioId, compareBaseOverride || undefined)}
             disabled={loadingScenario}
           >
             {loadingScenario ? "Syncing..." : "Refresh"}
@@ -543,7 +723,7 @@ export default function JakartaMap() {
             className={`hud-button ${showReportDrawer ? "active" : ""}`}
             onClick={() => setShowReportDrawer((prev) => !prev)}
           >
-            {showReportDrawer ? "Hide Summary" : "Result Summary"}
+            {showReportDrawer ? "Hide Panel" : "Comparison & Report"}
           </button>
 
           <button type="button" className="hud-button" onClick={handleResetView}>
@@ -589,12 +769,12 @@ export default function JakartaMap() {
         )}
       </aside>
 
-      {/* Right Analyst Report & Metrics Drawer */}
+      {/* Right Analyst Report & Baseline vs. Variant Comparison Drawer */}
       {showReportDrawer && (
-        <aside className="summary-drawer" aria-label="Scenario Result Summary">
+        <aside className="summary-drawer" aria-label="Scenario Comparison and Result Summary">
           <div className="drawer-header">
             <div>
-              <h2>Result Summary</h2>
+              <h2>{comparison ? "Baseline vs. Variant Comparison" : "Result Summary"}</h2>
               <p className="drawer-subtitle">
                 {activeScenario?.name || selectedScenarioId}
               </p>
@@ -604,115 +784,433 @@ export default function JakartaMap() {
             </span>
           </div>
 
-          {metrics && (
-            <div className="metrics-strip">
-              <div className="metric-card">
+          {/* Compare against Baseline selector */}
+          <div className="compare-bar">
+            <label className="compare-select-label">
+              <span>Compare vs. Baseline:</span>
+              <select
+                className="scenario-select compare-select"
+                value={effectiveCompareBaseId}
+                onChange={(e) => handleBaseOverrideChange(e.target.value)}
+              >
+                <option value="">None (Single scenario view)</option>
+                {scenarios
+                  .filter(
+                    (s) =>
+                      s.scenario_id !== selectedScenarioId &&
+                      s.status === "completed"
+                  )
+                  .map((s) => (
+                    <option key={s.scenario_id} value={s.scenario_id}>
+                      {s.name} ({s.scenario_id.slice(0, 18)}…)
+                    </option>
+                  ))}
+              </select>
+            </label>
+          </div>
+
+          {/* Citywide Metrics: Side-by-Side Comparison when `comparison` exists, else single strip */}
+          {comparison ? (
+            <div className="compare-citywide-grid">
+              <div className="compare-card">
                 <span className="metric-label">Avg Travel Time</span>
-                <strong className="metric-value">
-                  {metrics.citywide.avg_travel_min} min
-                </strong>
-              </div>
-              {typeof metrics.citywide.avg_cost_idr === "number" && (
-                <div className="metric-card">
-                  <span className="metric-label">Avg Commute Cost</span>
-                  <strong className="metric-value">
-                    Rp {metrics.citywide.avg_cost_idr.toLocaleString()}
+                <div className="compare-values">
+                  <span className="base-val" title="Baseline">
+                    {comparison.base.citywide.avg_travel_min}m
+                  </span>
+                  <span className="arrow-sep">&rarr;</span>
+                  <strong className="var-val" title="Variant">
+                    {comparison.variant.citywide.avg_travel_min}m
                   </strong>
                 </div>
-              )}
-              <div className="metric-card">
-                <span className="metric-label">Modes Used</span>
-                <strong className="metric-value">
-                  {Object.keys(metrics.citywide.mode_share || {}).length}
-                </strong>
+                <span
+                  className={`delta-badge ${
+                    comparison.variant.citywide.avg_travel_min -
+                      comparison.base.citywide.avg_travel_min <=
+                    0
+                      ? "delta-good"
+                      : "delta-warn"
+                  }`}
+                >
+                  {formatSignedDelta(
+                    comparison.variant.citywide.avg_travel_min -
+                      comparison.base.citywide.avg_travel_min,
+                    1,
+                    " min"
+                  )}
+                </span>
               </div>
-            </div>
-          )}
 
-          {metrics?.citywide?.mode_share && (
-            <div className="mode-share-section">
-              <div className="section-caption">Citywide Mode Share</div>
-              <div className="mode-share-bar">
-                {Object.entries(metrics.citywide.mode_share).map(([m, share]) => (
-                  <div
-                    key={m}
-                    style={{
-                      width: `${Math.max(4, Math.round(share * 100))}%`,
-                      backgroundColor: MODE_COLORS[m] || "#64748b",
-                    }}
-                    title={`${MODE_LABELS[m] || m}: ${(share * 100).toFixed(1)}%`}
-                  />
-                ))}
-              </div>
-              <div className="mode-share-labels">
-                {Object.entries(metrics.citywide.mode_share).map(([m, share]) => (
-                  <span key={m} className="share-pill">
-                    <span
-                      className="mode-dot"
-                      style={{ backgroundColor: MODE_COLORS[m] || "#64748b" }}
-                    />
-                    {MODE_LABELS[m] || m}: <b>{(share * 100).toFixed(0)}%</b>
+              <div className="compare-card">
+                <span className="metric-label">Avg Commute Cost</span>
+                <div className="compare-values">
+                  <span className="base-val" title="Baseline">
+                    Rp {(comparison.base.citywide.avg_cost_idr ?? 0).toLocaleString()}
                   </span>
+                  <span className="arrow-sep">&rarr;</span>
+                  <strong className="var-val" title="Variant">
+                    Rp {(comparison.variant.citywide.avg_cost_idr ?? 0).toLocaleString()}
+                  </strong>
+                </div>
+                <span
+                  className={`delta-badge ${
+                    (comparison.variant.citywide.avg_cost_idr ?? 0) -
+                      (comparison.base.citywide.avg_cost_idr ?? 0) <=
+                    0
+                      ? "delta-good"
+                      : "delta-warn"
+                  }`}
+                >
+                  {formatSignedIdr(
+                    (comparison.variant.citywide.avg_cost_idr ?? 0) -
+                      (comparison.base.citywide.avg_cost_idr ?? 0)
+                  )}
+                </span>
+              </div>
+
+              <div className="compare-card">
+                <span className="metric-label">Flood-Delayed</span>
+                <div className="compare-values">
+                  <span className="base-val" title="Baseline">
+                    {comparison.base.citywide.stuck_count ?? 0}
+                  </span>
+                  <span className="arrow-sep">&rarr;</span>
+                  <strong className="var-val" title="Variant">
+                    {comparison.variant.citywide.stuck_count ?? 0}
+                  </strong>
+                </div>
+                <span
+                  className={`delta-badge ${
+                    (comparison.variant.citywide.stuck_count ?? 0) -
+                      (comparison.base.citywide.stuck_count ?? 0) <=
+                    0
+                      ? "delta-good"
+                      : "delta-warn"
+                  }`}
+                >
+                  {formatSignedDelta(
+                    (comparison.variant.citywide.stuck_count ?? 0) -
+                      (comparison.base.citywide.stuck_count ?? 0),
+                    0,
+                    " res"
+                  )}
+                </span>
+              </div>
+            </div>
+          ) : (
+            metrics && (
+              <div className="metrics-strip">
+                <div className="metric-card">
+                  <span className="metric-label">Avg Travel Time</span>
+                  <strong className="metric-value">
+                    {metrics.citywide.avg_travel_min} min
+                  </strong>
+                </div>
+                {typeof metrics.citywide.avg_cost_idr === "number" && (
+                  <div className="metric-card">
+                    <span className="metric-label">Avg Commute Cost</span>
+                    <strong className="metric-value">
+                      Rp {metrics.citywide.avg_cost_idr.toLocaleString()}
+                    </strong>
+                  </div>
+                )}
+                <div className="metric-card">
+                  <span className="metric-label">Flood-Delayed</span>
+                  <strong className="metric-value">
+                    {metrics.citywide.stuck_count ?? 0}
+                  </strong>
+                </div>
+              </div>
+            )
+          )}
+
+          {/* Mode Share Section: Side-by-Side when `comparison` exists */}
+          {comparison ? (
+            <div className="mode-share-section">
+              <div className="section-caption">
+                Mode Share Shift ({baseScenarioObj?.name || "Baseline"} &rarr; Variant)
+              </div>
+
+              <div className="stacked-bar-row">
+                <span className="bar-tag">Base</span>
+                <div className="mode-share-bar">
+                  {comparedModes.map((row) =>
+                    row.basePct > 0 ? (
+                      <div
+                        key={`base-${row.mode}`}
+                        style={{
+                          width: `${Math.max(2, row.basePct)}%`,
+                          backgroundColor: row.color,
+                        }}
+                        title={`Baseline ${row.label}: ${row.basePct.toFixed(1)}%`}
+                      />
+                    ) : null
+                  )}
+                </div>
+              </div>
+
+              <div className="stacked-bar-row">
+                <span className="bar-tag">Var</span>
+                <div className="mode-share-bar">
+                  {comparedModes.map((row) =>
+                    row.varPct > 0 ? (
+                      <div
+                        key={`var-${row.mode}`}
+                        style={{
+                          width: `${Math.max(2, row.varPct)}%`,
+                          backgroundColor: row.color,
+                        }}
+                        title={`Variant ${row.label}: ${row.varPct.toFixed(1)}%`}
+                      />
+                    ) : null
+                  )}
+                </div>
+              </div>
+
+              <div className="mode-compare-table">
+                {comparedModes.map((row) => (
+                  <div key={row.mode} className="mode-compare-row">
+                    <span className="mode-compare-name">
+                      <span
+                        className="mode-dot"
+                        style={{ backgroundColor: row.color }}
+                      />
+                      {row.label}
+                    </span>
+                    <span className="mode-compare-nums">
+                      {row.basePct.toFixed(1)}% &rarr; <b>{row.varPct.toFixed(1)}%</b>
+                    </span>
+                    <span
+                      className={`mode-delta ${
+                        Math.abs(row.deltaPp) < 0.05
+                          ? "neutral"
+                          : row.deltaPp > 0
+                          ? "up"
+                          : "down"
+                      }`}
+                    >
+                      {formatSignedDelta(row.deltaPp, 1, " pp")}
+                    </span>
+                  </div>
                 ))}
               </div>
             </div>
+          ) : (
+            metrics?.citywide?.mode_share && (
+              <div className="mode-share-section">
+                <div className="section-caption">Citywide Mode Share</div>
+                <div className="mode-share-bar">
+                  {Object.entries(metrics.citywide.mode_share).map(([m, share]) => (
+                    <div
+                      key={m}
+                      style={{
+                        width: `${Math.max(4, Math.round(share * 100))}%`,
+                        backgroundColor: MODE_COLORS[m] || "#64748b",
+                      }}
+                      title={`${MODE_LABELS[m] || m}: ${(share * 100).toFixed(1)}%`}
+                    />
+                  ))}
+                </div>
+                <div className="mode-share-labels">
+                  {Object.entries(metrics.citywide.mode_share).map(([m, share]) => (
+                    <span key={m} className="share-pill">
+                      <span
+                        className="mode-dot"
+                        style={{ backgroundColor: MODE_COLORS[m] || "#64748b" }}
+                      />
+                      {MODE_LABELS[m] || m}: <b>{(share * 100).toFixed(1)}%</b>
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )
           )}
 
-          <div className="report-body">
-            {loadingReport ? (
-              <p className="muted-note">Generating Gemini analyst report...</p>
-            ) : report ? (
-              <>
-                <div className="report-headline">{report.headline}</div>
-
-                {report.winners?.length > 0 && (
-                  <div className="report-section">
-                    <h3 className="sec-winners">Who Benefits (Winners)</h3>
-                    <ul>
-                      {report.winners.map((item, idx) => (
-                        <li key={idx}>{item}</li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-
-                {report.losers?.length > 0 && (
-                  <div className="report-section">
-                    <h3 className="sec-losers">Who Is Affected Most (Losers)</h3>
-                    <ul>
-                      {report.losers.map((item, idx) => (
-                        <li key={idx}>{item}</li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-
-                {report.recommendations?.length > 0 && (
-                  <div className="report-section">
-                    <h3 className="sec-recs">Policy Recommendations</h3>
-                    <ul>
-                      {report.recommendations.map((item, idx) => (
-                        <li key={idx}>{item}</li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-
-                {report.caveats?.length > 0 && (
-                  <div className="report-caveats">
-                    {report.caveats.map((c, idx) => (
-                      <div key={idx}>&bull; {c}</div>
-                    ))}
-                  </div>
-                )}
-              </>
-            ) : (
-              <p className="muted-note">
-                Analyst report is generated once the simulation worker writes{" "}
-                <code>metrics/summary</code> for this scenario.
-              </p>
-            )}
+          {/* Drawer Tabs: Analyst Report vs. Per-Kelurahan & Income Breakdown */}
+          <div className="drawer-tabs">
+            <button
+              type="button"
+              className={`tab-btn ${drawerTab === "report" ? "active" : ""}`}
+              onClick={() => setDrawerTab("report")}
+            >
+              Analyst Report
+            </button>
+            <button
+              type="button"
+              className={`tab-btn ${drawerTab === "breakdown" ? "active" : ""}`}
+              onClick={() => setDrawerTab("breakdown")}
+            >
+              By Income &amp; Kelurahan ({kelurahanComparisonRows.length})
+            </button>
           </div>
+
+          {drawerTab === "report" ? (
+            <div className="report-body">
+              {loadingReport ? (
+                <p className="muted-note">Generating Gemini analyst report...</p>
+              ) : report ? (
+                <>
+                  {report.base_scenario_id && (
+                    <div className="compared-against-tag">
+                      Comparison Report vs. Baseline (<code>{report.base_scenario_id}</code>)
+                    </div>
+                  )}
+                  <div className="report-headline">{report.headline}</div>
+
+                  {report.winners?.length > 0 && (
+                    <div className="report-section">
+                      <h3 className="sec-winners">Who Benefits (Winners)</h3>
+                      <ul>
+                        {report.winners.map((item, idx) => (
+                          <li key={idx}>{item}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+
+                  {report.losers?.length > 0 && (
+                    <div className="report-section">
+                      <h3 className="sec-losers">Who Is Affected Most (Losers)</h3>
+                      <ul>
+                        {report.losers.map((item, idx) => (
+                          <li key={idx}>{item}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+
+                  {report.recommendations?.length > 0 && (
+                    <div className="report-section">
+                      <h3 className="sec-recs">Policy Recommendations</h3>
+                      <ul>
+                        {report.recommendations.map((item, idx) => (
+                          <li key={idx}>{item}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+
+                  {report.caveats?.length > 0 && (
+                    <div className="report-caveats">
+                      {report.caveats.map((c, idx) => (
+                        <div key={idx}>&bull; {c}</div>
+                      ))}
+                    </div>
+                  )}
+                </>
+              ) : (
+                <p className="muted-note">
+                  Analyst report is generated once the simulation worker writes{" "}
+                  <code>metrics/summary</code> for this scenario.
+                </p>
+              )}
+            </div>
+          ) : (
+            <div className="breakdown-body">
+              {/* By Income Band Table */}
+              <div className="breakdown-block">
+                <div className="section-caption">By Income Band</div>
+                <table className="compact-table">
+                  <thead>
+                    <tr>
+                      <th>Income</th>
+                      <th>Travel Time</th>
+                      <th>Avg Cost (IDR)</th>
+                      <th>Stuck</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {incomeComparisonRows.map((row) => (
+                      <tr key={row.income_band}>
+                        <td>
+                          <code>{row.income_band}</code>
+                        </td>
+                        <td>
+                          {row.base_min !== null ? (
+                            <>
+                              {row.base_min}m &rarr; <b>{row.var_min}m</b>{" "}
+                              <span className="inline-delta">
+                                ({formatSignedDelta(row.delta_min ?? 0, 1, "m")})
+                              </span>
+                            </>
+                          ) : (
+                            <b>{row.var_min}m</b>
+                          )}
+                        </td>
+                        <td>
+                          {row.base_cost !== null ? (
+                            <>
+                              {(row.base_cost / 1000).toFixed(1)}k &rarr;{" "}
+                              <b>{(row.var_cost / 1000).toFixed(1)}k</b>
+                            </>
+                          ) : (
+                            <b>Rp {row.var_cost.toLocaleString()}</b>
+                          )}
+                        </td>
+                        <td>{row.var_stuck}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Per-Kelurahan Table */}
+              <div className="breakdown-block">
+                <div className="kelurahan-header-row">
+                  <span className="section-caption">Per-Kelurahan Breakdown</span>
+                  <input
+                    type="text"
+                    placeholder="Filter kelurahan..."
+                    value={kelurahanSearch}
+                    onChange={(e) => setKelurahanSearch(e.target.value)}
+                    className="kelurahan-filter-input"
+                  />
+                </div>
+                <div className="kelurahan-scroll">
+                  <table className="compact-table">
+                    <thead>
+                      <tr>
+                        <th>Kelurahan</th>
+                        <th>Time (m)</th>
+                        <th>Cost (IDR)</th>
+                        <th>Stuck</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {kelurahanComparisonRows.slice(0, 80).map((row) => (
+                        <tr key={row.kelurahan}>
+                          <td>{row.kelurahan}</td>
+                          <td>
+                            {row.base_min !== null ? (
+                              <>
+                                {row.base_min} &rarr; <b>{row.var_min}</b>{" "}
+                                <span className="inline-delta">
+                                  ({formatSignedDelta(row.delta_min ?? 0, 1)})
+                                </span>
+                              </>
+                            ) : (
+                              <b>{row.var_min}</b>
+                            )}
+                          </td>
+                          <td>
+                            {row.base_cost !== null ? (
+                              <>
+                                {(row.base_cost / 1000).toFixed(1)}k &rarr;{" "}
+                                <b>{(row.var_cost / 1000).toFixed(1)}k</b>
+                              </>
+                            ) : (
+                              <b>{row.var_cost.toLocaleString()}</b>
+                            )}
+                          </td>
+                          <td>{row.var_stuck}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          )}
         </aside>
       )}
 
@@ -781,7 +1279,7 @@ export default function JakartaMap() {
       {showCreateModal && (
         <div className="modal-backdrop" onClick={() => setShowCreateModal(false)}>
           <div className="modal-card" onClick={(e) => e.stopPropagation()}>
-            <h3>Create Layer 1 Scenario (50 Personas)</h3>
+            <h3>Create Policy / Flood Scenario</h3>
             <form onSubmit={handleCreateScenario} className="scenario-form">
               <label>
                 Scenario Name
@@ -793,7 +1291,35 @@ export default function JakartaMap() {
                 />
               </label>
               <label>
-                Central Parking Tariff Change Ratio (e.g., 1.0 = +100%)
+                Baseline Scenario to Compare Against (optional)
+                <select
+                  className="scenario-select"
+                  value={newBaseId}
+                  onChange={(e) => setNewBaseId(e.target.value)}
+                >
+                  <option value="">None (Standalone baseline)</option>
+                  {scenarios
+                    .filter((s) => s.status === "completed")
+                    .map((s) => (
+                      <option key={s.scenario_id} value={s.scenario_id}>
+                        {s.name} ({s.scenario_id})
+                      </option>
+                    ))}
+                </select>
+              </label>
+              <label>
+                Population Size (Seed 42)
+                <select
+                  className="scenario-select"
+                  value={newPopSize}
+                  onChange={(e) => setNewPopSize(Number(e.target.value))}
+                >
+                  <option value={1000}>1,000 Personas (Layer 2–5 Standard)</option>
+                  <option value={50}>50 Personas (Fast Smoke Test)</option>
+                </select>
+              </label>
+              <label>
+                Central Parking Tariff Change Ratio (e.g., 1.0 = +100%, 0 = No policy)
                 <input
                   type="number"
                   step="0.25"
@@ -809,7 +1335,7 @@ export default function JakartaMap() {
                   checked={includeFlood}
                   onChange={(e) => setIncludeFlood(e.target.checked)}
                 />
-                <span>Include North Jakarta Tidal Flood (40 cm, ticks 16–80)</span>
+                <span>Include North Jakarta Tidal Flood (45 cm, ticks 12–72)</span>
               </label>
               <div className="modal-actions">
                 <button
