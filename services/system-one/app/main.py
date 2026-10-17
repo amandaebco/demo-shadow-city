@@ -1,6 +1,7 @@
 """System One service: POST /v1/decide and GET /v1/health (CONTRACT.md §4)."""
 
 import logging
+from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, Request
 from fastapi.encoders import jsonable_encoder
@@ -8,12 +9,52 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
-from app.models import DecideRequest, DecideResponse
+from app.config import Settings, load_settings
+from app.evidence import log_decision
+from app.models import DecideRequest, DecideResponse, DecisionRequestItem, DecisionResponseItem
 from app.rules import MODEL_VERSION, decide
 
 logger = logging.getLogger("system-one")
 
-app = FastAPI(title="Shadow City System One", version=MODEL_VERSION)
+
+class RuleDecider:
+    """CONTRACT.md §4.4 mock."""
+
+    model_version = MODEL_VERSION
+
+    async def decide_batch(self, items: list[DecisionRequestItem]) -> list[DecisionResponseItem]:
+        return [decide(item) for item in items]
+
+
+def build_decider(settings: Settings):
+    if settings.decider == "rule":
+        return RuleDecider()
+    if settings.decider == "gemini":
+        # Imported lazily so the rule mock runs without Google Cloud credentials.
+        from google import genai
+        from google.cloud import firestore
+
+        from app.gemini_decider import GeminiDecider
+        from app.seeds import SeedLookup
+
+        client = genai.Client(vertexai=True, project=settings.project_id, location=settings.gemini_location)
+        db = firestore.Client(project=settings.project_id, database=settings.firestore_database)
+        decider = GeminiDecider(
+            client, settings.gemini_model, settings.gemini_fallback_model, SeedLookup(db), settings.gemini_concurrency
+        )
+        decider.model_version = settings.gemini_model
+        return decider
+    raise ValueError(f"Unknown DECIDER '{settings.decider}' (expected 'rule' or 'gemini')")
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    if not hasattr(app.state, "decider"):
+        app.state.decider = build_decider(load_settings())
+    yield
+
+
+app = FastAPI(title="Shadow City System One", lifespan=lifespan)
 
 ERROR_CODES = {400: "INVALID_REQUEST", 404: "NOT_FOUND", 429: "RATE_LIMITED", 503: "MODEL_UNAVAILABLE"}
 
@@ -47,11 +88,13 @@ async def handle_unexpected_error(_: Request, exc: Exception) -> JSONResponse:
 
 
 @app.get("/v1/health")
-def health() -> dict:
-    return {"status": "ok", "model_version": MODEL_VERSION}
+def health(request: Request) -> dict:
+    return {"status": "ok", "model_version": request.app.state.decider.model_version}
 
 
 @app.post("/v1/decide", response_model=DecideResponse)
-def decide_batch(request: DecideRequest) -> DecideResponse:
-    # TODO(Layer 4): log every request + response to BigQuery (CONTRACT.md §2.3, §6).
-    return DecideResponse(items=[decide(item) for item in request.items])
+async def decide_batch(body: DecideRequest, request: Request) -> DecideResponse:
+    results = await request.app.state.decider.decide_batch(body.items)
+    for item, result in zip(body.items, results):
+        log_decision(item, result)
+    return DecideResponse(items=results)

@@ -1,6 +1,6 @@
 # Shadow City — Integration Contract
 
-**Version:** v1.1 (frozen, 2026-10-17) — v1.1 adds the named Firestore database `shadow-city`
+**Version:** v1.2 (frozen, 2026-10-17) — v1.1 adds the named Firestore database `shadow-city`; v1.2 adds the optional `population_id` field (2.1, 2.2)
 **Status:** Frozen. Changes follow section 9.
 **GCP project:** `ebc-cloud-dev-03`
 **Source of truth for design:** `docs/REFERENCE.md`
@@ -54,6 +54,7 @@ Adding a value to an enum is a **minor** change (section 9). Removing or renamin
 {
   "persona_id": "p_00421",
   "cluster_id": "c_017",
+  "population_id": "pop_s42_n5000",
   "home": {"kelurahan": "Penjaringan", "lat": -6.1214, "lng": 106.7923},
   "work": {"kelurahan": "Setiabudi", "lat": -6.2088, "lng": 106.8302},
   "age": 34,
@@ -70,6 +71,7 @@ Adding a value to an enum is a **minor** change (section 9). Removing or renamin
 ```
 
 - `cost_sensitivity`, `time_sensitivity`: 0–1.
+- `population_id` (optional, added in v1.2): the population this persona belongs to. Track B loads a scenario's personas by querying `personas` where `population_id` equals the scenario's `population_id`.
 - `memory`: short strings, max 5 items, newest last. Written by Track B during simulation (section 4.3), read by Track A when asking for decisions.
 - `usual_departure_tick`: the tick the persona normally leaves home.
 
@@ -82,6 +84,7 @@ Adding a value to an enum is a **minor** change (section 9). Removing or renamin
   "base_scenario_id": "s_baseline_weekday",
   "seed": 42,
   "population_size": 5000,
+  "population_id": "pop_s42_n5000",
   "policies": [
     {"type": "parking_tariff", "zone": "central", "change_ratio": 1.0}
   ],
@@ -98,6 +101,7 @@ Adding a value to an enum is a **minor** change (section 9). Removing or renamin
 - `change_ratio`: relative change. `1.0` = +100%, `-0.5` = −50%.
 - `zone` and `area_id` refer to polygons defined in `data/zones.geojson` (owner: Track B).
 - `base_scenario_id`: `null` for a baseline scenario.
+- `population_id` (optional, added in v1.2): set by Track A when the population is ready, before `scenario-start` is published. Scenarios with the same `seed` and `population_size` share one population, so a baseline and its variant use identical personas.
 
 ### 2.3 Decision request and response — System One (owner: Track A serves, Track B calls)
 

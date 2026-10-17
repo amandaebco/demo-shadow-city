@@ -37,5 +37,6 @@ def item() -> dict:
 
 
 @pytest.fixture
-def client() -> TestClient:
-    return TestClient(app)
+def client():
+    with TestClient(app) as test_client:
+        yield test_client

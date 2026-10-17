@@ -3,39 +3,21 @@
 #
 # Usage: infra/deploy.sh [orchestrator|system-one|all] [--yes]
 #
-# Reads GCP_PROJECT_ID, GCP_REGION and FIRESTORE_DATABASE from .env
-# (falls back to .env.example). Builds from source with Cloud Build.
+# Reads configuration from .env (falls back to .env.example). Builds from source
+# with Cloud Build. Each service runs as its own service account sc-<service>,
+# which must exist first (see infra/README.md).
 set -euo pipefail
-
-REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-# The only project Shadow City may use (AGENTS.md). Guards against a wrong .env.
-EXPECTED_PROJECT="ebc-cloud-dev-03"
+source "$(dirname "${BASH_SOURCE[0]}")/lib.sh"
 
 target="all"
-assume_yes="false"
 for arg in "$@"; do
   case "$arg" in
     orchestrator|system-one|all) target="$arg" ;;
-    --yes|-y) assume_yes="true" ;;
+    --yes|-y) ASSUME_YES=true ;;
     *) echo "Unknown argument: $arg" >&2; exit 2 ;;
   esac
 done
-
-env_file="$REPO_ROOT/.env"
-[[ -f "$env_file" ]] || env_file="$REPO_ROOT/.env.example"
-set -a
-# shellcheck disable=SC1090
-source "$env_file"
-set +a
-
-: "${GCP_PROJECT_ID:?GCP_PROJECT_ID is not set in $env_file}"
-: "${GCP_REGION:?GCP_REGION is not set in $env_file}"
-: "${FIRESTORE_DATABASE:?FIRESTORE_DATABASE is not set in $env_file}"
-
-if [[ "$GCP_PROJECT_ID" != "$EXPECTED_PROJECT" ]]; then
-  echo "Refusing to deploy: GCP_PROJECT_ID is '$GCP_PROJECT_ID', expected '$EXPECTED_PROJECT'." >&2
-  exit 1
-fi
+load_env
 
 account="$(gcloud auth list --filter=status:ACTIVE --format='value(account)' 2>/dev/null || true)"
 if [[ -z "$account" ]]; then
@@ -44,27 +26,42 @@ if [[ -z "$account" ]]; then
 fi
 
 case "$target" in
-  all) services=(orchestrator system-one) ;;
-  *) services=("$target") ;;
+  all) services="orchestrator system-one" ;;
+  *) services="$target" ;;
 esac
+
+for service in $services; do
+  sa="sc-$service@$GCP_PROJECT_ID.iam.gserviceaccount.com"
+  if ! gcloud iam service-accounts describe "$sa" --project="$GCP_PROJECT_ID" >/dev/null 2>&1; then
+    echo "Service account $sa does not exist. Create it first (infra/README.md)." >&2
+    exit 1
+  fi
+done
+
+common_env="GCP_PROJECT_ID=$GCP_PROJECT_ID,GCP_REGION=$GCP_REGION,FIRESTORE_DATABASE=$FIRESTORE_DATABASE"
+gemini_env="GEMINI_LOCATION=${GEMINI_LOCATION:-global},GEMINI_MODEL=${GEMINI_MODEL:?},GEMINI_FALLBACK_MODEL=${GEMINI_FALLBACK_MODEL:-}"
 
 echo "Project : $GCP_PROJECT_ID"
 echo "Region  : $GCP_REGION"
 echo "Account : $account"
-echo "Services: ${services[*]}"
-if [[ "$assume_yes" != "true" ]]; then
-  read -r -p "Deploy to Cloud Run? This builds images and may incur cost. [y/N] " answer
-  [[ "$answer" =~ ^[Yy]$ ]] || { echo "Aborted."; exit 1; }
-fi
+echo "Services: $services"
+confirm "Deploy to Cloud Run? This builds images and may incur cost."
 
 deploy_service() {
   local service="$1"
-  local auth_flag
+  local flags=()
   case "$service" in
-    # Public: called by the frontend (CONTRACT.md §3).
-    orchestrator) auth_flag="--allow-unauthenticated" ;;
-    # Private: Track B workers call it with ID tokens (CONTRACT.md §4).
-    system-one) auth_flag="--no-allow-unauthenticated" ;;
+    orchestrator)
+      # Public: called by the frontend (CONTRACT.md §3).
+      # No CPU throttling: population generation runs after POST /v1/scenarios returns.
+      flags=(--allow-unauthenticated --no-cpu-throttling --timeout=300
+             --set-env-vars="$common_env,$gemini_env")
+      ;;
+    system-one)
+      # Private: Track B workers call it with ID tokens (CONTRACT.md §4).
+      flags=(--no-allow-unauthenticated --timeout=120
+             --set-env-vars="$common_env,$gemini_env,DECIDER=${SYSTEM_ONE_DECIDER:-rule}")
+      ;;
   esac
 
   echo "==> Deploying $service"
@@ -72,13 +69,13 @@ deploy_service() {
     --project="$GCP_PROJECT_ID" \
     --region="$GCP_REGION" \
     --source="$REPO_ROOT/services/$service" \
+    --service-account="sc-$service@$GCP_PROJECT_ID.iam.gserviceaccount.com" \
     --platform=managed \
-    "$auth_flag" \
     --cpu=1 \
     --memory=512Mi \
     --min-instances=0 \
     --max-instances=2 \
-    --set-env-vars="GCP_PROJECT_ID=$GCP_PROJECT_ID,GCP_REGION=$GCP_REGION,FIRESTORE_DATABASE=$FIRESTORE_DATABASE" \
+    "${flags[@]}" \
     --quiet
 
   local url
@@ -87,7 +84,7 @@ deploy_service() {
   echo "==> $service URL: $url"
 
   echo "==> Health check: $url/v1/health"
-  if [[ "$auth_flag" == "--allow-unauthenticated" ]]; then
+  if [[ "$service" == "orchestrator" ]]; then
     curl -fsS "$url/v1/health"
   else
     curl -fsS -H "Authorization: Bearer $(gcloud auth print-identity-token)" "$url/v1/health"
@@ -95,6 +92,6 @@ deploy_service() {
   echo
 }
 
-for service in "${services[@]}"; do
+for service in $services; do
   deploy_service "$service"
 done
