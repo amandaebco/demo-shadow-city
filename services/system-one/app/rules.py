@@ -10,11 +10,11 @@ import hashlib
 import time
 
 from app.models import (
-    MAX_REASON_CHARS,
     DecidedBy,
     DecisionRequestItem,
     DecisionResponseItem,
     Mode,
+    truncate_reason,
 )
 
 MODEL_VERSION = "rule-mock-v0"
@@ -55,7 +55,7 @@ def reason_for(item: DecisionRequestItem, chosen: Mode) -> str:
         f"Rule mock: {chosen.value} has the lowest weighted time and cost "
         f"({detail.est_minutes:g} min, {detail.cost_idr} IDR)."
     )
-    return reason[:MAX_REASON_CHARS]
+    return truncate_reason(reason)
 
 
 def decide(item: DecisionRequestItem) -> DecisionResponseItem:

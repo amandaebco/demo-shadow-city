@@ -76,6 +76,7 @@ def test_long_reason_is_truncated(item):
     decider, _ = make_decider({"primary": reply})
     result = run(decider.decide(DecisionRequestItem.model_validate(item)))
     assert len(result.reason_short) == 140
+    assert result.reason_short.endswith("…")
     assert result.chosen is Mode.krl
 
 
@@ -106,3 +107,15 @@ def test_reason_flags_sampled_minority_option():
     reason = explain(Mode.ojol, probs, "Transit is cheaper.")
     assert reason.startswith("Sampled ojol (p=0.05); model favored transjakarta (p=0.65).")
     assert explain(Mode.transjakarta, probs, "Transit is cheaper.") == "Transit is cheaper."
+
+
+def test_truncate_reason_cuts_at_word_boundary():
+    from app.models import truncate_reason
+
+    text = "Sampled ojol (p=0.05); model favored transjakarta (p=0.55). " + "Transjakarta is the fastest option " * 5
+    out = truncate_reason(text)
+    assert len(out) <= 140
+    assert out.endswith("…")
+    assert out[:-1] == text[: len(out) - 1]
+    assert text[len(out) - 1] in " ,.;:"
+    assert truncate_reason("short") == "short"

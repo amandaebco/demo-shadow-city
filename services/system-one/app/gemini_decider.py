@@ -14,11 +14,11 @@ from google.genai import types
 
 from app import rules
 from app.models import (
-    MAX_REASON_CHARS,
     DecidedBy,
     DecisionRequestItem,
     DecisionResponseItem,
     Mode,
+    truncate_reason,
 )
 from app.sampling import decision_rng, normalize_probabilities, sample
 
@@ -113,7 +113,7 @@ class GeminiDecider:
             decision_id=rules.decision_id_for(item.request_id),
             probabilities=probabilities,
             chosen=chosen,
-            reason_short=reason[:MAX_REASON_CHARS],
+            reason_short=truncate_reason(reason),
             decided_by=DecidedBy.gemini_system_two,
             model_version=model,
             latency_ms=int((time.perf_counter() - started) * 1000),
