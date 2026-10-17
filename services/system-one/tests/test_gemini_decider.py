@@ -119,3 +119,42 @@ def test_truncate_reason_cuts_at_word_boundary():
     assert out[:-1] == text[: len(out) - 1]
     assert text[len(out) - 1] in " ,.;:"
     assert truncate_reason("short") == "short"
+
+
+def test_prompt_includes_habit_context(item):
+    req = DecisionRequestItem.model_validate(item)
+    persona = {"usual_mode": "motorcycle", "vehicles": ["motorcycle"], "income_band": "low", "occupation": "x"}
+    prompt = build_prompt(req, persona)
+    assert "Usual commute mode: motorcycle\n" in prompt
+    assert "Owns: motorcycle" in prompt
+    assert "Income band: low" in prompt
+
+
+def test_prompt_flags_unavailable_usual_mode(item):
+    item["options"] = ["transjakarta", "krl"]
+    req = DecisionRequestItem.model_validate(item)
+    prompt = build_prompt(req, {"usual_mode": "car", "vehicles": [], "income_band": None})
+    assert "Usual commute mode: car (not available today)" in prompt
+    assert "Owns: no private vehicle" in prompt
+    assert "Income band" not in prompt
+
+
+def test_prompt_without_persona_has_no_habit_lines(item):
+    assert "Usual commute mode" not in build_prompt(DecisionRequestItem.model_validate(item))
+
+
+def test_decider_passes_persona_into_prompt(item):
+    class Personas:
+        async def get(self, persona_id):
+            return {"usual_mode": "krl", "vehicles": [], "income_band": "middle"}
+
+    class RecordingModels(FakeModels):
+        async def generate_content(self, model, contents, config):
+            self.prompt = contents
+            return await super().generate_content(model, contents, config)
+
+    models = RecordingModels({"primary": GOOD})
+    client = SimpleNamespace(aio=SimpleNamespace(models=models))
+    decider = GeminiDecider(client, "primary", "", FakeSeeds(), concurrency=1, personas=Personas())
+    run(decider.decide(DecisionRequestItem.model_validate(item)))
+    assert "Usual commute mode: krl" in models.prompt

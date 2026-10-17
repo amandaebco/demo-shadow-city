@@ -29,15 +29,36 @@ SYSTEM_INSTRUCTION = (
     "Use only the facts given: the resident's profile, sensitivities, memory, and the "
     "per-option travel time, cost and flooding computed by the simulation engine. "
     "Do not recompute or invent any numbers. "
+    "Commuters have habits: their usual mode starts with an advantage, but they switch when "
+    "another option is clearly better for them today given their cost and time sensitivity, "
+    "or when a policy or event makes their usual option worse. Weigh habit against the "
+    "numbers instead of simply repeating the usual mode. "
     "Return a probability for every option (they should sum to 1) reflecting how likely "
     "this resident is to choose it, and a reason of at most 140 characters in English."
 )
 
 
-def build_prompt(item: DecisionRequestItem) -> str:
+def habit_lines(item: DecisionRequestItem, persona: dict | None) -> list[str]:
+    if not persona:
+        return []
+    lines = []
+    usual = persona.get("usual_mode")
+    if usual:
+        offered = usual in {o.value for o in item.options}
+        lines.append(f"Usual commute mode: {usual}" + ("" if offered else " (not available today)"))
+    vehicles = persona.get("vehicles")
+    if vehicles is not None:
+        lines.append(f"Owns: {', '.join(vehicles) if vehicles else 'no private vehicle'}")
+    if persona.get("income_band"):
+        lines.append(f"Income band: {persona['income_band']}")
+    return lines
+
+
+def build_prompt(item: DecisionRequestItem, persona: dict | None = None) -> str:
     ctx = item.context
     lines = [
         f"Resident: {ctx.persona_summary}",
+        *habit_lines(item, persona),
         f"Cost sensitivity (0-1): {ctx.cost_sensitivity}",
         f"Time sensitivity (0-1): {ctx.time_sensitivity}",
         f"Recent memory: {'; '.join(ctx.memory) if ctx.memory else 'none'}",
@@ -82,10 +103,11 @@ def explain(chosen: Mode, probabilities: dict[Mode, float], model_reason: str) -
 
 
 class GeminiDecider:
-    def __init__(self, client, model: str, fallback_model: str, seeds, concurrency: int):
+    def __init__(self, client, model: str, fallback_model: str, seeds, concurrency: int, personas=None):
         self._client = client
         self._models = [m for m in (model, fallback_model) if m]
         self._seeds = seeds
+        self._personas = personas
         self._semaphore = asyncio.Semaphore(concurrency)
 
     async def decide_batch(self, items: list[DecisionRequestItem]) -> list[DecisionResponseItem]:
@@ -93,10 +115,11 @@ class GeminiDecider:
 
     async def decide(self, item: DecisionRequestItem) -> DecisionResponseItem:
         started = time.perf_counter()
+        persona = await self._personas.get(item.persona_id) if self._personas else None
         async with self._semaphore:
             for model in self._models:
                 try:
-                    raw = await self._ask(model, item)
+                    raw = await self._ask(model, item, persona)
                     break
                 except Exception:
                     logger.exception("Gemini model %s failed for %s", model, item.request_id)
@@ -119,10 +142,10 @@ class GeminiDecider:
             latency_ms=int((time.perf_counter() - started) * 1000),
         )
 
-    async def _ask(self, model: str, item: DecisionRequestItem) -> dict:
+    async def _ask(self, model: str, item: DecisionRequestItem, persona: dict | None) -> dict:
         response = await self._client.aio.models.generate_content(
             model=model,
-            contents=build_prompt(item),
+            contents=build_prompt(item, persona),
             config=types.GenerateContentConfig(
                 system_instruction=SYSTEM_INSTRUCTION,
                 temperature=0,

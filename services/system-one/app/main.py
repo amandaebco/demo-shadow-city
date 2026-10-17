@@ -35,12 +35,14 @@ def build_decider(settings: Settings):
         from google.cloud import firestore
 
         from app.gemini_decider import GeminiDecider
+        from app.personas import PersonaLookup
         from app.seeds import SeedLookup
 
         client = genai.Client(vertexai=True, project=settings.project_id, location=settings.gemini_location)
         db = firestore.Client(project=settings.project_id, database=settings.firestore_database)
         decider = GeminiDecider(
-            client, settings.gemini_model, settings.gemini_fallback_model, SeedLookup(db), settings.gemini_concurrency
+            client, settings.gemini_model, settings.gemini_fallback_model, SeedLookup(db),
+            settings.gemini_concurrency, PersonaLookup(db),
         )
         decider.model_version = settings.gemini_model
         return decider
