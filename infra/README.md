@@ -96,3 +96,23 @@ Both run as `ebc-devops-sa@ebc-source-code` and only when `services/system-one/*
 and its paths to the triggers' included files.
 
 Run the same tests on demand against your working tree: `infra/ci.sh`.
+
+## Gemini cost per scenario
+
+Every Gemini call logs its token usage and cost: decisions in `system-one` (in the decision log
+entry), population and report generation in the orchestrator (`"event": "gemini_usage"`).
+Prices live in `services/*/app/costs.py` with their source.
+
+```bash
+infra/cost_report.py s_layer_1_smoke_test_803984
+```
+
+Baseline measured on 2026-10-17 (`gemini-3.8-flash`, introductory pricing):
+
+| Item | Tokens | Cost (USD) |
+| --- | --- | --- |
+| One mode decision | ~1,080 (574 prompt, 86 output, 417 thinking) | ~0.0023 |
+| Population of 50 personas (2 calls) | 8,418 | 0.022 |
+
+Thinking tokens are about 40% of a decision's tokens but most of its cost, because they are
+billed as output. This is the Gemini-only baseline that Layer 5 (Gemma) is measured against.
