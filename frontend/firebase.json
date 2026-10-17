@@ -1,5 +1,12 @@
 {
+  "firestore": [
+    {
+      "database": "shadow-city",
+      "rules": "firestore.rules"
+    }
+  ],
   "hosting": {
+    "site": "shadow-city",
     "public": "dist",
     "ignore": [
       "firebase.json",
@@ -14,4 +21,3 @@
     ]
   }
 }
-
