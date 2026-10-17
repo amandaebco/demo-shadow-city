@@ -9,6 +9,10 @@ from pathlib import Path
 EXPECTED_GCP_PROJECT_ID = "ebc-cloud-dev-03"
 EXPECTED_FIRESTORE_DATABASE = "shadow-city"
 
+DEFAULT_SYSTEM_ONE_URL = "https://system-one-697653429683.asia-southeast2.run.app"
+DEFAULT_ORCHESTRATOR_URL = "https://orchestrator-697653429683.asia-southeast2.run.app"
+DEFAULT_PUBSUB_SUBSCRIPTION = "scenario-start-sim-worker"
+
 # Simulation time constants (docs/CONTRACT.md section 1)
 START_TICK: int = 0
 END_TICK: int = 203
@@ -26,6 +30,8 @@ class WorkerConfig:
     firestore_database: str
     bigquery_dataset: str
     system_one_url: str
+    orchestrator_url: str
+    pubsub_subscription: str
     zones_geojson_path: Path
 
     @classmethod
@@ -52,7 +58,8 @@ class WorkerConfig:
             gcp_region=os.getenv("GCP_REGION", "asia-southeast2"),
             firestore_database=firestore_db,
             bigquery_dataset=os.getenv("BIGQUERY_DATASET", "shadow_city"),
-            system_one_url=os.getenv("SYSTEM_ONE_URL", "http://localhost:8081"),
+            system_one_url=os.getenv("SYSTEM_ONE_URL", DEFAULT_SYSTEM_ONE_URL).rstrip("/"),
+            orchestrator_url=os.getenv("ORCHESTRATOR_URL", DEFAULT_ORCHESTRATOR_URL).rstrip("/"),
+            pubsub_subscription=os.getenv("PUBSUB_SUBSCRIPTION", DEFAULT_PUBSUB_SUBSCRIPTION),
             zones_geojson_path=zones_path,
         )
-
