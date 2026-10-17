@@ -55,3 +55,19 @@ def test_generate_fails_after_retries():
     with pytest.raises(RuntimeError):
         asyncio.run(PersonaGenerator(fake_client(models), "m").generate(build_skeletons(42, 10)))
     assert models.calls == 2
+
+
+def test_kelurahan_data_covers_mainland_jakarta():
+    from app.kelurahan import HOME_KELURAHAN, WORK_KELURAHAN
+
+    assert len(HOME_KELURAHAN) == 262
+    assert len({k[1] for k in HOME_KELURAHAN}) == 42
+    assert not any(k[1].startswith("Kepulauan Seribu") for k in HOME_KELURAHAN)
+    for _, _, lat, lng in HOME_KELURAHAN:
+        assert -6.40 < lat < -6.05 and 106.65 < lng < 107.0
+    assert len(WORK_KELURAHAN) == 8
+
+
+def test_skeleton_homes_spread_across_jakarta():
+    homes = {s["home"]["kelurahan"] for s in build_skeletons(42, 1000)}
+    assert len(homes) > 200
