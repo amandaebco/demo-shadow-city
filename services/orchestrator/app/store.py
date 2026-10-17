@@ -49,6 +49,20 @@ class FirestoreStore:
         result = query.count().get()
         return int(result[0][0].value)
 
+    def home_counts(self, population_id: str) -> dict[str, int]:
+        """Residents per home kelurahan in a population."""
+        query = (
+            self._db.collection("personas")
+            .where(filter=FieldFilter("population_id", "==", population_id))
+            .select(["home.kelurahan"])
+        )
+        counts: dict[str, int] = {}
+        for doc in query.stream():
+            name = (doc.to_dict().get("home") or {}).get("kelurahan")
+            if name:
+                counts[name] = counts.get(name, 0) + 1
+        return counts
+
     def write_personas(self, personas: list[dict]) -> None:
         collection = self._db.collection("personas")
         for start in range(0, len(personas), WRITE_BATCH_LIMIT):
