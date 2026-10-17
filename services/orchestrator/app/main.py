@@ -15,6 +15,7 @@ from starlette.exceptions import HTTPException as StarletteHTTPException
 from app.config import Settings, load_settings
 from app.models import ScenarioCreate, ScenarioStatus
 from app.pipeline import prepare_scenario, utc_now
+from app.report import report_id_for
 
 SERVICE_VERSION = "0.2.0"
 
@@ -35,12 +36,14 @@ def build_dependencies(settings: Settings) -> dict:
 
     from app.events import PubSubPublisher
     from app.population import PersonaGenerator
+    from app.report import ReportWriter
     from app.store import FirestoreStore
 
     client = genai.Client(vertexai=True, project=settings.project_id, location=settings.gemini_location)
     return {
         "store": FirestoreStore(firestore.Client(project=settings.project_id, database=settings.firestore_database)),
         "generator": PersonaGenerator(client, settings.gemini_model),
+        "report_writer": ReportWriter(client, settings.gemini_model),
         "publisher": PubSubPublisher(settings.project_id, settings.topic_scenario_start, settings.topic_scenario_failed),
     }
 
@@ -149,6 +152,29 @@ async def get_metrics(scenario_id: str, request: Request) -> dict:
     if not metrics:
         raise not_found("Metrics for scenario", scenario_id)
     return metrics
+
+
+@app.get("/v1/scenarios/{scenario_id}/report")
+async def get_report(scenario_id: str, request: Request) -> dict:
+    """Analyst report. Layer 1: written on first request once Track B's metrics exist."""
+    state = request.app.state
+    report_id = report_id_for(scenario_id)
+    report = await asyncio.to_thread(state.store.get_report, report_id)
+    if report:
+        return report
+    scenario = await asyncio.to_thread(state.store.get_scenario, scenario_id)
+    if not scenario:
+        raise not_found("Scenario", scenario_id)
+    metrics = await asyncio.to_thread(state.store.get_metrics, scenario_id)
+    if not metrics:
+        raise ApiError(404, "NOT_FOUND", f"Report for '{scenario_id}' is not available until its metrics exist")
+    try:
+        report = await state.report_writer.write(scenario, metrics)
+    except Exception as exc:
+        logger.exception("Writing report for %s failed", scenario_id)
+        raise ApiError(503, "MODEL_UNAVAILABLE", "Could not generate the report; retry later") from exc
+    await asyncio.to_thread(state.store.save_report, report)
+    return report
 
 
 @app.get("/v1/personas/{persona_id}")

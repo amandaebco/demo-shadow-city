@@ -94,3 +94,33 @@ def test_list_and_metrics(client, deps):
     deps.store.metrics[scenario_id] = {"scenario_id": scenario_id, "by_kelurahan": [], "by_income_band": [], "citywide": {}}
     assert [s["scenario_id"] for s in client.get("/v1/scenarios").json()] == [scenario_id]
     assert client.get(f"/v1/scenarios/{scenario_id}/metrics").json()["scenario_id"] == scenario_id
+
+
+def test_report_waits_for_metrics(client):
+    scenario_id = client.post("/v1/scenarios", json=BODY).json()["scenario_id"]
+    response = client.get(f"/v1/scenarios/{scenario_id}/report")
+    assert response.status_code == 404
+    assert "metrics" in response.json()["error"]["message"]
+
+
+def test_report_generated_once_then_cached(client, deps):
+    scenario_id = client.post("/v1/scenarios", json=BODY).json()["scenario_id"]
+    deps.store.metrics[scenario_id] = {"scenario_id": scenario_id, "citywide": {}}
+    first = client.get(f"/v1/scenarios/{scenario_id}/report")
+    assert first.status_code == 200
+    assert first.json()["generated_by"] == "gemini-system-two"
+    assert client.get(f"/v1/scenarios/{scenario_id}/report").json() == first.json()
+    assert deps.report_writer.calls == 1
+
+
+def test_report_model_failure(client, deps):
+    deps.report_writer.fail = True
+    scenario_id = client.post("/v1/scenarios", json=BODY).json()["scenario_id"]
+    deps.store.metrics[scenario_id] = {"scenario_id": scenario_id}
+    response = client.get(f"/v1/scenarios/{scenario_id}/report")
+    assert response.status_code == 503
+    assert response.json()["error"]["code"] == "MODEL_UNAVAILABLE"
+
+
+def test_report_unknown_scenario(client):
+    assert client.get("/v1/scenarios/s_missing/report").json()["error"]["code"] == "NOT_FOUND"
