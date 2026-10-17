@@ -7,13 +7,20 @@
   ],
   "hosting": {
     "site": "shadow-city",
-    "public": "dist",
+    "public": "out",
     "ignore": [
       "firebase.json",
       "**/.*",
       "**/node_modules/**"
     ],
     "rewrites": [
+      {
+        "source": "/v1/**",
+        "run": {
+          "serviceId": "orchestrator",
+          "region": "asia-southeast2"
+        }
+      },
       {
         "source": "**",
         "destination": "/index.html"

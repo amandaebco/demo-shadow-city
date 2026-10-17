@@ -107,8 +107,22 @@ export function tickToLocalTime(tick: number): string {
   return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}`;
 }
 
+async function fetchOrchestrator(path: string, init?: RequestInit): Promise<Response> {
+  if (typeof window !== "undefined" && window.location.hostname !== "localhost" && window.location.hostname !== "127.0.0.1") {
+    try {
+      const sameOriginRes = await fetch(path, init);
+      if (sameOriginRes.status !== 404 || sameOriginRes.headers.get("content-type")?.includes("application/json")) {
+        return sameOriginRes;
+      }
+    } catch {
+      // Fall back to direct Cloud Run URL
+    }
+  }
+  return fetch(`${APP_CONFIG.orchestratorUrl}${path}`, init);
+}
+
 export async function fetchScenarios(): Promise<Scenario[]> {
-  const res = await fetch(`${APP_CONFIG.orchestratorUrl}/v1/scenarios`, {
+  const res = await fetchOrchestrator(`/v1/scenarios`, {
     cache: "no-store",
   });
   if (!res.ok) {
@@ -119,7 +133,7 @@ export async function fetchScenarios(): Promise<Scenario[]> {
 }
 
 export async function fetchScenario(scenarioId: string): Promise<Scenario> {
-  const res = await fetch(`${APP_CONFIG.orchestratorUrl}/v1/scenarios/${scenarioId}`, {
+  const res = await fetchOrchestrator(`/v1/scenarios/${scenarioId}`, {
     cache: "no-store",
   });
   if (!res.ok) {
@@ -136,7 +150,7 @@ export async function createScenario(payload: {
   policies: PolicyItem[];
   events: EventItem[];
 }): Promise<{ scenario_id: string }> {
-  const res = await fetch(`${APP_CONFIG.orchestratorUrl}/v1/scenarios`, {
+  const res = await fetchOrchestrator(`/v1/scenarios`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(payload),
@@ -149,7 +163,7 @@ export async function createScenario(payload: {
 }
 
 export async function fetchScenarioMetrics(scenarioId: string): Promise<ScenarioMetrics | null> {
-  const res = await fetch(`${APP_CONFIG.orchestratorUrl}/v1/scenarios/${scenarioId}/metrics`, {
+  const res = await fetchOrchestrator(`/v1/scenarios/${scenarioId}/metrics`, {
     cache: "no-store",
   });
   if (res.status === 404) return null;
@@ -160,7 +174,7 @@ export async function fetchScenarioMetrics(scenarioId: string): Promise<Scenario
 }
 
 export async function fetchScenarioReport(scenarioId: string): Promise<AnalystReport | null> {
-  const res = await fetch(`${APP_CONFIG.orchestratorUrl}/v1/scenarios/${scenarioId}/report`, {
+  const res = await fetchOrchestrator(`/v1/scenarios/${scenarioId}/report`, {
     cache: "no-store",
   });
   if (res.status === 404) return null;
