@@ -124,3 +124,37 @@ def test_report_model_failure(client, deps):
 
 def test_report_unknown_scenario(client):
     assert client.get("/v1/scenarios/s_missing/report").json()["error"]["code"] == "NOT_FOUND"
+
+
+def make_pair(client, deps):
+    base_id = client.post("/v1/scenarios", json=BODY | {"name": "Baseline", "policies": [], "events": []}).json()["scenario_id"]
+    variant_id = client.post("/v1/scenarios", json=BODY | {"base_scenario_id": base_id}).json()["scenario_id"]
+    return base_id, variant_id
+
+
+def test_compare_defaults_to_scenario_baseline(client, deps):
+    base_id, variant_id = make_pair(client, deps)
+    deps.store.metrics[base_id] = {"scenario_id": base_id, "citywide": {"avg_travel_min": 40.0}}
+    deps.store.metrics[variant_id] = {"scenario_id": variant_id, "citywide": {"avg_travel_min": 43.0}}
+    body = client.get(f"/v1/scenarios/{variant_id}/compare").json()
+    assert body == {"base": deps.store.metrics[base_id], "variant": deps.store.metrics[variant_id]}
+    assert client.get(f"/v1/scenarios/{base_id}/compare?base={variant_id}").json()["base"]["scenario_id"] == variant_id
+
+
+def test_compare_errors(client, deps):
+    base_id, variant_id = make_pair(client, deps)
+    no_base = client.get(f"/v1/scenarios/{base_id}/compare")
+    assert no_base.status_code == 400 and no_base.json()["error"]["details"]["field"] == "base"
+    missing = client.get(f"/v1/scenarios/{variant_id}/compare")
+    assert missing.status_code == 404 and variant_id in missing.json()["error"]["message"]
+    assert client.get("/v1/scenarios/s_nope/compare?base=s_x").status_code == 404
+
+
+def test_report_uses_baseline_once_its_metrics_exist(client, deps):
+    base_id, variant_id = make_pair(client, deps)
+    deps.store.metrics[variant_id] = {"scenario_id": variant_id}
+    waiting = client.get(f"/v1/scenarios/{variant_id}/report")
+    assert waiting.status_code == 404 and "baseline" in waiting.json()["error"]["message"]
+    deps.store.metrics[base_id] = {"scenario_id": base_id}
+    assert client.get(f"/v1/scenarios/{variant_id}/report").status_code == 200
+    assert deps.report_writer.last_base["scenario_id"] == base_id

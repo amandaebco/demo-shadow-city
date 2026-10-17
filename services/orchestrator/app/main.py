@@ -154,6 +154,32 @@ async def get_metrics(scenario_id: str, request: Request) -> dict:
     return metrics
 
 
+async def load_with_metrics(store, scenario_id: str) -> tuple[dict | None, dict | None]:
+    scenario, metrics = await asyncio.gather(
+        asyncio.to_thread(store.get_scenario, scenario_id), asyncio.to_thread(store.get_metrics, scenario_id)
+    )
+    return scenario, metrics
+
+
+@app.get("/v1/scenarios/{scenario_id}/compare")
+async def compare_scenarios(scenario_id: str, request: Request, base: str | None = None) -> dict:
+    """CONTRACT.md §3: {"base": metrics, "variant": metrics}. `base` defaults to the scenario's baseline."""
+    store = request.app.state.store
+    variant, variant_metrics = await load_with_metrics(store, scenario_id)
+    if not variant:
+        raise not_found("Scenario", scenario_id)
+    base_id = base or variant.get("base_scenario_id")
+    if not base_id:
+        raise ApiError(400, "INVALID_REQUEST", "No baseline: pass ?base={scenario_id}", {"field": "base"})
+    base_scenario, base_metrics = await load_with_metrics(store, base_id)
+    if not base_scenario:
+        raise not_found("Scenario", base_id)
+    if not variant_metrics or not base_metrics:
+        missing = scenario_id if not variant_metrics else base_id
+        raise ApiError(404, "NOT_FOUND", f"Metrics for scenario '{missing}' do not exist yet")
+    return {"base": base_metrics, "variant": variant_metrics}
+
+
 @app.get("/v1/scenarios/{scenario_id}/report")
 async def get_report(scenario_id: str, request: Request) -> dict:
     """Analyst report. Layer 1: written on first request once Track B's metrics exist."""
@@ -168,8 +194,13 @@ async def get_report(scenario_id: str, request: Request) -> dict:
     metrics = await asyncio.to_thread(state.store.get_metrics, scenario_id)
     if not metrics:
         raise ApiError(404, "NOT_FOUND", f"Report for '{scenario_id}' is not available until its metrics exist")
+    base_scenario = base_metrics = None
+    if scenario.get("base_scenario_id"):
+        base_scenario, base_metrics = await load_with_metrics(state.store, scenario["base_scenario_id"])
+        if not base_metrics:
+            raise ApiError(404, "NOT_FOUND", f"Report for '{scenario_id}' is not available until its baseline's metrics exist")
     try:
-        report = await state.report_writer.write(scenario, metrics)
+        report = await state.report_writer.write(scenario, metrics, base_scenario, base_metrics)
     except Exception as exc:
         logger.exception("Writing report for %s failed", scenario_id)
         raise ApiError(503, "MODEL_UNAVAILABLE", "Could not generate the report; retry later") from exc
