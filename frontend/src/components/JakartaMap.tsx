@@ -62,10 +62,40 @@ const CANONICAL_MODE_ORDER = [
 ];
 
 const FEATURED_DEMO_RESIDENTS = [
-  { id: "p_s42_n1000_00026", tag: "#00026 (Moto → TJ)" },
-  { id: "p_s42_n1000_00009", tag: "#00009 (Car → TJ)" },
-  { id: "p_s42_n1000_00005", tag: "#00005 (Flood → TJ)" },
+  { id: "p_s42_n1000_00954", tag: "p_s42_n1000_00954 (KRL)" },
+  { id: "p_s42_n1000_00026", tag: "p_s42_n1000_00026 (Moto → TJ)" },
+  { id: "p_s42_n1000_00009", tag: "p_s42_n1000_00009 (Car → TJ)" },
 ];
+
+const ZONE_LABEL_POINTS: GeoJSON.FeatureCollection = {
+  type: "FeatureCollection",
+  features: [
+    {
+      type: "Feature",
+      properties: {
+        zone_id: "central",
+        label:
+          "CENTRAL PARKING ZONE (+100% TARIFF)\nGambir · Menteng · Tanah Abang · Setiabudi",
+      },
+      geometry: {
+        type: "Point",
+        coordinates: [106.824, -6.198],
+      },
+    },
+    {
+      type: "Feature",
+      properties: {
+        zone_id: "jakarta_utara",
+        label:
+          "NORTH JAKARTA TIDAL FLOOD AREA\nPenjaringan · Pademangan · Tg. Priok · Koja · Cilincing",
+      },
+      geometry: {
+        type: "Point",
+        coordinates: [106.855, -6.122],
+      },
+    },
+  ],
+};
 
 const DEMO_SCENARIO_PRIORITY: Record<string, number> = {
   s_baseline_weekday_ea7247: 1,
@@ -127,6 +157,8 @@ export default function JakartaMap() {
   const mapRef = useRef<maplibregl.Map | null>(null);
   const popupRef = useRef<maplibregl.Popup | null>(null);
   const scenarioCacheRef = useRef<Map<string, CachedScenarioBundle>>(new Map());
+  const personaCacheRef = useRef<Map<string, Persona | null>>(new Map());
+  const decisionCacheRef = useRef<Map<string, PersonaDecisionRecord | null>>(new Map());
 
   const [mapReady, setMapReady] = useState<boolean>(false);
   const [showZones, setShowZones] = useState<boolean>(true);
@@ -156,8 +188,11 @@ export default function JakartaMap() {
   const [loadingVerification, setLoadingVerification] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  // Selected resident decision (evidence chain) state
+  // Selected & hovered resident decision (evidence chain) state
   const [selectedPersonaId, setSelectedPersonaId] = useState<string | null>(null);
+  const [hoveredPersonaId, setHoveredPersonaId] = useState<string | null>(null);
+  const [residentSearchInput, setResidentSearchInput] = useState<string>("");
+  const [residentSearchFeedback, setResidentSearchFeedback] = useState<string | null>(null);
   const [selectedPersona, setSelectedPersona] = useState<Persona | null>(null);
   const [selectedDecision, setSelectedDecision] = useState<PersonaDecisionRecord | null>(null);
   const [selectedBaseDecision, setSelectedBaseDecision] = useState<PersonaDecisionRecord | null>(
@@ -220,7 +255,30 @@ export default function JakartaMap() {
             "#38bdf8",
             "#94a3b8",
           ],
-          "fill-opacity": 0.16,
+          "fill-opacity": 0.24,
+        },
+      });
+
+      map.addLayer({
+        id: "zones-outline-glow",
+        type: "line",
+        source: "shadow-city-zones",
+        layout: {
+          visibility: "visible",
+        },
+        paint: {
+          "line-color": [
+            "match",
+            ["get", "zone_id"],
+            "central",
+            "#fbbf24",
+            "jakarta_utara",
+            "#38bdf8",
+            "#cbd5e1",
+          ],
+          "line-width": 6,
+          "line-opacity": 0.28,
+          "line-blur": 1.6,
         },
       });
 
@@ -236,13 +294,13 @@ export default function JakartaMap() {
             "match",
             ["get", "zone_id"],
             "central",
-            "#fbbf24",
+            "#fde047",
             "jakarta_utara",
-            "#0ea5e9",
+            "#7dd3fc",
             "#cbd5e1",
           ],
-          "line-width": 1.8,
-          "line-dasharray": [2, 2],
+          "line-width": 2.6,
+          "line-dasharray": [2, 1.5],
         },
       });
 
@@ -261,10 +319,10 @@ export default function JakartaMap() {
             "match",
             ["get", "status"],
             "traveling",
-            10,
+            10.5,
             "stuck",
-            12,
-            6.5,
+            13,
+            7,
           ],
           "circle-color": [
             "match",
@@ -289,10 +347,10 @@ export default function JakartaMap() {
             "match",
             ["get", "status"],
             "traveling",
-            0.32,
+            0.35,
             "stuck",
-            0.48,
-            0.16,
+            0.52,
+            0.18,
           ],
           "circle-blur": 0.6,
         },
@@ -307,10 +365,10 @@ export default function JakartaMap() {
             "match",
             ["get", "status"],
             "traveling",
-            5.2,
+            5.5,
             "stuck",
-            6.5,
-            4.0,
+            7.0,
+            4.2,
           ],
           "circle-color": [
             "match",
@@ -331,7 +389,7 @@ export default function JakartaMap() {
             MODE_COLORS.walk,
             "#38bdf8",
           ],
-          "circle-stroke-width": 1.2,
+          "circle-stroke-width": 1.3,
           "circle-stroke-color": [
             "match",
             ["get", "status"],
@@ -342,34 +400,105 @@ export default function JakartaMap() {
         },
       });
 
+      // Zone labels source and layer placed above resident dots for 1080p legibility
+      map.addSource("shadow-city-zone-labels", {
+        type: "geojson",
+        data: ZONE_LABEL_POINTS,
+      });
+
+      map.addLayer({
+        id: "zones-label",
+        type: "symbol",
+        source: "shadow-city-zone-labels",
+        layout: {
+          visibility: "visible",
+          "text-field": ["get", "label"],
+          "text-size": 12.5,
+          "text-font": ["Open Sans Bold", "Arial Unicode MS Bold"],
+          "text-justify": "center",
+          "text-anchor": "center",
+          "text-allow-overlap": true,
+        },
+        paint: {
+          "text-color": [
+            "match",
+            ["get", "zone_id"],
+            "central",
+            "#fef3c7",
+            "jakarta_utara",
+            "#e0f2fe",
+            "#f8fafc",
+          ],
+          "text-halo-color": "#020617",
+          "text-halo-width": 2.4,
+        },
+      });
+
+      map.addLayer({
+        id: "resident-hover-ring",
+        type: "circle",
+        source: "residents-source",
+        filter: ["==", ["get", "persona_id"], ""],
+        paint: {
+          "circle-radius": 15,
+          "circle-color": "rgba(250, 204, 21, 0.26)",
+          "circle-stroke-width": 2.8,
+          "circle-stroke-color": "#fde047",
+        },
+      });
+
       map.addLayer({
         id: "resident-selected-ring",
         type: "circle",
         source: "residents-source",
         filter: ["==", ["get", "persona_id"], ""],
         paint: {
-          "circle-radius": 11,
-          "circle-color": "rgba(56, 189, 248, 0.22)",
-          "circle-stroke-width": 2.4,
-          "circle-stroke-color": "#f8fafc",
+          "circle-radius": 14,
+          "circle-color": "rgba(56, 189, 248, 0.3)",
+          "circle-stroke-width": 3,
+          "circle-stroke-color": "#ffffff",
         },
       });
 
-      map.on("mouseenter", "residents-circle", (e) => {
+      map.addLayer({
+        id: "resident-active-label",
+        type: "symbol",
+        source: "residents-source",
+        filter: ["==", ["get", "persona_id"], ""],
+        layout: {
+          "text-field": ["get", "persona_id"],
+          "text-size": 12,
+          "text-font": ["Open Sans Bold", "Arial Unicode MS Bold"],
+          "text-offset": [0, -1.6],
+          "text-anchor": "bottom",
+          "text-allow-overlap": true,
+        },
+        paint: {
+          "text-color": "#fef08a",
+          "text-halo-color": "#020617",
+          "text-halo-width": 2.2,
+        },
+      });
+
+      map.on("mousemove", "residents-circle", (e) => {
         map.getCanvas().style.cursor = "pointer";
         const feat = e.features?.[0];
         if (!feat || feat.geometry.type !== "Point") return;
         const coords = feat.geometry.coordinates.slice() as [number, number];
         const props = feat.properties || {};
+        const pid = String(props.persona_id || "");
+        if (pid) {
+          setHoveredPersonaId((prev) => (prev === pid ? prev : pid));
+        }
         const modeLabel = MODE_LABELS[props.mode] || props.mode;
         popup
           .setLngLat(coords)
           .setHTML(
-            `<div style="color:#0f172a;font-size:12px;line-height:1.4">
-              <strong>${props.persona_id}</strong><br/>
+            `<div style="color:#0f172a;font-size:12.5px;line-height:1.45">
+              <strong>Resident: ${pid}</strong><br/>
               Mode: <b>${modeLabel}</b><br/>
-              Status: <code>${props.status}</code><br/>
-              <span style="color:#0284c7;font-weight:600">Click to inspect decision &rarr;</span>
+              Status: <b>${props.status}</b><br/>
+              <span style="color:#0284c7;font-weight:700">Click dot to view decision &rarr;</span>
             </div>`
           )
           .addTo(map);
@@ -377,6 +506,7 @@ export default function JakartaMap() {
 
       map.on("mouseleave", "residents-circle", () => {
         map.getCanvas().style.cursor = "";
+        setHoveredPersonaId(null);
         popup.remove();
       });
 
@@ -385,6 +515,7 @@ export default function JakartaMap() {
         const pid = feat?.properties?.persona_id;
         if (typeof pid === "string" && pid) {
           setSelectedPersonaId(pid);
+          setResidentSearchFeedback(null);
         }
       });
 
@@ -405,11 +536,15 @@ export default function JakartaMap() {
     const map = mapRef.current;
     if (!map || !mapReady) return;
     const visibility = showZones ? "visible" : "none";
-    if (map.getLayer("zones-fill")) {
-      map.setLayoutProperty("zones-fill", "visibility", visibility);
-    }
-    if (map.getLayer("zones-outline")) {
-      map.setLayoutProperty("zones-outline", "visibility", visibility);
+    for (const layerId of [
+      "zones-fill",
+      "zones-outline-glow",
+      "zones-outline",
+      "zones-label",
+    ]) {
+      if (map.getLayer(layerId)) {
+        map.setLayoutProperty(layerId, "visibility", visibility);
+      }
     }
   }, [showZones, mapReady]);
 
@@ -623,7 +758,7 @@ export default function JakartaMap() {
     }
   }, [currentTickData, mapReady]);
 
-  // Highlight selected resident dot on the map
+  // Highlight selected and hovered resident dots on the map
   useEffect(() => {
     const map = mapRef.current;
     if (!map || !mapReady) return;
@@ -634,7 +769,25 @@ export default function JakartaMap() {
         selectedPersonaId || "",
       ]);
     }
-  }, [selectedPersonaId, mapReady]);
+    if (map.getLayer("resident-hover-ring")) {
+      map.setFilter("resident-hover-ring", [
+        "==",
+        ["get", "persona_id"],
+        hoveredPersonaId || "",
+      ]);
+    }
+    if (map.getLayer("resident-active-label")) {
+      const activeIds = [selectedPersonaId, hoveredPersonaId].filter(
+        (id): id is string => Boolean(id)
+      );
+      map.setFilter(
+        "resident-active-label",
+        activeIds.length > 0
+          ? ["in", ["get", "persona_id"], ["literal", activeIds]]
+          : ["==", ["get", "persona_id"], ""]
+      );
+    }
+  }, [selectedPersonaId, hoveredPersonaId, mapReady]);
 
   // Animation loop for ticks 0..203
   useEffect(() => {
@@ -777,6 +930,47 @@ export default function JakartaMap() {
     [scenarios, comparison]
   );
 
+  // Cached helpers for persona profile & decision evidence chain
+  const getPersonaCached = useCallback(async (personaId: string): Promise<Persona | null> => {
+    if (personaCacheRef.current.has(personaId)) {
+      return personaCacheRef.current.get(personaId) ?? null;
+    }
+    const p = await fetchPersona(personaId).catch(() => null);
+    if (p) personaCacheRef.current.set(personaId, p);
+    return p;
+  }, []);
+
+  const getDecisionCached = useCallback(
+    async (
+      scenarioId: string,
+      personaId: string
+    ): Promise<PersonaDecisionRecord | null> => {
+      const key = `${scenarioId}::${personaId}`;
+      if (decisionCacheRef.current.has(key)) {
+        return decisionCacheRef.current.get(key) ?? null;
+      }
+      const d = await fetchPersonaDecisions(scenarioId, personaId).catch(() => null);
+      if (d && d.decisions?.length) decisionCacheRef.current.set(key, d);
+      return d;
+    },
+    []
+  );
+
+  // Prefetch featured demo residents (especially p_s42_n1000_00954) so clicking in the video is instant
+  useEffect(() => {
+    if (!selectedScenarioId) return;
+    const timer = setTimeout(() => {
+      for (const item of FEATURED_DEMO_RESIDENTS) {
+        getPersonaCached(item.id);
+        getDecisionCached(selectedScenarioId, item.id);
+        if (effectiveCompareBaseId && effectiveCompareBaseId !== selectedScenarioId) {
+          getDecisionCached(effectiveCompareBaseId, item.id);
+        }
+      }
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [selectedScenarioId, effectiveCompareBaseId, getPersonaCached, getDecisionCached]);
+
   // Load selected persona profile + scenario decision evidence chain when selectedPersonaId changes
   useEffect(() => {
     if (!selectedPersonaId || !selectedScenarioId) {
@@ -788,10 +982,10 @@ export default function JakartaMap() {
     let cancelled = false;
     setLoadingDecision(true);
     Promise.all([
-      fetchPersona(selectedPersonaId).catch(() => null),
-      fetchPersonaDecisions(selectedScenarioId, selectedPersonaId).catch(() => null),
+      getPersonaCached(selectedPersonaId),
+      getDecisionCached(selectedScenarioId, selectedPersonaId),
       effectiveCompareBaseId && effectiveCompareBaseId !== selectedScenarioId
-        ? fetchPersonaDecisions(effectiveCompareBaseId, selectedPersonaId).catch(() => null)
+        ? getDecisionCached(effectiveCompareBaseId, selectedPersonaId)
         : Promise.resolve(null),
     ])
       .then(([personaDoc, decDoc, baseDecDoc]) => {
@@ -806,11 +1000,18 @@ export default function JakartaMap() {
     return () => {
       cancelled = true;
     };
-  }, [selectedPersonaId, selectedScenarioId, effectiveCompareBaseId]);
+  }, [
+    selectedPersonaId,
+    selectedScenarioId,
+    effectiveCompareBaseId,
+    getPersonaCached,
+    getDecisionCached,
+  ]);
 
   const handleSelectResident = useCallback(
     (personaId: string, flyTo = false) => {
       setSelectedPersonaId(personaId);
+      setResidentSearchFeedback(null);
       if (flyTo && currentTickData?.persona_ids) {
         const idx = currentTickData.persona_ids.indexOf(personaId);
         if (idx >= 0) {
@@ -819,8 +1020,9 @@ export default function JakartaMap() {
           if (typeof lat === "number" && typeof lng === "number") {
             mapRef.current?.flyTo({
               center: [lng, lat],
-              zoom: Math.max(mapRef.current.getZoom(), 11.8),
-              duration: 650,
+              zoom: Math.max(mapRef.current.getZoom(), 12.0),
+              offset: [70, 0],
+              duration: 600,
             });
           }
         }
@@ -828,6 +1030,34 @@ export default function JakartaMap() {
     },
     [currentTickData]
   );
+
+  const handleFindResident = (e: React.FormEvent) => {
+    e.preventDefault();
+    const raw = residentSearchInput.trim();
+    if (!raw) return;
+    const query = raw.toLowerCase().replace(/^#/, "");
+    const ids = currentTickData?.persona_ids || [];
+
+    let matched =
+      ids.find((id) => id.toLowerCase() === query) ||
+      ids.find((id) => id.toLowerCase().endsWith(`_${query.padStart(5, "0")}`)) ||
+      ids.find((id) => id.toLowerCase().includes(query));
+
+    if (!matched && /^\d+$/.test(query)) {
+      const popN = activeScenario?.population_size || 1000;
+      matched = `p_s42_n${popN}_${query.padStart(5, "0")}`;
+    } else if (!matched && query.startsWith("p_")) {
+      matched = raw;
+    }
+
+    if (matched) {
+      handleSelectResident(matched, true);
+    } else {
+      setResidentSearchFeedback(
+        `No resident matching "${raw}". Try p_s42_n1000_00954 or 00954.`
+      );
+    }
+  };
 
   const handleResetView = () => {
     mapRef.current?.flyTo({
@@ -999,9 +1229,9 @@ export default function JakartaMap() {
       {/* Map Canvas */}
       <div ref={containerRef} className="map-canvas" role="region" aria-label="Map of Jakarta" />
 
-      {/* Left Mode & Zone Legend */}
-      <aside className="mode-legend" aria-label="Transport Mode Legend">
-        <div className="legend-title">Resident Transport Modes</div>
+      {/* Left Mode, Zone & Resident Search Legend */}
+      <aside className="mode-legend" aria-label="Transport Mode and Policy Zone Legend">
+        <div className="legend-title">Commute Transport Modes</div>
         <div className="mode-grid">
           {Object.entries(MODE_LABELS).map(([key, label]) => (
             <div key={key} className="mode-chip">
@@ -1015,28 +1245,56 @@ export default function JakartaMap() {
         </div>
         {showZones && (
           <div className="zone-legend-inline">
+            <div className="legend-title">Policy &amp; Flood Areas on Map</div>
             <div className="legend-item">
               <span className="swatch swatch-central" />
               <div>
-                <strong>central</strong> (<code>parking_zone</code>)
+                <strong>Central Parking Zone (+100% tariff)</strong>
+                <div className="zone-subtext">
+                  Gambir, Menteng, Tanah Abang, Setiabudi
+                </div>
               </div>
             </div>
             <div className="legend-item">
               <span className="swatch swatch-north" />
               <div>
-                <strong>jakarta_utara</strong> (<code>flood_area</code>)
+                <strong>North Jakarta Tidal Flood Area</strong>
+                <div className="zone-subtext">
+                  Penjaringan, Pademangan, Tanjung Priok, Koja, Cilincing
+                </div>
               </div>
             </div>
           </div>
         )}
         <div className="resident-picker-inline">
-          <div className="legend-title">Inspect Resident (Evidence Chain)</div>
-          <div className="resident-hint">Click any dot on map or pick:</div>
+          <div className="legend-title">Find Resident (Decision Evidence)</div>
+          <form onSubmit={handleFindResident} className="resident-find-form">
+            <input
+              type="text"
+              value={residentSearchInput}
+              onChange={(e) => {
+                setResidentSearchInput(e.target.value);
+                if (residentSearchFeedback) setResidentSearchFeedback(null);
+              }}
+              placeholder="Persona ID (e.g. p_s42_n1000_00954)"
+              className="resident-find-input"
+              aria-label="Find resident by persona ID"
+            />
+            <button type="submit" className="resident-find-btn">
+              Find
+            </button>
+          </form>
+          {residentSearchFeedback && (
+            <div className="resident-search-feedback">{residentSearchFeedback}</div>
+          )}
+          <div className="resident-hint">
+            Quick-pick resident (hover to highlight on map):
+          </div>
           <div className="resident-pill-group">
             {(activeScenario?.population_size === 50 && currentTickData?.persona_ids?.length
               ? currentTickData.persona_ids.slice(0, 3).map((id) => ({
                   id,
-                  tag: id.replace("p_s42_n50_", "#"),
+                  tag: id.replace("p_s42_n50_", "Resident #"),
                 }))
               : FEATURED_DEMO_RESIDENTS
             ).map((item) => (
@@ -1046,6 +1304,8 @@ export default function JakartaMap() {
                 className={`resident-pill-btn ${
                   selectedPersonaId === item.id ? "active" : ""
                 }`}
+                onMouseEnter={() => setHoveredPersonaId(item.id)}
+                onMouseLeave={() => setHoveredPersonaId(null)}
                 onClick={() => handleSelectResident(item.id, true)}
               >
                 {item.tag}
