@@ -295,17 +295,6 @@ Until Layer 5, Track A provides `system-one` with `decided_by: "rule-fallback"`:
 
 ---
 
-### 4.6 Clusters share decisions (Layer 6)
-
-To scale to thousands of residents, Track B asks System One once per cluster instead of once per resident.
-
-1. At each decision point (tick), split a cluster's members by their flood signature: the set of options whose `flooded_on_route` is true for that member. Without an active flood every cluster is one group.
-2. Send one decision request per group, built from the context of the cluster representative if it is in the group, otherwise of the member with the lowest `persona_id`.
-3. Each member samples its own `chosen` from the returned `probabilities`, restricted to the options available to that member and rescaled to sum to 1, with the RNG seeded by `seed + tick + persona_id hash` of the member (as in 2.3). Each member's travel uses its own `options_detail`.
-4. A member's decision record (4.5) copies the shared `probabilities`, `reason_short` and `decided_by`, its own `chosen` and `options_detail`, and adds `"shared_from": "<persona_id whose request was sent>"`.
-
-Measured on the 1,000-resident demo population (`ml/distillation/README.md`): 106 clusters, so 84–89% fewer model calls; members' own decisions match their group's in 89% (baseline), 79% (parking +100%) and 75% (parking + flood) of cases, against 19–25% for random groups of the same sizes.
-
 ### 4.5 Decision records (evidence chain)
 
 The worker stores every decision it received for a persona in a scenario, so the frontend can show why a resident chose a mode:
@@ -329,6 +318,17 @@ The worker stores every decision it received for a persona in a scenario, so the
 - Path: `scenarios/{scenario_id}/decisions/{persona_id}`, written by Track B, read by the frontend and Track A.
 - Values are copied from the decision request (2.3, `context.options_detail`) and response (2.3), ordered by tick.
 - This is the Firestore copy for the UI; the full decision log stays with Track A (2.3, 6).
+
+### 4.6 Clusters share decisions (Layer 6)
+
+To scale to thousands of residents, Track B asks System One once per cluster instead of once per resident.
+
+1. At each decision point (tick), split a cluster's members by their flood signature: the set of options whose `flooded_on_route` is true for that member. Without an active flood every cluster is one group.
+2. Send one decision request per group, built from the context of the cluster representative if it is in the group, otherwise of the member with the lowest `persona_id`.
+3. Each member samples its own `chosen` from the returned `probabilities`, restricted to the options available to that member and rescaled to sum to 1, with the RNG seeded by `seed + tick + persona_id hash` of the member (as in 2.3). Each member's travel uses its own `options_detail`.
+4. A member's decision record (4.5) copies the shared `probabilities`, `reason_short` and `decided_by`, its own `chosen` and `options_detail`, and adds `"shared_from": "<persona_id whose request was sent>"`.
+
+Measured on the 1,000-resident demo population (`ml/distillation/README.md`): 106 clusters, so 84–89% fewer model calls; members' own decisions match their group's in 89% (baseline), 79% (parking +100%) and 75% (parking + flood) of cases, against 19–25% for random groups of the same sizes.
 
 ## 5. Firestore layout
 
