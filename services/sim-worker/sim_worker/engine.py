@@ -54,6 +54,7 @@ FROZEN_DEMO_SCENARIO_IDS: frozenset[str] = frozenset(
         "s_baseline_weekday_ea7247",
         "s_central_parking_100_af902a",
         "s_central_parking_100_with_north_jakarta_t_78f06b",
+        "s_rp1_fare_day_24_april_2026_0acbd5",
     }
 )
 

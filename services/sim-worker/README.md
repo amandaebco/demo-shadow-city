@@ -1,8 +1,17 @@
 # `sim-worker` — Deterministic Simulation Worker (Track B)
 
-**Current Layer:** Layer 6 — Scale + Persona Clustering (`docs/REFERENCE.md` §9, `docs/CONTRACT.md` v1.7 §4.6).
+**Current Layer:** Layer 6 & Layer 7 Lite — Scale + Persona Clustering & Rp1 Fare Day Backtest (`docs/REFERENCE.md` §9, `docs/CONTRACT.md` v1.8 §2.2, §4.6, §8).
 
-`sim-worker` is the deterministic simulation engine for **Shadow City**. It routes agents across an OpenStreetMap road graph of mainland DKI Jakarta (`NetworkX`), gates `mrt` and `krl` availability on real operational OSM rail stations (with walking access/egress and headway wait times), centralizes all model assumptions with explicit source `TODO`s in `sim_worker/assumptions.py`, shares decisions across persona clusters split by flood signature (`CONTRACT.md` v1.7 §4.6), preserves scenario-scoped persona memory (`scenarios/{id}/memory/{persona_id}` without mutating `personas/{id}.memory`), persists per-persona decision evidence chains (`scenarios/{id}/decisions/{persona_id}` with `shared_from`), and produces byte-for-byte reproducible requests for Track A's `system-one` `decision_cache` (`POST /v1/decide`).
+`sim-worker` is the deterministic simulation engine for **Shadow City**. It routes agents across an OpenStreetMap road graph of mainland DKI Jakarta (`NetworkX`), gates `mrt` and `krl` availability on real operational OSM rail stations (with walking access/egress and headway wait times), supports mode-specific `transit_fare` discounts (`modes: ["transjakarta", "mrt"]` for Jakarta's Rp1 fare day), centralizes all model assumptions with explicit source `TODO`s in `sim_worker/assumptions.py`, shares decisions across persona clusters split by flood signature (`CONTRACT.md` v1.7 §4.6), preserves scenario-scoped persona memory (`scenarios/{id}/memory/{persona_id}` without mutating `personas/{id}.memory`), persists per-persona decision evidence chains (`scenarios/{id}/decisions/{persona_id}` with `shared_from`), and produces byte-for-byte reproducible requests for Track A's `system-one` `decision_cache` (`POST /v1/decide`).
+
+## Layer 7 Lite — Rp1 Fare Day Backtest (`CONTRACT.md` v1.8 §2.2, §8)
+
+- **Scenario ID:** `s_rp1_fare_day_24_april_2026_0acbd5` (`"Rp1 fare day (24 April 2026)"`)
+- **Configuration:** `seed: 42`, `population_size: 1000` (`pop_s42_n1000`), `base_scenario_id: "s_baseline_weekday_ea7247"`, `policies: [{"type": "transit_fare", "zone": "all", "change_ratio": -0.9997, "modes": ["transjakarta", "mrt"]}]`, `events: []`, run **without** clustering (`1,000` individual `/v1/decide` requests).
+- **Results vs. Baseline (`s_baseline_weekday_ea7247`):**
+  - Baseline transit mode share (`transjakarta + mrt + krl`): **32.0%**
+  - Rp1 fare day transit mode share (`transjakarta: 35.7%`, `mrt: 2.1%`, `krl: 4.5%`): **42.3%**
+  - Simulated transit mode share change: **`+10.3 pp`** (`simulated_direction: "increase"`, matching ANTARA's reported `"increase"`).
 
 ## Layer 6 — Scale + Clustering (`CONTRACT.md` v1.7 §4.6)
 
@@ -41,7 +50,8 @@ services/sim-worker/
 │   ├── build_network.py            # Extracts OSM road network & operational stations via Overpass API
 │   ├── run_determinism_check.py    # Creates and compares two identical scenarios in Firestore
 │   ├── run_layer3_demos.py         # Creates or re-runs (--rerun) the 3 Layer 3 demo scenarios (A, B, C)
-│   └── run_layer6_check.py         # Runs and verifies the 5,000-resident Layer 6 clustered scenarios
+│   ├── run_layer6_check.py         # Runs and verifies the 5,000-resident Layer 6 clustered scenarios
+│   └── run_layer7_backtest.py      # Creates and runs the Layer 7 Rp1 fare day backtest scenario
 └── tests/
     └── test_engine.py              # Unit tests for config, road graph, station gating, decisions, and determinism
 ```
