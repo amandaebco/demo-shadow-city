@@ -191,30 +191,58 @@ interface CachedScenarioBundle {
   verification: VerificationReport | null;
 }
 
-function buildResidentsGeoJSON(tickData: TickData | undefined): GeoJSON.FeatureCollection {
-  if (!tickData || !tickData.persona_ids) {
+interface ReusableGeoJSONBuffer {
+  scenarioId: string;
+  count: number;
+  collection: GeoJSON.FeatureCollection<GeoJSON.Point>;
+}
+
+function updateReusableResidentsGeoJSON(
+  tickData: TickData | undefined,
+  bufferRef: React.MutableRefObject<ReusableGeoJSONBuffer | null>
+): GeoJSON.FeatureCollection {
+  if (!tickData || !tickData.persona_ids || tickData.persona_ids.length === 0) {
     return { type: "FeatureCollection", features: [] };
   }
-  const features: GeoJSON.Feature[] = [];
   const count = tickData.persona_ids.length;
-  for (let i = 0; i < count; i++) {
-    const lat = tickData.lat[i];
-    const lng = tickData.lng[i];
-    if (typeof lat !== "number" || typeof lng !== "number") continue;
-    features.push({
-      type: "Feature",
-      properties: {
-        persona_id: tickData.persona_ids[i],
-        mode: tickData.mode[i] || "motorcycle",
-        status: tickData.status[i] || "at_home",
-      },
-      geometry: {
-        type: "Point",
-        coordinates: [lng, lat],
-      },
-    });
+  let buf = bufferRef.current;
+
+  if (!buf || buf.scenarioId !== tickData.scenario_id || buf.count !== count) {
+    const features: GeoJSON.Feature<GeoJSON.Point>[] = new Array(count);
+    for (let i = 0; i < count; i++) {
+      features[i] = {
+        type: "Feature",
+        properties: {
+          persona_id: tickData.persona_ids[i],
+          mode: tickData.mode[i] || "motorcycle",
+          status: tickData.status[i] || "at_home",
+        },
+        geometry: {
+          type: "Point",
+          coordinates: [tickData.lng[i] || 0, tickData.lat[i] || 0],
+        },
+      };
+    }
+    buf = {
+      scenarioId: tickData.scenario_id,
+      count,
+      collection: { type: "FeatureCollection", features },
+    };
+    bufferRef.current = buf;
+    return buf.collection;
   }
-  return { type: "FeatureCollection", features };
+
+  const features = buf.collection.features;
+  for (let i = 0; i < count; i++) {
+    const feat = features[i];
+    const coords = feat.geometry.coordinates;
+    coords[0] = tickData.lng[i] || 0;
+    coords[1] = tickData.lat[i] || 0;
+    if (feat.properties) {
+      feat.properties.status = tickData.status[i] || "at_home";
+    }
+  }
+  return buf.collection;
 }
 
 function formatSignedDelta(val: number, decimals = 1, unit = ""): string {
@@ -238,6 +266,7 @@ export default function JakartaMap() {
   const scenarioCacheRef = useRef<Map<string, CachedScenarioBundle>>(new Map());
   const personaCacheRef = useRef<Map<string, Persona | null>>(new Map());
   const decisionCacheRef = useRef<Map<string, PersonaDecisionRecord | null>>(new Map());
+  const reusableGeoJsonRef = useRef<ReusableGeoJSONBuffer | null>(null);
 
   const [mapReady, setMapReady] = useState<boolean>(false);
   const [showZones, setShowZones] = useState<boolean>(true);
@@ -830,12 +859,51 @@ export default function JakartaMap() {
     return ticks[currentTick] || ticks.find((t) => t.tick === currentTick) || ticks[0];
   }, [ticks, currentTick]);
 
+  const isLargeScaleScenario =
+    (activeScenario?.population_size ?? 0) >= 2500 ||
+    (currentTickData?.persona_ids?.length ?? 0) >= 2500;
+
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !mapReady) return;
+    if (map.getLayer("residents-glow")) {
+      map.setPaintProperty(
+        "residents-glow",
+        "circle-radius",
+        isLargeScaleScenario
+          ? ["match", ["get", "status"], "traveling", 7.2, "stuck", 9.5, 4.5]
+          : ["match", ["get", "status"], "traveling", 10.5, "stuck", 13, 7]
+      );
+      map.setPaintProperty(
+        "residents-glow",
+        "circle-opacity",
+        isLargeScaleScenario
+          ? ["match", ["get", "status"], "traveling", 0.26, "stuck", 0.45, 0.12]
+          : ["match", ["get", "status"], "traveling", 0.35, "stuck", 0.52, 0.18]
+      );
+    }
+    if (map.getLayer("residents-circle")) {
+      map.setPaintProperty(
+        "residents-circle",
+        "circle-radius",
+        isLargeScaleScenario
+          ? ["match", ["get", "status"], "traveling", 3.8, "stuck", 5.2, 2.7]
+          : ["match", ["get", "status"], "traveling", 5.5, "stuck", 7.0, 4.2]
+      );
+      map.setPaintProperty(
+        "residents-circle",
+        "circle-stroke-width",
+        isLargeScaleScenario ? 0.9 : 1.3
+      );
+    }
+  }, [isLargeScaleScenario, mapReady]);
+
   useEffect(() => {
     const map = mapRef.current;
     if (!map || !mapReady) return;
     const src = map.getSource("residents-source") as maplibregl.GeoJSONSource | undefined;
     if (src) {
-      src.setData(buildResidentsGeoJSON(currentTickData));
+      src.setData(updateReusableResidentsGeoJSON(currentTickData, reusableGeoJsonRef));
     }
   }, [currentTickData, mapReady]);
 
