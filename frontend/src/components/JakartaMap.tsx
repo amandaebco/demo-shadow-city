@@ -18,6 +18,7 @@ import {
   loadScenarioTicks,
   Persona,
   PersonaDecisionRecord,
+  SCALE_5000_SCENARIO_ID,
   Scenario,
   ScenarioCompareResponse,
   ScenarioMetrics,
@@ -169,7 +170,17 @@ const DEMO_SCENARIO_PRIORITY: Record<string, number> = {
   s_baseline_weekday_ea7247: 1,
   s_central_parking_100_af902a: 2,
   s_central_parking_100_with_north_jakarta_t_78f06b: 3,
+  [SCALE_5000_SCENARIO_ID]: 4,
 };
+
+function formatScenarioPickerLabel(s: Scenario): string {
+  if (s.scenario_id === SCALE_5000_SCENARIO_ID) {
+    return "Scale: 5,000 residents (clustered)";
+  }
+  return `${s.name} (${s.population_size.toLocaleString()} residents · ${formatScenarioStatus(
+    s.status
+  )})`;
+}
 
 interface CachedScenarioBundle {
   scenario: Scenario;
@@ -1216,13 +1227,12 @@ export default function JakartaMap() {
               )}
               {scenarios.some((s) => s.scenario_id in DEMO_SCENARIO_PRIORITY) ? (
                 <>
-                  <optgroup label="Demo Scenarios (1,000 residents)">
+                  <optgroup label="Demo & Scale Scenarios">
                     {scenarios
                       .filter((s) => s.scenario_id in DEMO_SCENARIO_PRIORITY)
                       .map((s) => (
                         <option key={s.scenario_id} value={s.scenario_id}>
-                          {s.name} ({s.population_size.toLocaleString()} residents &middot;{" "}
-                          {formatScenarioStatus(s.status)})
+                          {formatScenarioPickerLabel(s)}
                         </option>
                       ))}
                   </optgroup>
@@ -1235,8 +1245,7 @@ export default function JakartaMap() {
                       )
                       .map((s) => (
                         <option key={s.scenario_id} value={s.scenario_id}>
-                          {s.name} ({s.population_size.toLocaleString()} residents &middot;{" "}
-                          {formatScenarioStatus(s.status)})
+                          {formatScenarioPickerLabel(s)}
                         </option>
                       ))}
                   </optgroup>
@@ -1244,8 +1253,7 @@ export default function JakartaMap() {
               ) : (
                 scenarios.map((s) => (
                   <option key={s.scenario_id} value={s.scenario_id}>
-                    {s.name} ({s.population_size.toLocaleString()} residents &middot;{" "}
-                    {formatScenarioStatus(s.status)})
+                    {formatScenarioPickerLabel(s)}
                   </option>
                 ))
               )}

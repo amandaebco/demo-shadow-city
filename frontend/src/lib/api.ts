@@ -101,6 +101,9 @@ export interface Persona {
   profile_summary: string;
 }
 
+export const SCALE_5000_SCENARIO_ID =
+  "s_layer_6_clustered_baseline_run_a_n_5000__0388aa";
+
 export interface PersonaDecisionOptionDetail {
   est_minutes: number;
   cost_idr: number;
@@ -114,6 +117,7 @@ export interface PersonaDecisionEntry {
   chosen: string;
   reason_short: string;
   decided_by: string;
+  shared_from?: string;
 }
 
 export interface PersonaDecisionRecord {
@@ -328,6 +332,73 @@ export async function fetchPersonaDecisions(
   };
 }
 
+interface CompactScaleTicksPayload {
+  scenario_id: string;
+  count: number;
+  total_ticks: number;
+  mode: string[];
+  home_lat: number[];
+  home_lng: number[];
+  work_lat: number[];
+  work_lng: number[];
+  dep_tick: number[];
+  arr_tick: number[];
+  travel: Record<string, [number, number, number, number][]>;
+}
+
+async function loadCompactScaleTicks(scenarioId: string): Promise<TickData[] | null> {
+  try {
+    const res = await fetch("/scale_5000_ticks.json", { cache: "force-cache" });
+    if (!res.ok) return null;
+    const data = (await res.json()) as CompactScaleTicksPayload;
+    const n = data.count;
+    const totalTicks = data.total_ticks || 204;
+    const personaIds: string[] = new Array(n);
+    for (let i = 0; i < n; i++) {
+      personaIds[i] = `p_s42_n${n}_${String(i).padStart(5, "0")}`;
+    }
+
+    const ticks: TickData[] = new Array(totalTicks);
+    for (let t = 0; t < totalTicks; t++) {
+      const lat = new Array<number>(n);
+      const lng = new Array<number>(n);
+      const status = new Array<string>(n);
+      for (let i = 0; i < n; i++) {
+        if (t < data.dep_tick[i]) {
+          lat[i] = data.home_lat[i];
+          lng[i] = data.home_lng[i];
+          status[i] = "at_home";
+        } else {
+          lat[i] = data.work_lat[i];
+          lng[i] = data.work_lng[i];
+          status[i] = "at_work";
+        }
+      }
+      const moving = data.travel[String(t)];
+      if (moving) {
+        for (let k = 0; k < moving.length; k++) {
+          const [idx, rlat, rlng, isStuck] = moving[k];
+          lat[idx] = rlat;
+          lng[idx] = rlng;
+          status[idx] = isStuck ? "stuck" : "traveling";
+        }
+      }
+      ticks[t] = {
+        scenario_id: scenarioId,
+        tick: t,
+        persona_ids: personaIds,
+        lat,
+        lng,
+        mode: data.mode,
+        status,
+      };
+    }
+    return ticks;
+  } catch {
+    return null;
+  }
+}
+
 /**
  * Load all tick documents (`0000`..`0203`) for a scenario directly from the
  * named Firestore database `shadow-city` in project `ebc-cloud-dev-03` (CONTRACT.md §3, §5).
@@ -337,6 +408,13 @@ export async function loadScenarioTicks(
   _metrics: ScenarioMetrics | null
 ): Promise<TickData[]> {
   const scenarioId = scenario.scenario_id;
+
+  if (scenarioId === SCALE_5000_SCENARIO_ID) {
+    const fastTicks = await loadCompactScaleTicks(scenarioId);
+    if (fastTicks && fastTicks.length > 0) {
+      return fastTicks;
+    }
+  }
 
   // 1. Primary: Firebase Web SDK `getFirestore(app, "shadow-city")` (`scenarios/{scenarioId}/ticks`)
   try {
