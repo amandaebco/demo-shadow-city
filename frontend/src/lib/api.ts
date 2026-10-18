@@ -206,6 +206,21 @@ export interface ScenarioCompareResponse {
   variant: ScenarioMetrics;
 }
 
+export type VerificationStatus = "pass" | "warn" | "fail";
+
+export interface VerificationCheck {
+  name: string;
+  status: VerificationStatus;
+  detail: string;
+}
+
+export interface VerificationReport {
+  report_id: string;
+  scenario_id: string;
+  checks: VerificationCheck[];
+  overall: VerificationStatus;
+}
+
 export async function fetchScenarioReport(scenarioId: string): Promise<AnalystReport | null> {
   const res = await fetchOrchestrator(`/v1/scenarios/${scenarioId}/report`, {
     cache: "no-store",
@@ -213,6 +228,19 @@ export async function fetchScenarioReport(scenarioId: string): Promise<AnalystRe
   if (res.status === 404) return null;
   if (!res.ok) {
     throw new Error(`Failed to fetch report for ${scenarioId}: HTTP ${res.status}`);
+  }
+  return res.json();
+}
+
+export async function fetchScenarioVerification(
+  scenarioId: string
+): Promise<VerificationReport | null> {
+  const res = await fetchOrchestrator(`/v1/scenarios/${scenarioId}/verification`, {
+    cache: "no-store",
+  });
+  if (res.status === 404) return null;
+  if (!res.ok) {
+    throw new Error(`Failed to fetch verification for ${scenarioId}: HTTP ${res.status}`);
   }
   return res.json();
 }

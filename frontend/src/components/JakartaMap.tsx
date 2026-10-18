@@ -14,6 +14,7 @@ import {
   fetchScenarioMetrics,
   fetchScenarioReport,
   fetchScenarios,
+  fetchScenarioVerification,
   loadScenarioTicks,
   Persona,
   PersonaDecisionRecord,
@@ -22,6 +23,7 @@ import {
   ScenarioMetrics,
   TickData,
   tickToLocalTime,
+  VerificationReport,
 } from "@/lib/api";
 import {
   KELURAHAN_TO_KECAMATAN,
@@ -114,7 +116,9 @@ export default function JakartaMap() {
   const [showZones, setShowZones] = useState<boolean>(true);
   const [showReportDrawer, setShowReportDrawer] = useState<boolean>(true);
   const [showCreateModal, setShowCreateModal] = useState<boolean>(false);
-  const [drawerTab, setDrawerTab] = useState<"report" | "breakdown">("report");
+  const [drawerTab, setDrawerTab] = useState<"report" | "breakdown" | "verification">(
+    "report"
+  );
   const [kecamatanSearch, setKecamatanSearch] = useState<string>("");
 
   const [scenarios, setScenarios] = useState<Scenario[]>([]);
@@ -126,12 +130,14 @@ export default function JakartaMap() {
   const [metrics, setMetrics] = useState<ScenarioMetrics | null>(null);
   const [comparison, setComparison] = useState<ScenarioCompareResponse | null>(null);
   const [report, setReport] = useState<AnalystReport | null>(null);
+  const [verification, setVerification] = useState<VerificationReport | null>(null);
   const [ticks, setTicks] = useState<TickData[]>([]);
   const [currentTick, setCurrentTick] = useState<number>(22);
   const [isPlaying, setIsPlaying] = useState<boolean>(true);
   const [playbackSpeed, setPlaybackSpeed] = useState<number>(2);
   const [loadingScenario, setLoadingScenario] = useState<boolean>(false);
   const [loadingReport, setLoadingReport] = useState<boolean>(false);
+  const [loadingVerification, setLoadingVerification] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   // Selected resident decision (evidence chain) state
@@ -461,16 +467,18 @@ export default function JakartaMap() {
 
         if (scen.status === "completed" || scenMetrics) {
           setLoadingReport(true);
-          try {
-            const rep = await fetchScenarioReport(scenarioId);
-            setReport(rep);
-          } catch {
-            setReport(null);
-          } finally {
-            setLoadingReport(false);
-          }
+          setLoadingVerification(true);
+          fetchScenarioReport(scenarioId)
+            .then((rep) => setReport(rep))
+            .catch(() => setReport(null))
+            .finally(() => setLoadingReport(false));
+          fetchScenarioVerification(scenarioId)
+            .then((ver) => setVerification(ver))
+            .catch(() => setVerification(null))
+            .finally(() => setLoadingVerification(false));
         } else {
           setReport(null);
+          setVerification(null);
         }
       } catch (err) {
         setErrorMessage(err instanceof Error ? err.message : "Failed to load scenario");
@@ -1399,8 +1407,8 @@ export default function JakartaMap() {
             )
           )}
 
-          {/* Drawer Tabs: Analyst Report vs. Per-Kecamatan & Income Breakdown */}
-          <div className="drawer-tabs">
+          {/* Drawer Tabs: Analyst Report vs. Verification vs. Per-Kecamatan & Income Breakdown */}
+          <div className="drawer-tabs three-tabs">
             <button
               type="button"
               className={`tab-btn ${drawerTab === "report" ? "active" : ""}`}
@@ -1410,10 +1418,18 @@ export default function JakartaMap() {
             </button>
             <button
               type="button"
+              className={`tab-btn ${drawerTab === "verification" ? "active" : ""}`}
+              onClick={() => setDrawerTab("verification")}
+            >
+              Verification{" "}
+              {verification ? `(${verification.overall.toUpperCase()})` : ""}
+            </button>
+            <button
+              type="button"
               className={`tab-btn ${drawerTab === "breakdown" ? "active" : ""}`}
               onClick={() => setDrawerTab("breakdown")}
             >
-              By Income &amp; Kecamatan ({kecamatanComparisonRows.length})
+              Income &amp; Kecamatan ({kecamatanComparisonRows.length})
             </button>
           </div>
 
@@ -1475,6 +1491,47 @@ export default function JakartaMap() {
                 <p className="muted-note">
                   Analyst report is generated once the simulation worker writes{" "}
                   <code>metrics/summary</code> for this scenario.
+                </p>
+              )}
+            </div>
+          ) : drawerTab === "verification" ? (
+            <div className="verification-body">
+              {loadingVerification ? (
+                <p className="muted-note">
+                  Running Verifier Agent checks (first call takes up to ~30s via Gemini)...
+                </p>
+              ) : verification ? (
+                <>
+                  <div className={`verification-overall vstatus-${verification.overall}`}>
+                    <div>
+                      <div className="metric-label">Verifier Overall Status</div>
+                      <strong className="verification-overall-text">
+                        OVERALL: {verification.overall.toUpperCase()}
+                      </strong>
+                    </div>
+                    <span className={`vstatus-badge vstatus-${verification.overall}`}>
+                      {verification.overall.toUpperCase()}
+                    </span>
+                  </div>
+
+                  <div className="verification-checks-list">
+                    {verification.checks.map((chk) => (
+                      <div key={chk.name} className="verification-check-card">
+                        <div className="verification-check-header">
+                          <code className="verification-check-name">{chk.name}</code>
+                          <span className={`vstatus-badge vstatus-${chk.status}`}>
+                            STATUS: {chk.status.toUpperCase()}
+                          </span>
+                        </div>
+                        <p className="verification-check-detail">{chk.detail}</p>
+                      </div>
+                    ))}
+                  </div>
+                </>
+              ) : (
+                <p className="muted-note">
+                  Verification report (<code>GET /v1/scenarios/&#123;id&#125;/verification</code>)
+                  is available once scenario metrics exist.
                 </p>
               )}
             </div>
