@@ -1,6 +1,6 @@
 # Shadow City — Integration Contract
 
-**Version:** v1.5 (frozen, 2026-10-18) — v1.1 adds the named Firestore database `shadow-city`; v1.2 adds the optional `population_id` field (2.1, 2.2) and clarifies the pre-Layer-5 System One decider (10.3); v1.3 adds the Track A-only `decision_cache` collection (5); v1.4 makes memory produced during a scenario scenario-scoped (2.1, 4.3, 5); v1.5 adds per-persona decision records for the evidence chain (4.5, 5)
+**Version:** v1.6 (frozen, 2026-10-18) — v1.1 adds the named Firestore database `shadow-city`; v1.2 adds the optional `population_id` field (2.1, 2.2) and clarifies the pre-Layer-5 System One decider (10.3); v1.3 adds the Track A-only `decision_cache` collection (5); v1.4 makes memory produced during a scenario scenario-scoped (2.1, 4.3, 5); v1.5 adds per-persona decision records for the evidence chain (4.5, 5); v1.6 moves the Gemma GPU to `asia-southeast1` and names the models (10.3)
 **Status:** Frozen. Changes follow section 9.
 **GCP project:** `ebc-cloud-dev-03`
 **Source of truth for design:** `docs/REFERENCE.md`
@@ -433,9 +433,9 @@ The API accepts 10–20,000 (section 7). Above 15,000, the tick document split i
 
 ### 10.3 System One model and regions
 
-- **Model:** the smallest instruction-tuned Gemma variant that Vertex AI supports for tuning at setup time. Track A records the exact model name in `model_version` and in `services/system-one/README.md`.
+- **Model:** Gemma 4 `e2b` (smallest) and `e4b`, with Gemma 3 `4b` for comparison, served by Ollama. Track A records the exact model in `model_version` (e.g. `gemma4:e4b`) and the measured agreement with Gemini in `ml/distillation/README.md`.
 - **Until Layer 5:** `system-one` runs on CPU in `asia-southeast2`. Layer 0 uses the rule mock (4.4). Layers 1–4 use Gemini as the decider (`decided_by: gemini-system-two`), as the roadmap's Gemini-only MVP requires, and these decisions become the distillation data for Gemma. The rule mock stays as the last-resort fallback (`decided_by: rule-fallback`). Request and response shapes do not change.
-- **From Layer 5:** `system-one` runs Gemma on Cloud Run GPU in `us-central1`. If Cloud Run GPU becomes available in an Asia-Pacific region, moving it is a minor change; the URL is read from config, never hard-coded.
+- **From Layer 5:** Gemma runs on Cloud Run GPU (one NVIDIA L4) as the private service `gemma` in `asia-southeast1` (Singapore); `system-one` stays on CPU in `asia-southeast2` and calls it when `DECIDER=gemma` (`decided_by: gemma-system-one`), falling back to Gemini and then the rule. The demo keeps `DECIDER=gemini` until a distilled Gemma reaches acceptable agreement. Request and response shapes do not change; the URL is read from config, never hard-coded.
 - **Fallback:** if GPU quota or tuning is blocked, `system-one` uses Gemini Flash-Lite with structured output and sets `decided_by` to `gemini-system-two`.
 - **Firestore:** the project already has a `(default)` Native database in `asia-southeast2` (created 2022, possibly used by other applications). Shadow City uses its own named database `shadow-city`, Native mode, `asia-southeast2` (section 5).
 
