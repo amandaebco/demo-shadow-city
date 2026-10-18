@@ -51,6 +51,74 @@ const MODE_LABELS: Record<string, string> = {
   walk: "Walk",
 };
 
+const SCENARIO_STATUS_LABELS: Record<string, string> = {
+  queued: "Queued",
+  generating_population: "Generating population",
+  running: "Running",
+  analyzing: "Analyzing",
+  completed: "Completed",
+  failed: "Failed",
+};
+
+const RESIDENT_STATUS_LABELS: Record<string, string> = {
+  at_home: "At home",
+  traveling: "Traveling",
+  stuck: "Stuck in flood",
+  at_work: "At work",
+};
+
+const INCOME_BAND_LABELS: Record<string, string> = {
+  low: "Low income",
+  lower_middle: "Lower-middle",
+  middle: "Middle income",
+  upper_middle: "Upper-middle",
+  high: "High income",
+};
+
+const VERIFICATION_CHECK_LABELS: Record<string, string> = {
+  population_size_matches: "Population size matches scenario",
+  home_distribution_vs_reference: "Home distribution vs reference",
+  age_distribution_vs_reference: "Age distribution vs reference",
+  income_distribution_vs_reference: "Income distribution vs reference",
+  baseline_mode_share_vs_reference: "Baseline mode share vs reference",
+  baseline_mode_share_plausible: "Baseline mode share plausible",
+  baseline_without_events_has_no_stuck_residents:
+    "Baseline without events has no stuck residents",
+  persona_profile_coherence: "Persona profile coherence",
+  policy_effect_direction_plausible: "Policy effect direction plausible",
+  flood_effect_direction_plausible: "Flood effect direction plausible",
+};
+
+const DECIDED_BY_LABELS: Record<string, string> = {
+  "gemini-system-two": "Gemini (System Two)",
+  "gemma-system-one": "Gemma (System One)",
+  "rule-mock": "Rule Mock",
+  "rule-fallback": "Rule Fallback",
+};
+
+function formatScenarioStatus(status: string): string {
+  return SCENARIO_STATUS_LABELS[status] || status;
+}
+
+function formatResidentStatus(status: string): string {
+  return RESIDENT_STATUS_LABELS[status] || status;
+}
+
+function formatIncomeBand(band: string): string {
+  return INCOME_BAND_LABELS[band] || band.replace(/_/g, "-");
+}
+
+function formatVerificationCheckName(name: string): string {
+  if (VERIFICATION_CHECK_LABELS[name]) return VERIFICATION_CHECK_LABELS[name];
+  return name
+    .replace(/_/g, " ")
+    .replace(/\b\w/g, (c) => c.toUpperCase());
+}
+
+function formatDecidedBy(decidedBy: string): string {
+  return DECIDED_BY_LABELS[decidedBy] || decidedBy;
+}
+
 const CANONICAL_MODE_ORDER = [
   "transjakarta",
   "motorcycle",
@@ -207,6 +275,7 @@ export default function JakartaMap() {
   const [newParkingRatio, setNewParkingRatio] = useState<number>(1.0);
   const [includeFlood, setIncludeFlood] = useState<boolean>(false);
   const [creatingScenario, setCreatingScenario] = useState<boolean>(false);
+  const [createErrorMessage, setCreateErrorMessage] = useState<string | null>(null);
 
   // Initialize MapLibre map
   useEffect(() => {
@@ -491,13 +560,14 @@ export default function JakartaMap() {
           setHoveredPersonaId((prev) => (prev === pid ? prev : pid));
         }
         const modeLabel = MODE_LABELS[props.mode] || props.mode;
+        const statusLabel = formatResidentStatus(String(props.status || "at_home"));
         popup
           .setLngLat(coords)
           .setHTML(
             `<div style="color:#0f172a;font-size:12.5px;line-height:1.45">
               <strong>Resident: ${pid}</strong><br/>
               Mode: <b>${modeLabel}</b><br/>
-              Status: <b>${props.status}</b><br/>
+              Status: <b>${statusLabel}</b><br/>
               <span style="color:#0284c7;font-weight:700">Click dot to view decision &rarr;</span>
             </div>`
           )
@@ -871,6 +941,7 @@ export default function JakartaMap() {
           ? Math.round((vRow.avg_travel_min - bRow.avg_travel_min) * 10) / 10
           : 0;
         const deltaCost = bRow ? vRow.avg_cost_idr - bRow.avg_cost_idr : 0;
+        const deltaStuck = vRow.stuck_count - (bRow?.stuck_count ?? 0);
         return {
           kecamatan: vRow.kecamatan,
           residents: vRow.residents,
@@ -882,7 +953,8 @@ export default function JakartaMap() {
           delta_cost: bRow ? deltaCost : null,
           base_stuck: bRow?.stuck_count ?? null,
           var_stuck: vRow.stuck_count,
-          sortScore: Math.abs(deltaMin) * 1000 + Math.abs(deltaCost),
+          sortScore:
+            Math.abs(deltaStuck) * 5000 + Math.abs(deltaMin) * 1000 + Math.abs(deltaCost),
         };
       });
     if (comparison) {
@@ -1072,6 +1144,7 @@ export default function JakartaMap() {
   const handleCreateScenario = async (e: React.FormEvent) => {
     e.preventDefault();
     setCreatingScenario(true);
+    setCreateErrorMessage(null);
     try {
       const policies =
         Math.abs(Number(newParkingRatio)) > 1e-6
@@ -1104,8 +1177,10 @@ export default function JakartaMap() {
       await refreshScenarioList(false);
       setSelectedScenarioId(created.scenario_id);
       setShowCreateModal(false);
-    } catch (err) {
-      alert(err instanceof Error ? err.message : "Failed to create scenario");
+    } catch {
+      setCreateErrorMessage(
+        "Unable to create scenario right now. Please check your connection and try again."
+      );
     } finally {
       setCreatingScenario(false);
     }
@@ -1120,7 +1195,7 @@ export default function JakartaMap() {
           <div>
             <h1>Shadow City</h1>
             <p className="subtitle">
-              Jakarta Policy &amp; Flood Simulator &middot; Layer 3 Comparison View
+              Jakarta Policy &amp; Flood Simulator &middot; AI Builder Cup 2026
             </p>
           </div>
         </div>
@@ -1146,11 +1221,12 @@ export default function JakartaMap() {
                       .filter((s) => s.scenario_id in DEMO_SCENARIO_PRIORITY)
                       .map((s) => (
                         <option key={s.scenario_id} value={s.scenario_id}>
-                          {s.name} ({s.population_size.toLocaleString()} residents)
+                          {s.name} ({s.population_size.toLocaleString()} residents &middot;{" "}
+                          {formatScenarioStatus(s.status)})
                         </option>
                       ))}
                   </optgroup>
-                  <optgroup label="Other Scenarios">
+                  <optgroup label="Earlier Validation & Test Runs">
                     {scenarios
                       .filter(
                         (s) =>
@@ -1160,7 +1236,7 @@ export default function JakartaMap() {
                       .map((s) => (
                         <option key={s.scenario_id} value={s.scenario_id}>
                           {s.name} ({s.population_size.toLocaleString()} residents &middot;{" "}
-                          {s.status})
+                          {formatScenarioStatus(s.status)})
                         </option>
                       ))}
                   </optgroup>
@@ -1169,7 +1245,7 @@ export default function JakartaMap() {
                 scenarios.map((s) => (
                   <option key={s.scenario_id} value={s.scenario_id}>
                     {s.name} ({s.population_size.toLocaleString()} residents &middot;{" "}
-                    {s.status})
+                    {formatScenarioStatus(s.status)})
                   </option>
                 ))
               )}
@@ -1178,7 +1254,8 @@ export default function JakartaMap() {
 
           {activeScenario && (
             <span className={`status-pill status-${activeScenario.status}`}>
-              {activeScenario.status} &middot; {activeScenario.population_size} residents
+              Status: {formatScenarioStatus(activeScenario.status)} &middot;{" "}
+              {activeScenario.population_size.toLocaleString()} residents
             </span>
           )}
 
@@ -1196,7 +1273,10 @@ export default function JakartaMap() {
           <button
             type="button"
             className="hud-button"
-            onClick={() => setShowCreateModal(true)}
+            onClick={() => {
+              setCreateErrorMessage(null);
+              setShowCreateModal(true);
+            }}
           >
             + New Scenario
           </button>
@@ -1207,7 +1287,7 @@ export default function JakartaMap() {
             onClick={() => setShowZones((prev) => !prev)}
             disabled={!mapReady}
           >
-            {showZones ? "Zones: On" : "Zones: Off"}
+            {showZones ? "Zones: Visible" : "Zones: Hidden"}
           </button>
 
           <button
@@ -1215,16 +1295,29 @@ export default function JakartaMap() {
             className={`hud-button ${showReportDrawer ? "active" : ""}`}
             onClick={() => setShowReportDrawer((prev) => !prev)}
           >
-            {showReportDrawer ? "Hide Panel" : "Comparison & Report"}
+            {showReportDrawer ? "Hide Analysis Panel" : "Comparison & Report"}
           </button>
 
           <button type="button" className="hud-button" onClick={handleResetView}>
-            Recenter
+            Recenter Map
           </button>
         </div>
       </header>
 
-      {errorMessage && <div className="error-banner">{errorMessage}</div>}
+      {errorMessage && (
+        <div className="error-banner" role="alert">
+          <span>{errorMessage}</span>
+          <button
+            type="button"
+            className="hud-button"
+            onClick={() =>
+              loadScenarioBundle(selectedScenarioId, compareBaseOverride || undefined, true)
+            }
+          >
+            Retry
+          </button>
+        </div>
+      )}
 
       {/* Map Canvas */}
       <div ref={containerRef} className="map-canvas" role="region" aria-label="Map of Jakarta" />
@@ -1343,13 +1436,15 @@ export default function JakartaMap() {
               <>
                 <div className="decision-card-header">
                   <div>
-                    <div className="decision-eyebrow">Resident Decision &middot; Evidence Chain</div>
+                    <div className="decision-eyebrow">
+                      Resident Commute Decision &middot; Evidence Chain
+                    </div>
                     <h3 className="decision-persona-id">{selectedPersonaId}</h3>
                   </div>
                   <div className="decision-header-right">
                     {decEntry?.decided_by && (
                       <span className="hud-badge">
-                        <code>{decEntry.decided_by}</code>
+                        Decided by: {formatDecidedBy(decEntry.decided_by)}
                       </span>
                     )}
                     <button
@@ -1364,22 +1459,24 @@ export default function JakartaMap() {
                 </div>
 
                 {loadingDecision ? (
-                  <p className="muted-note">Loading persona &amp; decision log...</p>
+                  <div className="state-box loading-state-box">
+                    Loading resident profile and decision evidence chain...
+                  </div>
                 ) : (
                   <>
-                    {selectedPersona && (
+                    {selectedPersona ? (
                       <div className="decision-profile-box">
                         <div className="decision-meta-row">
                           <span className="decision-badge">
-                            {selectedPersona.occupation} ({selectedPersona.age}y)
+                            {selectedPersona.occupation} ({selectedPersona.age} yrs)
                           </span>
                           <span className="decision-badge">
-                            Income: <code>{selectedPersona.income_band}</code>
+                            Income: {formatIncomeBand(selectedPersona.income_band)}
                           </span>
                         </div>
                         <div className="decision-route-line">
-                          <strong>{homeKel}</strong>
-                          {homeKec ? ` (${homeKec})` : ""} &rarr;{" "}
+                          Home: <strong>{homeKel}</strong>
+                          {homeKec ? ` (${homeKec})` : ""} &rarr; Work:{" "}
                           <strong>{workKel}</strong>
                           {workKec ? ` (${workKec})` : ""}
                         </div>
@@ -1387,13 +1484,17 @@ export default function JakartaMap() {
                           {selectedPersona.profile_summary}
                         </p>
                       </div>
+                    ) : (
+                      <div className="state-box empty-state-box">
+                        Resident profile details unavailable for {selectedPersonaId}.
+                      </div>
                     )}
 
                     {decEntry ? (
                       <>
                         <div className="decision-mode-strip">
                           <div className="decision-mode-cell">
-                            <span className="metric-label">Usual Mode</span>
+                            <span className="metric-label">Usual mode</span>
                             <span className="decision-mode-val">
                               <span
                                 className="mode-dot"
@@ -1410,7 +1511,7 @@ export default function JakartaMap() {
 
                           {baseDecEntry && (
                             <div className="decision-mode-cell">
-                              <span className="metric-label">Baseline Mode</span>
+                              <span className="metric-label">Baseline mode</span>
                               <span className="decision-mode-val">
                                 <span
                                   className="mode-dot"
@@ -1426,7 +1527,7 @@ export default function JakartaMap() {
 
                           <div className="decision-mode-cell highlight">
                             <span className="metric-label">
-                              Today&apos;s Chosen ({tickToLocalTime(decEntry.tick)})
+                              Today&apos;s chosen mode ({tickToLocalTime(decEntry.tick)})
                             </span>
                             <strong className="decision-mode-val">
                               <span
@@ -1441,19 +1542,21 @@ export default function JakartaMap() {
                         </div>
 
                         <div className="decision-reason-box">
-                          <div className="metric-label">Decision Reason (reason_short)</div>
+                          <div className="metric-label">
+                            Why this resident chose {MODE_LABELS[decEntry.chosen] || decEntry.chosen}
+                          </div>
                           <p>&ldquo;{decEntry.reason_short}&rdquo;</p>
                         </div>
 
                         <div className="decision-options-block">
                           <div className="section-caption">
-                            Evaluated Options &amp; Probabilities (Tick {decEntry.tick})
+                            All Mode Options, Route Flood Status &amp; Model Probabilities
                           </div>
                           <table className="compact-table decision-table">
                             <thead>
                               <tr>
-                                <th>Option</th>
-                                <th>Est. Time</th>
+                                <th>Mode option</th>
+                                <th>Travel time</th>
                                 <th>Cost</th>
                                 <th>Probability</th>
                               </tr>
@@ -1472,16 +1575,21 @@ export default function JakartaMap() {
                                       />
                                       <b>{opt.label}</b>
                                       {opt.isChosen && (
-                                        <span className="chosen-tag">chosen</span>
+                                        <span className="chosen-tag">CHOSEN</span>
                                       )}
                                     </span>
                                   </td>
                                   <td>
-                                    {opt.detail?.est_minutes}m
-                                    {opt.detail?.flooded_on_route && (
-                                      <span className="flood-tag" title="Route crosses flood area">
-                                        flooded
+                                    {opt.detail?.est_minutes} min{" "}
+                                    {opt.detail?.flooded_on_route ? (
+                                      <span
+                                        className="flood-tag"
+                                        title="Route crosses North Jakarta flood area"
+                                      >
+                                        Flooded route
                                       </span>
+                                    ) : (
+                                      <span className="clear-route-tag">Clear route</span>
                                     )}
                                   </td>
                                   <td>Rp {(opt.detail?.cost_idr ?? 0).toLocaleString()}</td>
@@ -1506,10 +1614,9 @@ export default function JakartaMap() {
                         </div>
                       </>
                     ) : (
-                      <p className="muted-note">
-                        No stored decision record found for <code>{selectedPersonaId}</code> in
-                        this scenario.
-                      </p>
+                      <div className="state-box empty-state-box">
+                        Decision details available once the scenario completes.
+                      </div>
                     )}
                   </>
                 )}
@@ -1524,20 +1631,18 @@ export default function JakartaMap() {
         <aside className="summary-drawer" aria-label="Scenario Comparison and Result Summary">
           <div className="drawer-header">
             <div>
-              <h2>{comparison ? "Baseline vs. Variant Comparison" : "Result Summary"}</h2>
+              <h2>{comparison ? "Comparison vs. Baseline" : "Scenario Summary"}</h2>
               <p className="drawer-subtitle">
                 {activeScenario?.name || selectedScenarioId}
               </p>
             </div>
-            <span className="hud-badge">
-              <code>gemini-system-two</code>
-            </span>
+            <span className="hud-badge">System Two &middot; Gemini</span>
           </div>
 
           {/* Compare against Baseline selector */}
           <div className="compare-bar">
             <label className="compare-select-label">
-              <span>Compare vs. Baseline:</span>
+              <span>Compare vs. baseline:</span>
               <select
                 className="scenario-select compare-select"
                 value={effectiveCompareBaseId}
@@ -1552,7 +1657,7 @@ export default function JakartaMap() {
                   )
                   .map((s) => (
                     <option key={s.scenario_id} value={s.scenario_id}>
-                      {s.name} ({s.scenario_id.slice(0, 18)}…)
+                      {s.name} ({s.population_size.toLocaleString()} residents)
                     </option>
                   ))}
               </select>
@@ -1560,17 +1665,21 @@ export default function JakartaMap() {
           </div>
 
           {/* Citywide Metrics: Side-by-Side Comparison when `comparison` exists, else single strip */}
-          {comparison ? (
+          {loadingScenario && !metrics ? (
+            <div className="state-box loading-state-box">
+              Loading citywide metrics and comparison vs. baseline...
+            </div>
+          ) : comparison ? (
             <div className="compare-citywide-grid">
               <div className="compare-card">
-                <span className="metric-label">Avg Travel Time</span>
+                <span className="metric-label">Avg travel time</span>
                 <div className="compare-values">
                   <span className="base-val" title="Baseline">
-                    {comparison.base.citywide.avg_travel_min}m
+                    {comparison.base.citywide.avg_travel_min} min
                   </span>
                   <span className="arrow-sep">&rarr;</span>
-                  <strong className="var-val" title="Variant">
-                    {comparison.variant.citywide.avg_travel_min}m
+                  <strong className="var-val" title="Current Scenario">
+                    {comparison.variant.citywide.avg_travel_min} min
                   </strong>
                 </div>
                 <span
@@ -1582,6 +1691,7 @@ export default function JakartaMap() {
                       : "delta-warn"
                   }`}
                 >
+                  &Delta; vs baseline:{" "}
                   {formatSignedDelta(
                     comparison.variant.citywide.avg_travel_min -
                       comparison.base.citywide.avg_travel_min,
@@ -1592,13 +1702,13 @@ export default function JakartaMap() {
               </div>
 
               <div className="compare-card">
-                <span className="metric-label">Avg Commute Cost</span>
+                <span className="metric-label">Avg commute cost</span>
                 <div className="compare-values">
                   <span className="base-val" title="Baseline">
                     Rp {(comparison.base.citywide.avg_cost_idr ?? 0).toLocaleString()}
                   </span>
                   <span className="arrow-sep">&rarr;</span>
-                  <strong className="var-val" title="Variant">
+                  <strong className="var-val" title="Current Scenario">
                     Rp {(comparison.variant.citywide.avg_cost_idr ?? 0).toLocaleString()}
                   </strong>
                 </div>
@@ -1611,6 +1721,7 @@ export default function JakartaMap() {
                       : "delta-warn"
                   }`}
                 >
+                  &Delta; vs baseline:{" "}
                   {formatSignedIdr(
                     (comparison.variant.citywide.avg_cost_idr ?? 0) -
                       (comparison.base.citywide.avg_cost_idr ?? 0)
@@ -1619,13 +1730,13 @@ export default function JakartaMap() {
               </div>
 
               <div className="compare-card">
-                <span className="metric-label">Flood-Delayed</span>
+                <span className="metric-label">Residents stuck in flood</span>
                 <div className="compare-values">
                   <span className="base-val" title="Baseline">
                     {comparison.base.citywide.stuck_count ?? 0}
                   </span>
                   <span className="arrow-sep">&rarr;</span>
-                  <strong className="var-val" title="Variant">
+                  <strong className="var-val" title="Current Scenario">
                     {comparison.variant.citywide.stuck_count ?? 0}
                   </strong>
                 </div>
@@ -1638,51 +1749,55 @@ export default function JakartaMap() {
                       : "delta-warn"
                   }`}
                 >
+                  &Delta; vs baseline:{" "}
                   {formatSignedDelta(
                     (comparison.variant.citywide.stuck_count ?? 0) -
                       (comparison.base.citywide.stuck_count ?? 0),
                     0,
-                    " res"
+                    " residents"
                   )}
                 </span>
               </div>
             </div>
-          ) : (
-            metrics && (
-              <div className="metrics-strip">
-                <div className="metric-card">
-                  <span className="metric-label">Avg Travel Time</span>
-                  <strong className="metric-value">
-                    {metrics.citywide.avg_travel_min} min
-                  </strong>
-                </div>
-                {typeof metrics.citywide.avg_cost_idr === "number" && (
-                  <div className="metric-card">
-                    <span className="metric-label">Avg Commute Cost</span>
-                    <strong className="metric-value">
-                      Rp {metrics.citywide.avg_cost_idr.toLocaleString()}
-                    </strong>
-                  </div>
-                )}
-                <div className="metric-card">
-                  <span className="metric-label">Flood-Delayed</span>
-                  <strong className="metric-value">
-                    {metrics.citywide.stuck_count ?? 0}
-                  </strong>
-                </div>
+          ) : metrics ? (
+            <div className="metrics-strip">
+              <div className="metric-card">
+                <span className="metric-label">Avg travel time</span>
+                <strong className="metric-value">
+                  {metrics.citywide.avg_travel_min} min
+                </strong>
               </div>
-            )
+              {typeof metrics.citywide.avg_cost_idr === "number" && (
+                <div className="metric-card">
+                  <span className="metric-label">Avg commute cost</span>
+                  <strong className="metric-value">
+                    Rp {metrics.citywide.avg_cost_idr.toLocaleString()}
+                  </strong>
+                </div>
+              )}
+              <div className="metric-card">
+                <span className="metric-label">Residents stuck in flood</span>
+                <strong className="metric-value">
+                  {metrics.citywide.stuck_count ?? 0} residents
+                </strong>
+              </div>
+            </div>
+          ) : (
+            <div className="state-box empty-state-box">
+              Citywide metrics available once the scenario completes.
+            </div>
           )}
 
           {/* Mode Share Section: Side-by-Side when `comparison` exists */}
           {comparison ? (
             <div className="mode-share-section">
               <div className="section-caption">
-                Mode Share Shift ({baseScenarioObj?.name || "Baseline"} &rarr; Variant)
+                Mode Share Shift (&Delta; vs baseline:{" "}
+                {baseScenarioObj?.name || "Baseline weekday"})
               </div>
 
               <div className="stacked-bar-row">
-                <span className="bar-tag">Base</span>
+                <span className="bar-tag">Baseline</span>
                 <div className="mode-share-bar">
                   {comparedModes.map((row) =>
                     row.basePct > 0 ? (
@@ -1700,7 +1815,7 @@ export default function JakartaMap() {
               </div>
 
               <div className="stacked-bar-row">
-                <span className="bar-tag">Var</span>
+                <span className="bar-tag">Scenario</span>
                 <div className="mode-share-bar">
                   {comparedModes.map((row) =>
                     row.varPct > 0 ? (
@@ -1710,7 +1825,7 @@ export default function JakartaMap() {
                           width: `${Math.max(2, row.varPct)}%`,
                           backgroundColor: row.color,
                         }}
-                        title={`Variant ${row.label}: ${row.varPct.toFixed(1)}%`}
+                        title={`Scenario ${row.label}: ${row.varPct.toFixed(1)}%`}
                       />
                     ) : null
                   )}
@@ -1739,7 +1854,7 @@ export default function JakartaMap() {
                           : "down"
                       }`}
                     >
-                      {formatSignedDelta(row.deltaPp, 1, " pp")}
+                      &Delta; {formatSignedDelta(row.deltaPp, 1, " pp")}
                     </span>
                   </div>
                 ))}
@@ -1805,12 +1920,18 @@ export default function JakartaMap() {
           {drawerTab === "report" ? (
             <div className="report-body">
               {loadingReport ? (
-                <p className="muted-note">Generating Gemini analyst report...</p>
+                <div className="state-box loading-state-box">
+                  Generating Analyst Report (comparing scenario against baseline)...
+                </div>
               ) : report ? (
                 <>
                   {report.base_scenario_id && (
                     <div className="compared-against-tag">
-                      Comparison Report vs. Baseline (<code>{report.base_scenario_id}</code>)
+                      Comparison vs. baseline:{" "}
+                      <strong>
+                        {scenarios.find((s) => s.scenario_id === report.base_scenario_id)
+                          ?.name || report.base_scenario_id}
+                      </strong>
                     </div>
                   )}
                   <div className="report-headline">{report.headline}</div>
@@ -1857,39 +1978,59 @@ export default function JakartaMap() {
                   )}
                 </>
               ) : (
-                <p className="muted-note">
-                  Analyst report is generated once the simulation worker writes{" "}
-                  <code>metrics/summary</code> for this scenario.
-                </p>
+                <div className="state-box empty-state-box">
+                  Report available once the scenario completes.
+                </div>
               )}
             </div>
           ) : drawerTab === "verification" ? (
             <div className="verification-body">
               {loadingVerification ? (
-                <p className="muted-note">
-                  Running Verifier Agent checks (first call takes up to ~30s via Gemini)...
-                </p>
+                <div className="state-box loading-state-box">
+                  Running verification checks (first call takes up to 30 seconds)...
+                </div>
               ) : verification ? (
                 <>
-                  <div className={`verification-overall vstatus-${verification.overall}`}>
-                    <div>
-                      <div className="metric-label">Verifier Overall Status</div>
-                      <strong className="verification-overall-text">
-                        OVERALL: {verification.overall.toUpperCase()}
-                      </strong>
-                    </div>
-                    <span className={`vstatus-badge vstatus-${verification.overall}`}>
-                      {verification.overall.toUpperCase()}
-                    </span>
-                  </div>
+                  {(() => {
+                    const passCount = verification.checks.filter(
+                      (c) => c.status === "pass"
+                    ).length;
+                    const warnCount = verification.checks.filter(
+                      (c) => c.status === "warn"
+                    ).length;
+                    const failCount = verification.checks.filter(
+                      (c) => c.status === "fail"
+                    ).length;
+                    return (
+                      <div className={`verification-overall vstatus-${verification.overall}`}>
+                        <div>
+                          <div className="metric-label">Verifier Overall Result</div>
+                          <strong className="verification-overall-text">
+                            Overall status: {verification.overall.toUpperCase()}
+                          </strong>
+                          <div className="verification-summary-counts">
+                            {passCount} Passed &middot; {warnCount} Reference Warnings &middot;{" "}
+                            {failCount} Failed
+                          </div>
+                        </div>
+                        <span className={`vstatus-badge vstatus-${verification.overall}`}>
+                          Status: {verification.overall.toUpperCase()}
+                        </span>
+                      </div>
+                    );
+                  })()}
 
                   <div className="verification-checks-list">
                     {verification.checks.map((chk) => (
                       <div key={chk.name} className="verification-check-card">
                         <div className="verification-check-header">
-                          <code className="verification-check-name">{chk.name}</code>
+                          <div>
+                            <div className="verification-check-title">
+                              {formatVerificationCheckName(chk.name)}
+                            </div>
+                          </div>
                           <span className={`vstatus-badge vstatus-${chk.status}`}>
-                            STATUS: {chk.status.toUpperCase()}
+                            Status: {chk.status.toUpperCase()}
                           </span>
                         </div>
                         <p className="verification-check-detail">{chk.detail}</p>
@@ -1898,177 +2039,203 @@ export default function JakartaMap() {
                   </div>
                 </>
               ) : (
-                <p className="muted-note">
-                  Verification report (<code>GET /v1/scenarios/&#123;id&#125;/verification</code>)
-                  is available once scenario metrics exist.
-                </p>
+                <div className="state-box empty-state-box">
+                  Verification report available once the scenario completes.
+                </div>
               )}
             </div>
           ) : (
             <div className="breakdown-body">
-              {/* By Income Band Table */}
-              <div className="breakdown-block">
-                <div className="section-caption">By Income Band</div>
-                <table className="compact-table">
-                  <thead>
-                    <tr>
-                      <th>Income</th>
-                      <th>Travel Time</th>
-                      <th>Avg Cost (IDR)</th>
-                      <th>Stuck</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {incomeComparisonRows.map((row) => (
-                      <tr key={row.income_band}>
-                        <td>
-                          <code>{row.income_band}</code>
-                        </td>
-                        <td>
-                          {row.base_min !== null ? (
-                            <>
-                              {row.base_min}m &rarr; <b>{row.var_min}m</b>{" "}
-                              <span className="inline-delta">
-                                ({formatSignedDelta(row.delta_min ?? 0, 1, "m")})
-                              </span>
-                            </>
-                          ) : (
-                            <b>{row.var_min}m</b>
-                          )}
-                        </td>
-                        <td>
-                          {row.base_cost !== null ? (
-                            <>
-                              {(row.base_cost / 1000).toFixed(1)}k &rarr;{" "}
-                              <b>{(row.var_cost / 1000).toFixed(1)}k</b>
-                            </>
-                          ) : (
-                            <b>Rp {row.var_cost.toLocaleString()}</b>
-                          )}
-                        </td>
-                        <td>{row.var_stuck}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-
-              {/* Per-Kecamatan Resident-Weighted Table */}
-              <div className="breakdown-block">
-                <div className="kelurahan-header-row">
-                  <span className="section-caption">
-                    By Kecamatan (Resident-Weighted)
-                  </span>
-                  <input
-                    type="text"
-                    placeholder="Filter kecamatan..."
-                    value={kecamatanSearch}
-                    onChange={(e) => setKecamatanSearch(e.target.value)}
-                    className="kelurahan-filter-input"
-                  />
+              {loadingScenario && !metrics ? (
+                <div className="state-box loading-state-box">
+                  Loading income and kecamatan breakdown...
                 </div>
-                <div className="kelurahan-scroll">
-                  <table className="compact-table">
-                    <thead>
-                      <tr>
-                        <th>Kecamatan</th>
-                        <th>Residents</th>
-                        <th>Time (m)</th>
-                        <th>Cost (IDR)</th>
-                        <th>Stuck</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {kecamatanComparisonRows.map((row) => (
-                        <tr key={row.kecamatan}>
-                          <td>
-                            <b>{row.kecamatan}</b>
-                          </td>
-                          <td>{row.residents}</td>
-                          <td>
-                            {row.base_min !== null ? (
-                              <>
-                                {row.base_min} &rarr; <b>{row.var_min}</b>{" "}
-                                <span className="inline-delta">
-                                  ({formatSignedDelta(row.delta_min ?? 0, 1)})
-                                </span>
-                              </>
-                            ) : (
-                              <b>{row.var_min}</b>
-                            )}
-                          </td>
-                          <td>
-                            {row.base_cost !== null ? (
-                              <>
-                                {(row.base_cost / 1000).toFixed(1)}k &rarr;{" "}
-                                <b>{(row.var_cost / 1000).toFixed(1)}k</b>
-                              </>
-                            ) : (
-                              <b>{row.var_cost.toLocaleString()}</b>
-                            )}
-                          </td>
-                          <td>
-                            {row.base_stuck !== null && row.base_stuck !== row.var_stuck
-                              ? `${row.base_stuck} → ${row.var_stuck}`
-                              : row.var_stuck}
-                          </td>
+              ) : !metrics ? (
+                <div className="state-box empty-state-box">
+                  Income and kecamatan breakdown available once the scenario completes.
+                </div>
+              ) : (
+                <>
+                  {/* By Income Band Table */}
+                  <div className="breakdown-block">
+                    <div className="section-caption">
+                      By Income Group {comparison ? "(Δ vs baseline)" : ""}
+                    </div>
+                    <table className="compact-table">
+                      <thead>
+                        <tr>
+                          <th>Income group</th>
+                          <th>Avg travel time</th>
+                          <th>Avg commute cost</th>
+                          <th>Residents stuck in flood</th>
                         </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-                <div className="area-rollup-note">
-                  Kelurahan with &lt; {MIN_AREA_RESIDENTS} residents are aggregated into their
-                  kecamatan, weighted by resident count.
-                </div>
-              </div>
-
-              {kelurahanMajorRows.length > 0 && (
-                <div className="breakdown-block">
-                  <div className="section-caption">
-                    Kelurahan (&ge; {MIN_AREA_RESIDENTS} Residents)
+                      </thead>
+                      <tbody>
+                        {incomeComparisonRows.map((row) => (
+                          <tr key={row.income_band}>
+                            <td>
+                              <b>{formatIncomeBand(row.income_band)}</b>
+                            </td>
+                            <td>
+                              {row.base_min !== null ? (
+                                <>
+                                  {row.base_min}m &rarr; <b>{row.var_min}m</b>{" "}
+                                  <span className="inline-delta">
+                                    (&Delta; {formatSignedDelta(row.delta_min ?? 0, 1, "m")})
+                                  </span>
+                                </>
+                              ) : (
+                                <b>{row.var_min} min</b>
+                              )}
+                            </td>
+                            <td>
+                              {row.base_cost !== null ? (
+                                <>
+                                  {(row.base_cost / 1000).toFixed(1)}k &rarr;{" "}
+                                  <b>{(row.var_cost / 1000).toFixed(1)}k</b>
+                                </>
+                              ) : (
+                                <b>Rp {row.var_cost.toLocaleString()}</b>
+                              )}
+                            </td>
+                            <td>
+                              {row.base_stuck !== null && row.base_stuck !== row.var_stuck
+                                ? `${row.base_stuck} → ${row.var_stuck}`
+                                : row.var_stuck}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
                   </div>
-                  <table className="compact-table">
-                    <thead>
-                      <tr>
-                        <th>Kelurahan</th>
-                        <th>Residents</th>
-                        <th>Time (m)</th>
-                        <th>Cost (IDR)</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {kelurahanMajorRows.map((row) => (
-                        <tr key={row.kelurahan}>
-                          <td>
-                            <b>{row.kelurahan}</b>{" "}
-                            <span className="inline-delta">({row.kecamatan})</span>
-                          </td>
-                          <td>{row.residents}</td>
-                          <td>
-                            {row.base_min !== null ? (
-                              <>
-                                {row.base_min} &rarr; <b>{row.var_min}</b>
-                              </>
-                            ) : (
-                              <b>{row.var_min}</b>
-                            )}
-                          </td>
-                          <td>
-                            {row.base_cost !== null ? (
-                              <>
-                                {(row.base_cost / 1000).toFixed(1)}k &rarr;{" "}
-                                <b>{(row.var_cost / 1000).toFixed(1)}k</b>
-                              </>
-                            ) : (
-                              <b>{row.var_cost.toLocaleString()}</b>
-                            )}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
+
+                  {/* Per-Kecamatan Resident-Weighted Table */}
+                  <div className="breakdown-block">
+                    <div className="kelurahan-header-row">
+                      <span className="section-caption">
+                        By Kecamatan &middot; Resident-Weighted{" "}
+                        {comparison ? "(Δ vs baseline)" : ""}
+                      </span>
+                      <input
+                        type="text"
+                        placeholder="Filter kecamatan..."
+                        value={kecamatanSearch}
+                        onChange={(e) => setKecamatanSearch(e.target.value)}
+                        className="kelurahan-filter-input"
+                      />
+                    </div>
+                    <div className="kelurahan-scroll">
+                      <table className="compact-table">
+                        <thead>
+                          <tr>
+                            <th>Kecamatan</th>
+                            <th>Residents</th>
+                            <th>Avg travel time</th>
+                            <th>Avg cost (IDR)</th>
+                            <th>Stuck in flood</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {kecamatanComparisonRows.length === 0 ? (
+                            <tr>
+                              <td colSpan={5} className="empty-table-cell">
+                                No kecamatan matches &ldquo;{kecamatanSearch}&rdquo;.
+                              </td>
+                            </tr>
+                          ) : (
+                            kecamatanComparisonRows.map((row) => (
+                              <tr key={row.kecamatan}>
+                                <td>
+                                  <b>{row.kecamatan}</b>
+                                </td>
+                                <td>{row.residents}</td>
+                                <td>
+                                  {row.base_min !== null ? (
+                                    <>
+                                      {row.base_min}m &rarr; <b>{row.var_min}m</b>{" "}
+                                      <span className="inline-delta">
+                                        (&Delta; {formatSignedDelta(row.delta_min ?? 0, 1, "m")})
+                                      </span>
+                                    </>
+                                  ) : (
+                                    <b>{row.var_min} min</b>
+                                  )}
+                                </td>
+                                <td>
+                                  {row.base_cost !== null ? (
+                                    <>
+                                      {(row.base_cost / 1000).toFixed(1)}k &rarr;{" "}
+                                      <b>{(row.var_cost / 1000).toFixed(1)}k</b>
+                                    </>
+                                  ) : (
+                                    <b>{row.var_cost.toLocaleString()}</b>
+                                  )}
+                                </td>
+                                <td>
+                                  {row.base_stuck !== null && row.base_stuck !== row.var_stuck
+                                    ? `${row.base_stuck} → ${row.var_stuck}`
+                                    : row.var_stuck}
+                                </td>
+                              </tr>
+                            ))
+                          )}
+                        </tbody>
+                      </table>
+                    </div>
+                    <div className="area-rollup-note">
+                      Kelurahan with fewer than {MIN_AREA_RESIDENTS} residents are aggregated
+                      into their kecamatan, weighted by resident count.
+                    </div>
+                  </div>
+
+                  {kelurahanMajorRows.length > 0 && (
+                    <div className="breakdown-block">
+                      <div className="section-caption">
+                        Kelurahan with &ge; {MIN_AREA_RESIDENTS} Residents
+                      </div>
+                      <table className="compact-table">
+                        <thead>
+                          <tr>
+                            <th>Kelurahan</th>
+                            <th>Residents</th>
+                            <th>Avg travel time</th>
+                            <th>Avg cost (IDR)</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {kelurahanMajorRows.map((row) => (
+                            <tr key={row.kelurahan}>
+                              <td>
+                                <b>{row.kelurahan}</b>{" "}
+                                <span className="inline-delta">({row.kecamatan})</span>
+                              </td>
+                              <td>{row.residents}</td>
+                              <td>
+                                {row.base_min !== null ? (
+                                  <>
+                                    {row.base_min}m &rarr; <b>{row.var_min}m</b>
+                                  </>
+                                ) : (
+                                  <b>{row.var_min} min</b>
+                                )}
+                              </td>
+                              <td>
+                                {row.base_cost !== null ? (
+                                  <>
+                                    {(row.base_cost / 1000).toFixed(1)}k &rarr;{" "}
+                                    <b>{(row.var_cost / 1000).toFixed(1)}k</b>
+                                  </>
+                                ) : (
+                                  <b>{row.var_cost.toLocaleString()}</b>
+                                )}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+                </>
               )}
             </div>
           )}
@@ -2120,18 +2287,16 @@ export default function JakartaMap() {
 
         <div className="status-counters">
           <span className="counter-chip">
-            At Home: <b>{statusCounts.at_home}</b>
+            At home: <b>{statusCounts.at_home}</b>
           </span>
           <span className="counter-chip traveling">
             Traveling: <b>{statusCounts.traveling}</b>
           </span>
-          {statusCounts.stuck > 0 && (
-            <span className="counter-chip stuck">
-              Flood Delayed: <b>{statusCounts.stuck}</b>
-            </span>
-          )}
+          <span className={`counter-chip ${statusCounts.stuck > 0 ? "stuck" : ""}`}>
+            Residents stuck in flood: <b>{statusCounts.stuck}</b>
+          </span>
           <span className="counter-chip at-work">
-            At Work: <b>{statusCounts.at_work}</b>
+            At work: <b>{statusCounts.at_work}</b>
           </span>
         </div>
       </footer>
@@ -2141,6 +2306,11 @@ export default function JakartaMap() {
         <div className="modal-backdrop" onClick={() => setShowCreateModal(false)}>
           <div className="modal-card" onClick={(e) => e.stopPropagation()}>
             <h3>Create Policy / Flood Scenario</h3>
+            {createErrorMessage && (
+              <div className="state-box empty-state-box" role="alert">
+                {createErrorMessage}
+              </div>
+            )}
             <form onSubmit={handleCreateScenario} className="scenario-form">
               <label>
                 Scenario Name
@@ -2175,8 +2345,8 @@ export default function JakartaMap() {
                   value={newPopSize}
                   onChange={(e) => setNewPopSize(Number(e.target.value))}
                 >
-                  <option value={1000}>1,000 Personas (Layer 2–5 Standard)</option>
-                  <option value={50}>50 Personas (Fast Smoke Test)</option>
+                  <option value={1000}>1,000 Residents (Demo Standard)</option>
+                  <option value={50}>50 Residents (Fast Smoke Test)</option>
                 </select>
               </label>
               <label>
