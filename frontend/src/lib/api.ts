@@ -34,6 +34,7 @@ export interface Scenario {
 
 export interface KelurahanMetric {
   kelurahan: string;
+  residents?: number;
   avg_travel_min: number;
   avg_cost_idr: number;
   mode_share: Record<string, number>;
@@ -98,6 +99,26 @@ export interface Persona {
   cost_sensitivity: number;
   time_sensitivity: number;
   profile_summary: string;
+}
+
+export interface PersonaDecisionOptionDetail {
+  est_minutes: number;
+  cost_idr: number;
+  flooded_on_route: boolean;
+}
+
+export interface PersonaDecisionEntry {
+  tick: number;
+  options_detail: Record<string, PersonaDecisionOptionDetail>;
+  probabilities: Record<string, number>;
+  chosen: string;
+  reason_short: string;
+  decided_by: string;
+}
+
+export interface PersonaDecisionRecord {
+  persona_id: string;
+  decisions: PersonaDecisionEntry[];
 }
 
 export function tickToLocalTime(tick: number): string {
@@ -220,7 +241,63 @@ function parseFirestoreValue(val: Record<string, unknown>): unknown {
     const arr = (val.arrayValue as { values?: Record<string, unknown>[] })?.values || [];
     return arr.map(parseFirestoreValue);
   }
+  if ("mapValue" in val) {
+    const fields =
+      (val.mapValue as { fields?: Record<string, Record<string, unknown>> })?.fields || {};
+    const out: Record<string, unknown> = {};
+    for (const [k, v] of Object.entries(fields)) {
+      out[k] = parseFirestoreValue(v);
+    }
+    return out;
+  }
   return null;
+}
+
+/**
+ * Fetch a persona document via GET /v1/personas/{persona_id} (CONTRACT.md §3).
+ */
+export async function fetchPersona(personaId: string): Promise<Persona | null> {
+  const res = await fetchOrchestrator(`/v1/personas/${encodeURIComponent(personaId)}`, {
+    cache: "no-store",
+  });
+  if (res.status === 404) return null;
+  if (!res.ok) {
+    throw new Error(`Failed to fetch persona ${personaId}: HTTP ${res.status}`);
+  }
+  return res.json();
+}
+
+/**
+ * Load per-persona decision evidence chain (`scenarios/{scenarioId}/decisions/{personaId}`)
+ * from the named Firestore database `shadow-city` (CONTRACT.md v1.5 §4.5).
+ */
+export async function fetchPersonaDecisions(
+  scenarioId: string,
+  personaId: string
+): Promise<PersonaDecisionRecord | null> {
+  try {
+    const { fetchPersonaDecisionsViaFirestoreSdk } = await import("./firestore");
+    const sdkDoc = await fetchPersonaDecisionsViaFirestoreSdk(scenarioId, personaId);
+    if (sdkDoc) return sdkDoc;
+  } catch (err) {
+    console.warn("Firestore Web SDK decision read fell back to Firestore REST:", err);
+  }
+
+  const fsUrl = `https://firestore.googleapis.com/v1/projects/${APP_CONFIG.gcpProjectId}/databases/${APP_CONFIG.firestoreDatabase}/documents/scenarios/${scenarioId}/decisions/${encodeURIComponent(personaId)}`;
+  const fsRes = await fetch(fsUrl, { cache: "no-store" });
+  if (fsRes.status === 404) return null;
+  if (!fsRes.ok) {
+    throw new Error(
+      `Failed to read scenarios/${scenarioId}/decisions/${personaId} from Firestore: HTTP ${fsRes.status}`
+    );
+  }
+  const docBody = await fsRes.json();
+  const f = docBody.fields || {};
+  return {
+    persona_id: String(parseFirestoreValue(f.persona_id || {}) || personaId),
+    decisions:
+      (parseFirestoreValue(f.decisions || {}) as PersonaDecisionEntry[]) || [],
+  };
 }
 
 /**
@@ -271,3 +348,4 @@ export async function loadScenarioTicks(
   ticks.sort((a, b) => a.tick - b.tick);
   return ticks;
 }
+
