@@ -171,7 +171,7 @@ body {
 
 .error-banner {
   position: absolute;
-  top: 72px;
+  top: calc(var(--hud-h, 50px) + 22px);
   left: 12px;
   z-index: 12;
   display: flex;
@@ -187,7 +187,7 @@ body {
 
 .mode-legend {
   position: absolute;
-  top: 74px;
+  top: calc(var(--hud-h, 50px) + 24px);
   left: 12px;
   z-index: 10;
   display: flex;
@@ -277,7 +277,7 @@ body {
 /* Right Summary Drawer */
 .summary-drawer {
   position: absolute;
-  top: 74px;
+  top: calc(var(--hud-h, 50px) + 24px);
   right: 12px;
   bottom: 84px;
   z-index: 10;
@@ -949,7 +949,7 @@ body {
 .decision-card {
   position: absolute;
   left: 292px;
-  top: 74px;
+  top: calc(var(--hud-h, 50px) + 24px);
   bottom: 84px;
   width: 396px;
   max-width: calc(100vw - 310px);

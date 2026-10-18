@@ -287,6 +287,8 @@ function formatSignedIdr(val: number): string {
 
 export default function JakartaMap() {
   const containerRef = useRef<HTMLDivElement | null>(null);
+  const hudHeaderRef = useRef<HTMLElement | null>(null);
+  const [hudHeight, setHudHeight] = useState(50);
   const mapRef = useRef<maplibregl.Map | null>(null);
   const popupRef = useRef<maplibregl.Popup | null>(null);
   const scenarioCacheRef = useRef<Map<string, CachedScenarioBundle>>(new Map());
@@ -346,6 +348,17 @@ export default function JakartaMap() {
   const [createErrorMessage, setCreateErrorMessage] = useState<string | null>(null);
 
   // Initialize MapLibre map
+  // The header wraps to more rows on narrow screens; panels below it follow its real height.
+  useEffect(() => {
+    const header = hudHeaderRef.current;
+    if (!header) return;
+    const update = () => setHudHeight(Math.ceil(header.getBoundingClientRect().height));
+    update();
+    const observer = new ResizeObserver(update);
+    observer.observe(header);
+    return () => observer.disconnect();
+  }, []);
+
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return;
 
@@ -1346,9 +1359,9 @@ export default function JakartaMap() {
   };
 
   return (
-    <div className="map-shell">
+    <div className="map-shell" style={{ "--hud-h": `${hudHeight}px` } as React.CSSProperties}>
       {/* Top HUD Bar */}
-      <header className="hud-header">
+      <header className="hud-header" ref={hudHeaderRef}>
         <div className="hud-brand">
           <span className="status-dot" aria-hidden="true" />
           <div>
