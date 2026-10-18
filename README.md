@@ -124,4 +124,4 @@ uv venv --python 3.12 && uv pip install -r requirements-dev.txt
 
 ## Team
 
-[Team member names and roles]
+EBCO Cloud Expert

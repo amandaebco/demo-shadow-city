@@ -6,7 +6,7 @@ Copy each slide into the PPT, then export to PDF. Numbers come from the demo run
 - Shadow City
 - Test a city policy on AI residents before real residents live with it.
 - Theme: Sustainability & Social Impact · Google Cloud AI Builder Cup 2026
-- [Team name / members]
+- Team EBCO Cloud Expert
 
 ## Slide 2 · The problem
 - Jakarta debates parking tariffs and transit fares, and faces tidal flooding in the north.
