@@ -47,7 +47,7 @@ def persona_id_for(population_id: str, index: int) -> str:
 
 
 def cluster_id_for(population_id: str, index: int) -> str:
-    # No clustering until Layer 6: every persona is its own cluster.
+    # Placeholder singleton cluster; app.clustering assigns real clusters before personas are stored.
     return f"c_{population_id.removeprefix('pop_')}_{index:05d}"
 
 
