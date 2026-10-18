@@ -6,3 +6,4 @@ node_modules/
 dist/
 .firebase/
 .DS_Store
+services/distill/data/
