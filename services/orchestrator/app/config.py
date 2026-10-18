@@ -12,6 +12,9 @@ class Settings:
     gemini_model: str
     topic_scenario_start: str
     topic_scenario_failed: str
+    # Public URL guard: new scenarios call Gemini and the GPU, so creation is capped.
+    max_new_scenarios_per_day: int
+    max_population_size: int
 
 
 def load_settings() -> Settings:
@@ -22,4 +25,6 @@ def load_settings() -> Settings:
         gemini_model=os.environ.get("GEMINI_MODEL", "gemini-3.8-flash"),
         topic_scenario_start=os.environ.get("TOPIC_SCENARIO_START", "scenario-start"),
         topic_scenario_failed=os.environ.get("TOPIC_SCENARIO_FAILED", "scenario-failed"),
+        max_new_scenarios_per_day=int(os.environ.get("MAX_NEW_SCENARIOS_PER_DAY", "30")),
+        max_population_size=int(os.environ.get("MAX_POPULATION_SIZE", "5000")),
     )

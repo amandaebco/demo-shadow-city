@@ -69,3 +69,13 @@ infra/deploy.sh orchestrator
 
 Public (`--allow-unauthenticated`), no CPU throttling, runs as `sc-orchestrator`.
 Environment: `GCP_PROJECT_ID`, `GCP_REGION`, `FIRESTORE_DATABASE`, `GEMINI_*` from `.env`.
+
+## Public URL guard
+
+The orchestrator is public (the frontend calls it) and every new scenario spends Gemini time, so
+creation is capped:
+
+- `MAX_NEW_SCENARIOS_PER_DAY` (default 30, per instance, resets at midnight UTC): beyond it,
+  `POST /v1/scenarios` returns 429 `RATE_LIMITED`. Reads and existing scenarios are unaffected.
+- `MAX_POPULATION_SIZE` (default 5000, within the contract's 10–20,000): larger requests return 400
+  `INVALID_SCENARIO` with `details.field = "population_size"`.
