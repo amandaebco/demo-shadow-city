@@ -26,6 +26,7 @@ GRAD_ACCUM = int(os.environ.get("GRAD_ACCUM", "8"))
 MAX_TRAIN = int(os.environ.get("MAX_TRAIN", "0"))  # 0 = all
 EVAL_N = int(os.environ.get("EVAL_N", "300"))
 LORA_R = int(os.environ.get("LORA_R", "16"))
+MAX_NEW_TOKENS = int(os.environ.get("MAX_NEW_TOKENS", "384"))
 SEED = 42
 
 
@@ -92,8 +93,12 @@ def evaluate(model, tokenizer, examples: list[dict], label: str) -> dict:
         batch = examples[start:start + 8]
         enc = tokenizer([prompt_text(tokenizer, e) for e in batch], return_tensors="pt", padding=True,
                         add_special_tokens=False).to(model.device)
-        out = model.generate(**enc, max_new_tokens=160, do_sample=False, pad_token_id=tokenizer.pad_token_id)
+        out = model.generate(**enc, max_new_tokens=MAX_NEW_TOKENS, do_sample=False, pad_token_id=tokenizer.pad_token_id)
         texts = tokenizer.batch_decode(out[:, enc["input_ids"].shape[1]:], skip_special_tokens=True)
+        if start == 0:
+            raw = tokenizer.batch_decode(out[:2, enc["input_ids"].shape[1]:], skip_special_tokens=False)
+            log("sample_output", label=label, prompt_tail=prompt_text(tokenizer, batch[0])[-300:],
+                decoded=[t[:600] for t in texts[:2]], raw=[t[:600] for t in raw])
         for e, text in zip(batch, texts):
             parsed = parse(text)
             if not parsed:
