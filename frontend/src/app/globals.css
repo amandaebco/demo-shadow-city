@@ -1300,4 +1300,69 @@ body {
   border: 1px solid rgba(239, 68, 68, 0.45);
 }
 
+/* Layer 6 Scale & Cost Card and Shared Cluster Decision Badge */
+.scale-cost-card {
+  background: rgba(16, 185, 129, 0.14);
+  border: 1px solid rgba(16, 185, 129, 0.45);
+  border-left: 3px solid #10b981;
+  border-radius: 8px;
+  padding: 9px 11px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.scale-cost-title {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #6ee7b7;
+}
+
+.scale-cost-text {
+  font-size: 0.76rem;
+  font-weight: 600;
+  color: #ecfdf5;
+  line-height: 1.42;
+}
+
+.decision-shared-box {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  background: rgba(16, 185, 129, 0.13);
+  border: 1px solid rgba(16, 185, 129, 0.4);
+  border-radius: 7px;
+  padding: 6px 9px;
+  font-size: 0.72rem;
+  color: #d1fae5;
+}
+
+.decision-shared-text code {
+  color: #6ee7b7;
+  font-weight: 700;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+.decision-shared-link {
+  appearance: none;
+  border: 1px solid rgba(16, 185, 129, 0.5);
+  background: rgba(6, 78, 59, 0.55);
+  color: #a7f3d0;
+  font-size: 0.67rem;
+  font-weight: 600;
+  padding: 2px 7px;
+  border-radius: 5px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.decision-shared-link:hover {
+  background: rgba(16, 185, 129, 0.35);
+  color: #ffffff;
+}
+
+
 
