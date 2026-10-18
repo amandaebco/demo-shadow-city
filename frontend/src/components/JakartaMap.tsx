@@ -67,6 +67,21 @@ const FEATURED_DEMO_RESIDENTS = [
   { id: "p_s42_n1000_00005", tag: "#00005 (Flood → TJ)" },
 ];
 
+const DEMO_SCENARIO_PRIORITY: Record<string, number> = {
+  s_baseline_weekday_ea7247: 1,
+  s_central_parking_100_af902a: 2,
+  s_central_parking_100_with_north_jakarta_t_78f06b: 3,
+};
+
+interface CachedScenarioBundle {
+  scenario: Scenario;
+  metrics: ScenarioMetrics | null;
+  comparison: ScenarioCompareResponse | null;
+  ticks: TickData[];
+  report: AnalystReport | null;
+  verification: VerificationReport | null;
+}
+
 function buildResidentsGeoJSON(tickData: TickData | undefined): GeoJSON.FeatureCollection {
   if (!tickData || !tickData.persona_ids) {
     return { type: "FeatureCollection", features: [] };
@@ -111,6 +126,7 @@ export default function JakartaMap() {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<maplibregl.Map | null>(null);
   const popupRef = useRef<maplibregl.Popup | null>(null);
+  const scenarioCacheRef = useRef<Map<string, CachedScenarioBundle>>(new Map());
 
   const [mapReady, setMapReady] = useState<boolean>(false);
   const [showZones, setShowZones] = useState<boolean>(true);
@@ -401,16 +417,24 @@ export default function JakartaMap() {
   const refreshScenarioList = useCallback(async (selectPreferredOnFirstLoad = false) => {
     try {
       const list = await fetchScenarios();
-      setScenarios(list);
-      if (selectPreferredOnFirstLoad && list.length > 0) {
-        // Prefer a completed Layer 3 variant (with base_scenario_id) so the comparison view is immediately visible
-        const preferredVariant = list.find(
+      const sorted = [...list].sort((a, b) => {
+        const pa = DEMO_SCENARIO_PRIORITY[a.scenario_id] ?? 99;
+        const pb = DEMO_SCENARIO_PRIORITY[b.scenario_id] ?? 99;
+        if (pa !== pb) return pa - pb;
+        return (b.created_at || "").localeCompare(a.created_at || "");
+      });
+      setScenarios(sorted);
+      if (selectPreferredOnFirstLoad && sorted.length > 0) {
+        const preferredFloodVariant = sorted.find(
+          (s) => s.scenario_id === "s_central_parking_100_with_north_jakarta_t_78f06b"
+        );
+        const preferredVariant = sorted.find(
           (s) =>
             s.status === "completed" &&
             s.base_scenario_id &&
             s.name.toLowerCase().includes("central parking")
         );
-        const preferredBase = list.find(
+        const preferredBase = sorted.find(
           (s) =>
             s.status === "completed" &&
             s.name.toLowerCase() === "baseline weekday"
@@ -418,10 +442,12 @@ export default function JakartaMap() {
         if (preferredBase) {
           setNewBaseId(preferredBase.scenario_id);
         }
-        if (preferredVariant) {
-          setSelectedScenarioId(preferredVariant.scenario_id);
-        } else if (preferredBase) {
-          setSelectedScenarioId(preferredBase.scenario_id);
+        const targetId =
+          preferredFloodVariant?.scenario_id ||
+          preferredVariant?.scenario_id ||
+          preferredBase?.scenario_id;
+        if (targetId) {
+          setSelectedScenarioId((prev) => (prev === targetId ? prev : targetId));
         }
       }
     } catch (err) {
@@ -433,61 +459,112 @@ export default function JakartaMap() {
     refreshScenarioList(true);
   }, [refreshScenarioList]);
 
-  // Load selected scenario details, ticks, metrics, comparison, and analyst report
-  const loadScenarioBundle = useCallback(
-    async (scenarioId: string, baseOverride?: string) => {
-      if (!scenarioId) return;
-      setLoadingScenario(true);
-      setErrorMessage(null);
-      try {
-        const scen = await fetchScenario(scenarioId);
-        setActiveScenario(scen);
+  // Fetch a scenario bundle (used for both active scenario load and background prefetch)
+  const fetchScenarioBundleRaw = useCallback(
+    async (
+      scenarioId: string,
+      baseOverride?: string
+    ): Promise<CachedScenarioBundle> => {
+      const [scen, scenMetrics, rep, ver] = await Promise.all([
+        fetchScenario(scenarioId),
+        fetchScenarioMetrics(scenarioId).catch(() => null),
+        fetchScenarioReport(scenarioId).catch(() => null),
+        fetchScenarioVerification(scenarioId).catch(() => null),
+      ]);
 
-        const scenMetrics = await fetchScenarioMetrics(scenarioId);
-        setMetrics(scenMetrics);
+      const effectiveBaseId =
+        baseOverride !== undefined
+          ? baseOverride || null
+          : scen.base_scenario_id || null;
 
-        const effectiveBaseId =
-          baseOverride !== undefined
-            ? baseOverride || null
-            : scen.base_scenario_id || null;
+      const [cmp, loadedTicks] = await Promise.all([
+        effectiveBaseId && effectiveBaseId !== scenarioId && scenMetrics
+          ? fetchScenarioCompare(scenarioId, effectiveBaseId).catch(() => null)
+          : Promise.resolve(null),
+        loadScenarioTicks(scen, scenMetrics),
+      ]);
 
-        if (effectiveBaseId && effectiveBaseId !== scenarioId && scenMetrics) {
-          try {
-            const cmp = await fetchScenarioCompare(scenarioId, effectiveBaseId);
-            setComparison(cmp);
-          } catch {
-            setComparison(null);
-          }
-        } else {
-          setComparison(null);
-        }
-
-        const loadedTicks = await loadScenarioTicks(scen, scenMetrics);
-        setTicks(loadedTicks);
-
-        if (scen.status === "completed" || scenMetrics) {
-          setLoadingReport(true);
-          setLoadingVerification(true);
-          fetchScenarioReport(scenarioId)
-            .then((rep) => setReport(rep))
-            .catch(() => setReport(null))
-            .finally(() => setLoadingReport(false));
-          fetchScenarioVerification(scenarioId)
-            .then((ver) => setVerification(ver))
-            .catch(() => setVerification(null))
-            .finally(() => setLoadingVerification(false));
-        } else {
-          setReport(null);
-          setVerification(null);
-        }
-      } catch (err) {
-        setErrorMessage(err instanceof Error ? err.message : "Failed to load scenario");
-      } finally {
-        setLoadingScenario(false);
-      }
+      return {
+        scenario: scen,
+        metrics: scenMetrics,
+        comparison: cmp,
+        ticks: loadedTicks,
+        report: rep,
+        verification: ver,
+      };
     },
     []
   );
+
+  // Load selected scenario details, ticks, metrics, comparison, and analyst report
+  const loadScenarioBundle = useCallback(
+    async (scenarioId: string, baseOverride?: string, forceRefresh = false) => {
+      if (!scenarioId) return;
+      setErrorMessage(null);
+
+      const cacheKey = `${scenarioId}::${baseOverride ?? "default"}`;
+      const cached = !forceRefresh ? scenarioCacheRef.current.get(cacheKey) : undefined;
+      if (cached) {
+        setActiveScenario(cached.scenario);
+        setMetrics(cached.metrics);
+        setComparison(cached.comparison);
+        setTicks(cached.ticks);
+        setReport(cached.report);
+        setVerification(cached.verification);
+        setLoadingScenario(false);
+        setLoadingReport(false);
+        setLoadingVerification(false);
+        return;
+      }
+
+      setLoadingScenario(true);
+      setLoadingReport(true);
+      setLoadingVerification(true);
+      try {
+        const bundle = await fetchScenarioBundleRaw(scenarioId, baseOverride);
+        setActiveScenario(bundle.scenario);
+        setMetrics(bundle.metrics);
+        setComparison(bundle.comparison);
+        setTicks(bundle.ticks);
+        setReport(bundle.report);
+        setVerification(bundle.verification);
+
+        if (bundle.scenario.status === "completed" && bundle.ticks.length > 0) {
+          scenarioCacheRef.current.set(cacheKey, bundle);
+        }
+      } catch {
+        setErrorMessage(
+          "Unable to load scenario data right now. Please check your connection or click Refresh."
+        );
+      } finally {
+        setLoadingScenario(false);
+        setLoadingReport(false);
+        setLoadingVerification(false);
+      }
+    },
+    [fetchScenarioBundleRaw]
+  );
+
+  // Warm the in-memory cache for the other primary demo scenarios so video switching is instant
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      for (const demoId of Object.keys(DEMO_SCENARIO_PRIORITY)) {
+        const key = `${demoId}::default`;
+        if (!scenarioCacheRef.current.has(key)) {
+          fetchScenarioBundleRaw(demoId)
+            .then((bundle) => {
+              if (bundle.scenario.status === "completed" && bundle.ticks.length > 0) {
+                scenarioCacheRef.current.set(key, bundle);
+              }
+            })
+            .catch(() => {
+              // Ignore background prefetch errors
+            });
+        }
+      }
+    }, 800);
+    return () => clearTimeout(timer);
+  }, [fetchScenarioBundleRaw]);
 
   useEffect(() => {
     setCompareBaseOverride("");
@@ -825,17 +902,47 @@ export default function JakartaMap() {
               className="scenario-select"
               value={selectedScenarioId}
               onChange={(e) => setSelectedScenarioId(e.target.value)}
+              aria-label="Select scenario"
             >
               {scenarios.length === 0 && (
                 <option value={APP_CONFIG.defaultScenarioId}>
-                  {APP_CONFIG.defaultScenarioId}
+                  Loading scenarios...
                 </option>
               )}
-              {scenarios.map((s) => (
-                <option key={s.scenario_id} value={s.scenario_id}>
-                  {s.name} ({s.population_size}p &middot; {s.status})
-                </option>
-              ))}
+              {scenarios.some((s) => s.scenario_id in DEMO_SCENARIO_PRIORITY) ? (
+                <>
+                  <optgroup label="Demo Scenarios (1,000 residents)">
+                    {scenarios
+                      .filter((s) => s.scenario_id in DEMO_SCENARIO_PRIORITY)
+                      .map((s) => (
+                        <option key={s.scenario_id} value={s.scenario_id}>
+                          {s.name} ({s.population_size.toLocaleString()} residents)
+                        </option>
+                      ))}
+                  </optgroup>
+                  <optgroup label="Other Scenarios">
+                    {scenarios
+                      .filter(
+                        (s) =>
+                          !(s.scenario_id in DEMO_SCENARIO_PRIORITY) &&
+                          (s.status !== "failed" || s.scenario_id === selectedScenarioId)
+                      )
+                      .map((s) => (
+                        <option key={s.scenario_id} value={s.scenario_id}>
+                          {s.name} ({s.population_size.toLocaleString()} residents &middot;{" "}
+                          {s.status})
+                        </option>
+                      ))}
+                  </optgroup>
+                </>
+              ) : (
+                scenarios.map((s) => (
+                  <option key={s.scenario_id} value={s.scenario_id}>
+                    {s.name} ({s.population_size.toLocaleString()} residents &middot;{" "}
+                    {s.status})
+                  </option>
+                ))
+              )}
             </select>
           </label>
 
@@ -848,7 +955,9 @@ export default function JakartaMap() {
           <button
             type="button"
             className="hud-button"
-            onClick={() => loadScenarioBundle(selectedScenarioId, compareBaseOverride || undefined)}
+            onClick={() =>
+              loadScenarioBundle(selectedScenarioId, compareBaseOverride || undefined, true)
+            }
             disabled={loadingScenario}
           >
             {loadingScenario ? "Syncing..." : "Refresh"}
