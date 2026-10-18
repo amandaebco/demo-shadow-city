@@ -62,7 +62,7 @@ Copy each slide into the PPT, then export to PDF. Numbers come from the demo run
 - Orchestrator: FastAPI on Cloud Run (scenarios, population, comparison, analyst)
 - System One: FastAPI on Cloud Run (per-resident decisions, decision cache)
 - Gemini on Vertex AI · Firestore · Pub/Sub · Cloud Build CI
-- Diagram: the mermaid diagram in the root README
+- Diagram: `docs/submission/architecture.png` (1920×1080, one full slide)
 
 ## Slide 9 · Feasibility: it runs today
 - Live prototype: shadow-city.web.app
