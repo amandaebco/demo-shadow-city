@@ -40,6 +40,10 @@ class FirestoreStore:
     def save_report(self, report: dict) -> None:
         self._db.collection("reports").document(report["report_id"]).set(report)
 
+    def get_backtest(self, backtest_id: str) -> dict | None:
+        snapshot = self._db.collection("backtests").document(backtest_id).get()
+        return snapshot.to_dict() if snapshot.exists else None
+
     def get_persona(self, persona_id: str) -> dict | None:
         snapshot = self._db.collection("personas").document(persona_id).get()
         return snapshot.to_dict() if snapshot.exists else None
