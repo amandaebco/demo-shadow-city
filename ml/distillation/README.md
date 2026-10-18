@@ -53,3 +53,21 @@ re-runs the production configuration, so its agreement is Gemini's own run-to-ru
 | thinking level `low` | 87% | 100% | 0.067 | 2 | $0.00072 (−65%) |
 
 `gemini-3.8-flash` rejects `minimal`. Raw results: `results/thinking_levels_2026-10-18.json`.
+
+## Clusters share decisions (Layer 6, 2026-10-18)
+
+`services/orchestrator/app/clustering.py` groups residents by usual mode, vehicles and income band,
+then k-means on home/work location, cost/time sensitivity and departure time (target 15 per
+cluster); the member nearest the centroid is the representative. Measured with
+`services/orchestrator/tools/eval_clustering.py` on `pop_s42_n1000`, using each resident's own
+Gemini decision from the demo runs: would the group's shared decision have matched it?
+
+| Scenario | Model calls | Saved | Members matching their group's decision | Random groups of the same sizes |
+| --- | --- | --- | --- | --- |
+| Baseline | 106 | 89% | 89% | 25% |
+| Parking +100% | 106 | 89% | 79% | 21% |
+| Parking + flood (split by flood signature) | 161 | 84% | 75% | 19% |
+
+Without the flood split, the flood scenario matched 72%; splitting by the full option set instead
+saved only 67–73% for little gain. Agreement drops when a policy or event makes members' situations
+diverge: the cost of sharing, stated here rather than hidden.
