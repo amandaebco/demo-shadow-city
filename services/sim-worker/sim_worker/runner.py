@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from concurrent.futures import ThreadPoolExecutor
 import json
 import logging
 from datetime import datetime, timezone
@@ -11,7 +12,12 @@ from google.api_core.exceptions import AlreadyExists, NotFound
 from google.cloud import firestore, pubsub_v1
 
 from sim_worker.config import TOTAL_TICKS, WorkerConfig
-from sim_worker.engine import DecisionProvider, SimulationResult, simulate_scenario_layer2
+from sim_worker.engine import (
+    FROZEN_DEMO_SCENARIO_IDS,
+    DecisionProvider,
+    SimulationResult,
+    simulate_scenario_layer2,
+)
 from sim_worker.physics import ZoneIndex
 from sim_worker.road_graph import JakartaNetwork
 from sim_worker.system_one import SystemOneClient
@@ -22,8 +28,9 @@ TOPIC_SCENARIO_START = "scenario-start"
 TOPIC_SCENARIO_COMPLETED = "scenario-completed"
 TOPIC_SCENARIO_FAILED = "scenario-failed"
 
-TICK_WRITE_BATCH_SIZE = 10
-MEMORY_WRITE_BATCH_SIZE = 200
+TICK_WRITE_BATCH_SIZE = 4
+MEMORY_WRITE_BATCH_SIZE = 250
+FIRESTORE_WRITE_CONCURRENCY = 12
 
 
 def utc_now_iso() -> str:
@@ -99,8 +106,15 @@ class SimulationRunner:
         logger.info("Loaded %d personas for population_id=%s", len(personas), population_id)
         return personas
 
-    def run_scenario(self, scenario_id: str) -> SimulationResult:
+    def run_scenario(
+        self, scenario_id: str, use_clustering: bool | None = None
+    ) -> SimulationResult:
         """Execute a scenario end-to-end and persist ticks, metrics, and status."""
+        if scenario_id in FROZEN_DEMO_SCENARIO_IDS:
+            raise ValueError(
+                f"Refusing to re-run or modify frozen demo scenario {scenario_id!r}."
+            )
+
         scenario_ref = self.db.collection("scenarios").document(scenario_id)
         try:
             scenario = self.load_scenario(scenario_id)
@@ -117,7 +131,7 @@ class SimulationRunner:
                 }
             )
 
-            # 2. Load personas and run Layer 2 simulation
+            # 2. Load personas and run Layer 2 / Layer 6 simulation
             personas = self.load_personas(scenario)
             result = simulate_scenario_layer2(
                 scenario=scenario,
@@ -126,68 +140,78 @@ class SimulationRunner:
                 decision_provider=self.decision_provider,
                 network=self.network,
                 total_ticks=total_ticks,
+                use_clustering=use_clustering,
             )
 
-            # 3. Write tick documents in batches and update progress
+            # 3. Write tick documents, scenario-scoped memory, and per-persona decisions concurrently
             ticks_col = scenario_ref.collection("ticks")
             tick_states = result.tick_states
-            for start in range(0, len(tick_states), TICK_WRITE_BATCH_SIZE):
-                chunk = tick_states[start : start + TICK_WRITE_BATCH_SIZE]
+            tick_chunks = [
+                tick_states[start : start + TICK_WRITE_BATCH_SIZE]
+                for start in range(0, len(tick_states), TICK_WRITE_BATCH_SIZE)
+            ]
+
+            def _commit_tick_chunk(chunk: list[Any]) -> None:
                 batch = self.db.batch()
                 for ts in chunk:
                     batch.set(ticks_col.document(ts.tick_id), ts.to_firestore_dict())
-                last_tick_in_chunk = chunk[-1].tick
-                batch.update(
-                    scenario_ref,
-                    {
-                        "progress": {
-                            "current_tick": last_tick_in_chunk,
-                            "total_ticks": total_ticks,
-                        },
-                        "updated_at": utc_now_iso(),
-                    },
-                )
                 batch.commit()
+
+            mem_col = scenario_ref.collection("memory")
+            mem_items = sorted(result.scenario_memories.items(), key=lambda kv: kv[0])
+            mem_chunks = [
+                mem_items[start : start + MEMORY_WRITE_BATCH_SIZE]
+                for start in range(0, len(mem_items), MEMORY_WRITE_BATCH_SIZE)
+            ]
+
+            def _commit_mem_chunk(chunk: list[tuple[str, list[str]]]) -> None:
+                batch = self.db.batch()
+                for pid, mem_list in chunk:
+                    batch.set(
+                        mem_col.document(pid),
+                        {"persona_id": pid, "memory": list(mem_list)[-5:]},
+                    )
+                batch.commit()
+
+            dec_col = scenario_ref.collection("decisions")
+            dec_items = sorted(result.persona_decisions.items(), key=lambda kv: kv[0])
+            dec_chunks = [
+                dec_items[start : start + MEMORY_WRITE_BATCH_SIZE]
+                for start in range(0, len(dec_items), MEMORY_WRITE_BATCH_SIZE)
+            ]
+
+            def _commit_dec_chunk(chunk: list[tuple[str, list[dict[str, Any]]]]) -> None:
+                batch = self.db.batch()
+                for pid, dec_list in chunk:
+                    batch.set(
+                        dec_col.document(pid),
+                        {"persona_id": pid, "decisions": list(dec_list)},
+                    )
+                batch.commit()
+
+            with ThreadPoolExecutor(max_workers=FIRESTORE_WRITE_CONCURRENCY) as pool:
+                tick_futs = [pool.submit(_commit_tick_chunk, c) for c in tick_chunks]
+                mem_futs = [pool.submit(_commit_mem_chunk, c) for c in mem_chunks]
+                dec_futs = [pool.submit(_commit_dec_chunk, c) for c in dec_chunks]
+
+                for fut in tick_futs:
+                    fut.result()
                 logger.info(
-                    "Committed ticks %s..%s for scenario %s",
-                    chunk[0].tick_id,
-                    chunk[-1].tick_id,
+                    "Committed %d tick docs for scenario %s",
+                    len(tick_states),
                     scenario_id,
                 )
 
-            # 4. Write scenario-scoped persona memory (CONTRACT.md v1.4 section 5)
-            # Never write to personas/{id}.memory; persist at scenarios/{scenario_id}/memory/{persona_id}.
-            if result.scenario_memories:
-                mem_col = scenario_ref.collection("memory")
-                mem_items = sorted(result.scenario_memories.items(), key=lambda kv: kv[0])
-                for start in range(0, len(mem_items), MEMORY_WRITE_BATCH_SIZE):
-                    chunk = mem_items[start : start + MEMORY_WRITE_BATCH_SIZE]
-                    batch = self.db.batch()
-                    for pid, mem_list in chunk:
-                        batch.set(
-                            mem_col.document(pid),
-                            {"persona_id": pid, "memory": list(mem_list)[-5:]},
-                        )
-                    batch.commit()
+                for fut in mem_futs:
+                    fut.result()
                 logger.info(
                     "Wrote %d scenario-scoped memory docs under scenarios/%s/memory",
                     len(mem_items),
                     scenario_id,
                 )
 
-            # 5. Write per-persona decision records for the evidence chain (CONTRACT.md v1.5 section 4.5)
-            if result.persona_decisions:
-                dec_col = scenario_ref.collection("decisions")
-                dec_items = sorted(result.persona_decisions.items(), key=lambda kv: kv[0])
-                for start in range(0, len(dec_items), MEMORY_WRITE_BATCH_SIZE):
-                    chunk = dec_items[start : start + MEMORY_WRITE_BATCH_SIZE]
-                    batch = self.db.batch()
-                    for pid, dec_list in chunk:
-                        batch.set(
-                            dec_col.document(pid),
-                            {"persona_id": pid, "decisions": list(dec_list)},
-                        )
-                    batch.commit()
+                for fut in dec_futs:
+                    fut.result()
                 logger.info(
                     "Wrote %d per-persona decision docs under scenarios/%s/decisions",
                     len(dec_items),

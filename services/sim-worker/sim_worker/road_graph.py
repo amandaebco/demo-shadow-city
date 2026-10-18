@@ -118,7 +118,17 @@ class JakartaNetwork:
             sorted(krl_stations, key=lambda s: (str(s["name"]), int(s.get("osm_id", 0))))
         )
 
+        self._is_connected: bool = (
+            nx.is_connected(self.graph) if self.graph.number_of_nodes() > 0 else False
+        )
+        self._node_grid: dict[tuple[int, int], list[tuple[int, float, float]]] = {}
+        for nid in self._sorted_node_ids:
+            nlat, nlng = self.nodes_by_id[nid]
+            cell = (int(math.floor(nlat * 100.0)), int(math.floor(nlng * 100.0)))
+            self._node_grid.setdefault(cell, []).append((nid, nlat, nlng))
+
         self._snap_cache: dict[tuple[float, float], int] = {}
+        self._node_path_cache: dict[tuple[int, int], list[int]] = {}
         self._route_cache: dict[tuple[float, float, float, float], RoutePlan] = {}
         self._rail_cache: dict[tuple[str, float, float, float, float], RailAccessPlan] = {}
 
@@ -145,11 +155,27 @@ class JakartaNetwork:
         if cached is not None:
             return cached
 
+        clat = int(math.floor(key[0] * 100.0))
+        clng = int(math.floor(key[1] * 100.0))
         best_id = self._sorted_node_ids[0]
         best_dist = float("inf")
+
+        for r in range(0, 6):
+            for di in range(-r, r + 1):
+                for dj in range(-r, r + 1):
+                    if r > 0 and abs(di) != r and abs(dj) != r:
+                        continue
+                    for nid, nlat, nlng in self._node_grid.get((clat + di, clng + dj), ()):
+                        d = round(haversine_km(key[0], key[1], nlat, nlng), 6)
+                        if d < best_dist or (d == best_dist and nid < best_id):
+                            best_dist = d
+                            best_id = nid
+            if best_dist < float("inf") and r >= 1 and best_dist <= (r * 0.85):
+                self._snap_cache[key] = best_id
+                return best_id
+
         for nid in self._sorted_node_ids:
             nlat, nlng = self.nodes_by_id[nid]
-            # Fast equirectangular pre-filter before exact haversine
             dlat = abs(key[0] - nlat)
             dlng = abs(key[1] - nlng)
             if (dlat + dlng) * 111.0 > best_dist * 1.5:
@@ -175,8 +201,17 @@ class JakartaNetwork:
         v = self.snap_node(k2_lat, k2_lng)
 
         waypoints: list[tuple[float, float]] = [(k1_lat, k1_lng)]
-        if u is not None and v is not None and u != v and nx.has_path(self.graph, u, v):
-            node_path = nx.shortest_path(self.graph, source=u, target=v, weight="dist_km")
+        has_road_path = (
+            u is not None
+            and v is not None
+            and u != v
+            and (self._is_connected or nx.has_path(self.graph, u, v))
+        )
+        if has_road_path and u is not None and v is not None:
+            node_path = self._node_path_cache.get((u, v))
+            if node_path is None:
+                node_path = nx.shortest_path(self.graph, source=u, target=v, weight="dist_km")
+                self._node_path_cache[(u, v)] = node_path
             for nid in node_path:
                 pt = self.nodes_by_id[nid]
                 if pt != waypoints[-1]:
