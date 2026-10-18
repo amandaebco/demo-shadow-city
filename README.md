@@ -74,6 +74,7 @@ The interface between the AI/backend track and the simulation/frontend track is 
 | Decision log in BigQuery (`shadow_city.decisions`, every decision with full evidence) | Live |
 | Verifier agent: code-decided checks against a cited BPS reference, Gemini audit of persona coherence | Live |
 | Gemma 4 (e2b, e4b) and Gemma 3 4B on a Cloud Run L4 GPU, behind the same System One API | Live (demo uses Gemini) |
+| Persona clustering: one decision per cluster of similar residents (contract §4.6) | Live (Track A); engine integration in progress |
 | Distil Gemini into Gemma with the logged teacher decisions | Next |
 | Persona clustering and parallel workers for thousands of residents | Next |
 | Backtest against a real event (Jakarta's Rp1 transit fare day) | Next |
@@ -93,6 +94,7 @@ Measured on 2026-10-17 with `gemini-3.8-flash` at its introductory Vertex AI pri
 Two ways to cut it, both measured on logged decisions (details in [`ml/distillation/README.md`](ml/distillation/README.md)):
 
 - **Gemini thinking level `low`:** −65% per decision ($0.0020 → $0.0007), same favourite option in 87% of 100 decisions, against 93% when Gemini is simply asked again. Available as `GEMINI_THINKING_LEVEL=low`.
+- **Persona clustering:** 1,000 residents form 106 clusters, so 84–89% fewer model calls. Measured against each resident's own decision in the demo runs, the shared decision matches 89% (baseline), 79% (parking) and 75% (parking + flood) of members, against 19–25% for random groups of the same sizes.
 - **Gemma as System One:** live on a Cloud Run L4 GPU. Untuned, it returns valid structured output 100% of the time and picks Gemini's favourite in 50–63% of 150 decisions (Gemini's favourite is in Gemma's top two 75–83%). Distillation on the 4,228 logged Gemini decisions is the next step.
 
 ## Limitations
