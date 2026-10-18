@@ -28,5 +28,7 @@ Requirements from https://aibuildercup.com/themes.html. Tick each box before sub
 
 ## Optional after submission
 
+- After judging, set `ORCHESTRATOR_MIN_INSTANCES=0` (or run `gcloud run services update orchestrator --min-instances=0 --project=ebc-cloud-dev-03 --region=asia-southeast2`) to stop paying for the warm instance.
+
 - Turn on `GEMINI_THINKING_LEVEL=low` for System One (−65% cost per decision); it starts a fresh decision cache.
 - Distil Gemini into Gemma with the logged decisions (`ml/distillation/`), then switch System One to `DECIDER=gemma`.
