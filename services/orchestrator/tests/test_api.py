@@ -169,3 +169,14 @@ def test_verification_waits_for_metrics_then_is_stored(client, deps):
     assert first["persona_count"] == 50
     assert client.get(f"/v1/scenarios/{scenario_id}/verification").json() == first
     assert deps.verifier.calls == 1
+
+
+def test_new_population_is_clustered(client, deps):
+    client.post("/v1/scenarios", json=BODY | {"population_size": 60})
+    assert wait_for(lambda: deps.publisher.started)
+    personas = [p for p in deps.store.personas.values() if p["population_id"] == "pop_s42_n60"]
+    clusters = {}
+    for p in personas:
+        clusters.setdefault(p["cluster_id"], []).append(p["is_cluster_representative"])
+    assert len(clusters) < len(personas)  # identical fake profiles share clusters
+    assert all(reps.count(True) == 1 for reps in clusters.values())

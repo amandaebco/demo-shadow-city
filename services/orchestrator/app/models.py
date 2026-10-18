@@ -87,6 +87,7 @@ class Place(BaseModel):
 class Persona(BaseModel):
     persona_id: str
     cluster_id: str
+    is_cluster_representative: bool = True  # CONTRACT.md v1.7, §4.6
     population_id: str
     home: Place
     work: Place

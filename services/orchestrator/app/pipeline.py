@@ -4,6 +4,7 @@ import asyncio
 import logging
 from datetime import datetime, timezone
 
+from app.clustering import cluster_personas
 from app.models import ScenarioStatus
 from app.population import build_skeletons, population_id_for
 
@@ -25,8 +26,12 @@ async def ensure_population(store, generator, seed: int, size: int) -> str:
         if existing >= size:
             logger.info("Reusing population %s (%d personas)", population_id, existing)
             return population_id
-        personas = await generator.generate(build_skeletons(seed, size))
-        await asyncio.to_thread(store.write_personas, [p.model_dump(mode="json") for p in personas])
+        personas = [p.model_dump(mode="json") for p in await generator.generate(build_skeletons(seed, size))]
+        # Layer 6: residents with similar profiles share one decision (CONTRACT.md §4.6).
+        clusters = cluster_personas(personas, population_id)
+        for persona in personas:
+            persona.update(clusters[persona["persona_id"]])
+        await asyncio.to_thread(store.write_personas, personas)
         logger.info("Generated population %s (%d personas)", population_id, len(personas))
         return population_id
 
