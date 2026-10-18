@@ -12,6 +12,7 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
+from app.backtest import evaluate_backtest
 from app.config import Settings, load_settings
 from app.models import ScenarioCreate, ScenarioStatus
 from app.pipeline import prepare_scenario, utc_now
@@ -230,6 +231,18 @@ async def get_verification(scenario_id: str, request: Request) -> dict:
     report = await state.verifier.verify(scenario, metrics, personas)
     await asyncio.to_thread(state.store.save_report, report)
     return report
+
+
+@app.get("/v1/backtests/{backtest_id}")
+async def get_backtest(backtest_id: str, request: Request) -> dict:
+    """Backtest result (CONTRACT.md §8), computed from the scenarios' current metrics."""
+    store = request.app.state.store
+    definition = await asyncio.to_thread(store.get_backtest, backtest_id)
+    if not definition:
+        raise not_found("Backtest", backtest_id)
+    variant = await asyncio.to_thread(store.get_metrics, definition["scenario_id"]) if definition.get("scenario_id") else None
+    base = await asyncio.to_thread(store.get_metrics, definition["base_scenario_id"]) if definition.get("base_scenario_id") else None
+    return evaluate_backtest(definition, variant, base)
 
 
 @app.get("/v1/personas/{persona_id}")
