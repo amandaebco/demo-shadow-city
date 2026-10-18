@@ -175,7 +175,26 @@ class SimulationRunner:
                     scenario_id,
                 )
 
-            # 5. Write scenarios/{id}/metrics/summary
+            # 5. Write per-persona decision records for the evidence chain (CONTRACT.md v1.5 section 4.5)
+            if result.persona_decisions:
+                dec_col = scenario_ref.collection("decisions")
+                dec_items = sorted(result.persona_decisions.items(), key=lambda kv: kv[0])
+                for start in range(0, len(dec_items), MEMORY_WRITE_BATCH_SIZE):
+                    chunk = dec_items[start : start + MEMORY_WRITE_BATCH_SIZE]
+                    batch = self.db.batch()
+                    for pid, dec_list in chunk:
+                        batch.set(
+                            dec_col.document(pid),
+                            {"persona_id": pid, "decisions": list(dec_list)},
+                        )
+                    batch.commit()
+                logger.info(
+                    "Wrote %d per-persona decision docs under scenarios/%s/decisions",
+                    len(dec_items),
+                    scenario_id,
+                )
+
+            # 6. Write scenarios/{id}/metrics/summary
             metrics_ref = scenario_ref.collection("metrics").document("summary")
             metrics_ref.set(result.metrics_summary)
             logger.info("Wrote scenarios/%s/metrics/summary", scenario_id)

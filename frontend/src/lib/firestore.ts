@@ -1,7 +1,9 @@
 import { getApps, initializeApp, FirebaseApp } from "firebase/app";
 import {
   collection,
+  doc,
   Firestore,
+  getDoc,
   getDocs,
   getFirestore,
   onSnapshot,
@@ -10,7 +12,7 @@ import {
   Unsubscribe,
 } from "firebase/firestore";
 import { APP_CONFIG } from "./config";
-import type { TickData } from "./api";
+import type { PersonaDecisionRecord, TickData } from "./api";
 
 let cachedDb: Firestore | null = null;
 
@@ -93,3 +95,23 @@ export function subscribeScenarioTicks(
     }
   );
 }
+
+/**
+ * Read `scenarios/{scenarioId}/decisions/{personaId}` from the named Firestore database `shadow-city`
+ * (CONTRACT.md v1.5 §4.5).
+ */
+export async function fetchPersonaDecisionsViaFirestoreSdk(
+  scenarioId: string,
+  personaId: string
+): Promise<PersonaDecisionRecord | null> {
+  const db = getShadowCityFirestore();
+  const docRef = doc(db, "scenarios", scenarioId, "decisions", personaId);
+  const snap = await getDoc(docRef);
+  if (!snap.exists()) return null;
+  const d = snap.data();
+  return {
+    persona_id: String(d.persona_id || personaId),
+    decisions: Array.isArray(d.decisions) ? d.decisions : [],
+  };
+}
+

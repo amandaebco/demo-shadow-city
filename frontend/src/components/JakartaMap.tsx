@@ -7,18 +7,29 @@ import { APP_CONFIG } from "@/lib/config";
 import {
   AnalystReport,
   createScenario,
+  fetchPersona,
+  fetchPersonaDecisions,
   fetchScenario,
   fetchScenarioCompare,
   fetchScenarioMetrics,
   fetchScenarioReport,
   fetchScenarios,
+  fetchScenarioVerification,
   loadScenarioTicks,
+  Persona,
+  PersonaDecisionRecord,
   Scenario,
   ScenarioCompareResponse,
   ScenarioMetrics,
   TickData,
   tickToLocalTime,
+  VerificationReport,
 } from "@/lib/api";
+import {
+  KELURAHAN_TO_KECAMATAN,
+  MIN_AREA_RESIDENTS,
+  rollupByKecamatan,
+} from "@/lib/kelurahanMap";
 
 const MODE_COLORS: Record<string, string> = {
   car: "#ef4444",
@@ -48,6 +59,12 @@ const CANONICAL_MODE_ORDER = [
   "krl",
   "mrt",
   "walk",
+];
+
+const FEATURED_DEMO_RESIDENTS = [
+  { id: "p_s42_n1000_00026", tag: "#00026 (Moto → TJ)" },
+  { id: "p_s42_n1000_00009", tag: "#00009 (Car → TJ)" },
+  { id: "p_s42_n1000_00005", tag: "#00005 (Flood → TJ)" },
 ];
 
 function buildResidentsGeoJSON(tickData: TickData | undefined): GeoJSON.FeatureCollection {
@@ -99,8 +116,10 @@ export default function JakartaMap() {
   const [showZones, setShowZones] = useState<boolean>(true);
   const [showReportDrawer, setShowReportDrawer] = useState<boolean>(true);
   const [showCreateModal, setShowCreateModal] = useState<boolean>(false);
-  const [drawerTab, setDrawerTab] = useState<"report" | "breakdown">("report");
-  const [kelurahanSearch, setKelurahanSearch] = useState<string>("");
+  const [drawerTab, setDrawerTab] = useState<"report" | "breakdown" | "verification">(
+    "report"
+  );
+  const [kecamatanSearch, setKecamatanSearch] = useState<string>("");
 
   const [scenarios, setScenarios] = useState<Scenario[]>([]);
   const [selectedScenarioId, setSelectedScenarioId] = useState<string>(
@@ -111,13 +130,24 @@ export default function JakartaMap() {
   const [metrics, setMetrics] = useState<ScenarioMetrics | null>(null);
   const [comparison, setComparison] = useState<ScenarioCompareResponse | null>(null);
   const [report, setReport] = useState<AnalystReport | null>(null);
+  const [verification, setVerification] = useState<VerificationReport | null>(null);
   const [ticks, setTicks] = useState<TickData[]>([]);
   const [currentTick, setCurrentTick] = useState<number>(22);
   const [isPlaying, setIsPlaying] = useState<boolean>(true);
   const [playbackSpeed, setPlaybackSpeed] = useState<number>(2);
   const [loadingScenario, setLoadingScenario] = useState<boolean>(false);
   const [loadingReport, setLoadingReport] = useState<boolean>(false);
+  const [loadingVerification, setLoadingVerification] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  // Selected resident decision (evidence chain) state
+  const [selectedPersonaId, setSelectedPersonaId] = useState<string | null>(null);
+  const [selectedPersona, setSelectedPersona] = useState<Persona | null>(null);
+  const [selectedDecision, setSelectedDecision] = useState<PersonaDecisionRecord | null>(null);
+  const [selectedBaseDecision, setSelectedBaseDecision] = useState<PersonaDecisionRecord | null>(
+    null
+  );
+  const [loadingDecision, setLoadingDecision] = useState<boolean>(false);
 
   // New scenario form state
   const [newName, setNewName] = useState<string>("Central parking +100%");
@@ -296,6 +326,19 @@ export default function JakartaMap() {
         },
       });
 
+      map.addLayer({
+        id: "resident-selected-ring",
+        type: "circle",
+        source: "residents-source",
+        filter: ["==", ["get", "persona_id"], ""],
+        paint: {
+          "circle-radius": 11,
+          "circle-color": "rgba(56, 189, 248, 0.22)",
+          "circle-stroke-width": 2.4,
+          "circle-stroke-color": "#f8fafc",
+        },
+      });
+
       map.on("mouseenter", "residents-circle", (e) => {
         map.getCanvas().style.cursor = "pointer";
         const feat = e.features?.[0];
@@ -309,7 +352,8 @@ export default function JakartaMap() {
             `<div style="color:#0f172a;font-size:12px;line-height:1.4">
               <strong>${props.persona_id}</strong><br/>
               Mode: <b>${modeLabel}</b><br/>
-              Status: <code>${props.status}</code>
+              Status: <code>${props.status}</code><br/>
+              <span style="color:#0284c7;font-weight:600">Click to inspect decision &rarr;</span>
             </div>`
           )
           .addTo(map);
@@ -318,6 +362,14 @@ export default function JakartaMap() {
       map.on("mouseleave", "residents-circle", () => {
         map.getCanvas().style.cursor = "";
         popup.remove();
+      });
+
+      map.on("click", "residents-circle", (e) => {
+        const feat = e.features?.[0];
+        const pid = feat?.properties?.persona_id;
+        if (typeof pid === "string" && pid) {
+          setSelectedPersonaId(pid);
+        }
       });
 
       setMapReady(true);
@@ -415,16 +467,18 @@ export default function JakartaMap() {
 
         if (scen.status === "completed" || scenMetrics) {
           setLoadingReport(true);
-          try {
-            const rep = await fetchScenarioReport(scenarioId);
-            setReport(rep);
-          } catch {
-            setReport(null);
-          } finally {
-            setLoadingReport(false);
-          }
+          setLoadingVerification(true);
+          fetchScenarioReport(scenarioId)
+            .then((rep) => setReport(rep))
+            .catch(() => setReport(null))
+            .finally(() => setLoadingReport(false));
+          fetchScenarioVerification(scenarioId)
+            .then((ver) => setVerification(ver))
+            .catch(() => setVerification(null))
+            .finally(() => setLoadingVerification(false));
         } else {
           setReport(null);
+          setVerification(null);
         }
       } catch (err) {
         setErrorMessage(err instanceof Error ? err.message : "Failed to load scenario");
@@ -492,6 +546,19 @@ export default function JakartaMap() {
     }
   }, [currentTickData, mapReady]);
 
+  // Highlight selected resident dot on the map
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !mapReady) return;
+    if (map.getLayer("resident-selected-ring")) {
+      map.setFilter("resident-selected-ring", [
+        "==",
+        ["get", "persona_id"],
+        selectedPersonaId || "",
+      ]);
+    }
+  }, [selectedPersonaId, mapReady]);
+
   // Animation loop for ticks 0..203
   useEffect(() => {
     if (!isPlaying || ticks.length === 0) return;
@@ -558,36 +625,70 @@ export default function JakartaMap() {
     });
   }, [comparison, metrics]);
 
-  // Compute per-kelurahan comparison rows sorted by largest absolute travel time or cost delta
-  const kelurahanComparisonRows = useMemo(() => {
+  // Compute resident-weighted per-kecamatan comparison rows (mapping kelurahan -> kecamatan)
+  const kecamatanComparisonRows = useMemo(() => {
     const varKel = comparison?.variant?.by_kelurahan || metrics?.by_kelurahan || [];
-    const baseByKel = new Map(
-      (comparison?.base?.by_kelurahan || []).map((row) => [row.kelurahan, row])
-    );
-    const query = kelurahanSearch.trim().toLowerCase();
-    const rows = varKel
-      .filter((r) => !query || r.kelurahan.toLowerCase().includes(query))
+    const baseKel = comparison?.base?.by_kelurahan || [];
+    const varKec = rollupByKecamatan(varKel);
+    const baseByKec = new Map(rollupByKecamatan(baseKel).map((r) => [r.kecamatan, r]));
+
+    const query = kecamatanSearch.trim().toLowerCase();
+    const rows = varKec
+      .filter((r) => !query || r.kecamatan.toLowerCase().includes(query))
       .map((vRow) => {
-        const bRow = baseByKel.get(vRow.kelurahan);
-        const deltaMin = bRow ? vRow.avg_travel_min - bRow.avg_travel_min : 0;
+        const bRow = baseByKec.get(vRow.kecamatan);
+        const deltaMin = bRow
+          ? Math.round((vRow.avg_travel_min - bRow.avg_travel_min) * 10) / 10
+          : 0;
         const deltaCost = bRow ? vRow.avg_cost_idr - bRow.avg_cost_idr : 0;
         return {
-          kelurahan: vRow.kelurahan,
+          kecamatan: vRow.kecamatan,
+          residents: vRow.residents,
           base_min: bRow?.avg_travel_min ?? null,
           var_min: vRow.avg_travel_min,
           delta_min: bRow ? deltaMin : null,
           base_cost: bRow?.avg_cost_idr ?? null,
           var_cost: vRow.avg_cost_idr,
           delta_cost: bRow ? deltaCost : null,
+          base_stuck: bRow?.stuck_count ?? null,
           var_stuck: vRow.stuck_count,
           sortScore: Math.abs(deltaMin) * 1000 + Math.abs(deltaCost),
         };
       });
     if (comparison) {
-      rows.sort((a, b) => b.sortScore - a.sortScore || a.kelurahan.localeCompare(b.kelurahan));
+      rows.sort((a, b) => b.sortScore - a.sortScore || a.kecamatan.localeCompare(b.kecamatan));
+    } else {
+      rows.sort((a, b) => b.residents - a.residents || a.kecamatan.localeCompare(b.kecamatan));
     }
     return rows;
-  }, [comparison, metrics, kelurahanSearch]);
+  }, [comparison, metrics, kecamatanSearch]);
+
+  // Only kelurahan with >= 10 residents (MIN_AREA_RESIDENTS)
+  const kelurahanMajorRows = useMemo(() => {
+    const varKel = comparison?.variant?.by_kelurahan || metrics?.by_kelurahan || [];
+    const baseByKel = new Map(
+      (comparison?.base?.by_kelurahan || []).map((row) => [row.kelurahan, row])
+    );
+    return varKel
+      .filter((r) => (r.residents ?? 0) >= MIN_AREA_RESIDENTS)
+      .map((vRow) => {
+        const bRow = baseByKel.get(vRow.kelurahan);
+        const deltaMin = bRow
+          ? Math.round((vRow.avg_travel_min - bRow.avg_travel_min) * 10) / 10
+          : null;
+        return {
+          kelurahan: vRow.kelurahan,
+          kecamatan: KELURAHAN_TO_KECAMATAN[vRow.kelurahan] || "",
+          residents: vRow.residents ?? 0,
+          base_min: bRow?.avg_travel_min ?? null,
+          var_min: vRow.avg_travel_min,
+          delta_min: deltaMin,
+          base_cost: bRow?.avg_cost_idr ?? null,
+          var_cost: vRow.avg_cost_idr,
+          var_stuck: vRow.stuck_count,
+        };
+      });
+  }, [comparison, metrics]);
 
   const effectiveCompareBaseId =
     compareBaseOverride !== ""
@@ -597,6 +698,58 @@ export default function JakartaMap() {
   const baseScenarioObj = useMemo(
     () => scenarios.find((s) => s.scenario_id === comparison?.base?.scenario_id),
     [scenarios, comparison]
+  );
+
+  // Load selected persona profile + scenario decision evidence chain when selectedPersonaId changes
+  useEffect(() => {
+    if (!selectedPersonaId || !selectedScenarioId) {
+      setSelectedPersona(null);
+      setSelectedDecision(null);
+      setSelectedBaseDecision(null);
+      return;
+    }
+    let cancelled = false;
+    setLoadingDecision(true);
+    Promise.all([
+      fetchPersona(selectedPersonaId).catch(() => null),
+      fetchPersonaDecisions(selectedScenarioId, selectedPersonaId).catch(() => null),
+      effectiveCompareBaseId && effectiveCompareBaseId !== selectedScenarioId
+        ? fetchPersonaDecisions(effectiveCompareBaseId, selectedPersonaId).catch(() => null)
+        : Promise.resolve(null),
+    ])
+      .then(([personaDoc, decDoc, baseDecDoc]) => {
+        if (cancelled) return;
+        setSelectedPersona(personaDoc);
+        setSelectedDecision(decDoc);
+        setSelectedBaseDecision(baseDecDoc);
+      })
+      .finally(() => {
+        if (!cancelled) setLoadingDecision(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [selectedPersonaId, selectedScenarioId, effectiveCompareBaseId]);
+
+  const handleSelectResident = useCallback(
+    (personaId: string, flyTo = false) => {
+      setSelectedPersonaId(personaId);
+      if (flyTo && currentTickData?.persona_ids) {
+        const idx = currentTickData.persona_ids.indexOf(personaId);
+        if (idx >= 0) {
+          const lat = currentTickData.lat[idx];
+          const lng = currentTickData.lng[idx];
+          if (typeof lat === "number" && typeof lng === "number") {
+            mapRef.current?.flyTo({
+              center: [lng, lat],
+              zoom: Math.max(mapRef.current.getZoom(), 11.8),
+              duration: 650,
+            });
+          }
+        }
+      }
+    },
+    [currentTickData]
   );
 
   const handleResetView = () => {
@@ -767,7 +920,235 @@ export default function JakartaMap() {
             </div>
           </div>
         )}
+        <div className="resident-picker-inline">
+          <div className="legend-title">Inspect Resident (Evidence Chain)</div>
+          <div className="resident-hint">Click any dot on map or pick:</div>
+          <div className="resident-pill-group">
+            {(activeScenario?.population_size === 50 && currentTickData?.persona_ids?.length
+              ? currentTickData.persona_ids.slice(0, 3).map((id) => ({
+                  id,
+                  tag: id.replace("p_s42_n50_", "#"),
+                }))
+              : FEATURED_DEMO_RESIDENTS
+            ).map((item) => (
+              <button
+                key={item.id}
+                type="button"
+                className={`resident-pill-btn ${
+                  selectedPersonaId === item.id ? "active" : ""
+                }`}
+                onClick={() => handleSelectResident(item.id, true)}
+              >
+                {item.tag}
+              </button>
+            ))}
+          </div>
+        </div>
       </aside>
+
+      {/* Resident Decision Evidence Chain Panel (CONTRACT.md v1.5 §4.5) */}
+      {selectedPersonaId && (
+        <aside className="decision-card" aria-label="Resident Decision Evidence Chain">
+          {(() => {
+            const decEntry = selectedDecision?.decisions?.[0] || null;
+            const baseDecEntry = selectedBaseDecision?.decisions?.[0] || null;
+            const homeKel = selectedPersona?.home?.kelurahan || "";
+            const workKel = selectedPersona?.work?.kelurahan || "";
+            const homeKec = KELURAHAN_TO_KECAMATAN[homeKel] || "";
+            const workKec = KELURAHAN_TO_KECAMATAN[workKel] || "";
+
+            const optionRows = decEntry
+              ? Object.keys(decEntry.options_detail || {})
+                  .map((mode) => ({
+                    mode,
+                    label: MODE_LABELS[mode] || mode,
+                    color: MODE_COLORS[mode] || "#64748b",
+                    detail: decEntry.options_detail[mode],
+                    prob: decEntry.probabilities?.[mode] ?? 0,
+                    isChosen: decEntry.chosen === mode,
+                  }))
+                  .sort((a, b) => b.prob - a.prob)
+              : [];
+
+            return (
+              <>
+                <div className="decision-card-header">
+                  <div>
+                    <div className="decision-eyebrow">Resident Decision &middot; Evidence Chain</div>
+                    <h3 className="decision-persona-id">{selectedPersonaId}</h3>
+                  </div>
+                  <div className="decision-header-right">
+                    {decEntry?.decided_by && (
+                      <span className="hud-badge">
+                        <code>{decEntry.decided_by}</code>
+                      </span>
+                    )}
+                    <button
+                      type="button"
+                      className="decision-close-btn"
+                      onClick={() => setSelectedPersonaId(null)}
+                      aria-label="Close resident decision panel"
+                    >
+                      &times;
+                    </button>
+                  </div>
+                </div>
+
+                {loadingDecision ? (
+                  <p className="muted-note">Loading persona &amp; decision log...</p>
+                ) : (
+                  <>
+                    {selectedPersona && (
+                      <div className="decision-profile-box">
+                        <div className="decision-meta-row">
+                          <span className="decision-badge">
+                            {selectedPersona.occupation} ({selectedPersona.age}y)
+                          </span>
+                          <span className="decision-badge">
+                            Income: <code>{selectedPersona.income_band}</code>
+                          </span>
+                        </div>
+                        <div className="decision-route-line">
+                          <strong>{homeKel}</strong>
+                          {homeKec ? ` (${homeKec})` : ""} &rarr;{" "}
+                          <strong>{workKel}</strong>
+                          {workKec ? ` (${workKec})` : ""}
+                        </div>
+                        <p className="decision-profile-summary">
+                          {selectedPersona.profile_summary}
+                        </p>
+                      </div>
+                    )}
+
+                    {decEntry ? (
+                      <>
+                        <div className="decision-mode-strip">
+                          <div className="decision-mode-cell">
+                            <span className="metric-label">Usual Mode</span>
+                            <span className="decision-mode-val">
+                              <span
+                                className="mode-dot"
+                                style={{
+                                  backgroundColor:
+                                    MODE_COLORS[selectedPersona?.usual_mode || ""] || "#64748b",
+                                }}
+                              />
+                              {MODE_LABELS[selectedPersona?.usual_mode || ""] ||
+                                selectedPersona?.usual_mode ||
+                                "—"}
+                            </span>
+                          </div>
+
+                          {baseDecEntry && (
+                            <div className="decision-mode-cell">
+                              <span className="metric-label">Baseline Mode</span>
+                              <span className="decision-mode-val">
+                                <span
+                                  className="mode-dot"
+                                  style={{
+                                    backgroundColor:
+                                      MODE_COLORS[baseDecEntry.chosen] || "#64748b",
+                                  }}
+                                />
+                                {MODE_LABELS[baseDecEntry.chosen] || baseDecEntry.chosen}
+                              </span>
+                            </div>
+                          )}
+
+                          <div className="decision-mode-cell highlight">
+                            <span className="metric-label">
+                              Today&apos;s Chosen ({tickToLocalTime(decEntry.tick)})
+                            </span>
+                            <strong className="decision-mode-val">
+                              <span
+                                className="mode-dot"
+                                style={{
+                                  backgroundColor: MODE_COLORS[decEntry.chosen] || "#38bdf8",
+                                }}
+                              />
+                              {MODE_LABELS[decEntry.chosen] || decEntry.chosen}
+                            </strong>
+                          </div>
+                        </div>
+
+                        <div className="decision-reason-box">
+                          <div className="metric-label">Decision Reason (reason_short)</div>
+                          <p>&ldquo;{decEntry.reason_short}&rdquo;</p>
+                        </div>
+
+                        <div className="decision-options-block">
+                          <div className="section-caption">
+                            Evaluated Options &amp; Probabilities (Tick {decEntry.tick})
+                          </div>
+                          <table className="compact-table decision-table">
+                            <thead>
+                              <tr>
+                                <th>Option</th>
+                                <th>Est. Time</th>
+                                <th>Cost</th>
+                                <th>Probability</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {optionRows.map((opt) => (
+                                <tr
+                                  key={opt.mode}
+                                  className={opt.isChosen ? "chosen-option-row" : ""}
+                                >
+                                  <td>
+                                    <span className="mode-compare-name">
+                                      <span
+                                        className="mode-dot"
+                                        style={{ backgroundColor: opt.color }}
+                                      />
+                                      <b>{opt.label}</b>
+                                      {opt.isChosen && (
+                                        <span className="chosen-tag">chosen</span>
+                                      )}
+                                    </span>
+                                  </td>
+                                  <td>
+                                    {opt.detail?.est_minutes}m
+                                    {opt.detail?.flooded_on_route && (
+                                      <span className="flood-tag" title="Route crosses flood area">
+                                        flooded
+                                      </span>
+                                    )}
+                                  </td>
+                                  <td>Rp {(opt.detail?.cost_idr ?? 0).toLocaleString()}</td>
+                                  <td>
+                                    <div className="prob-cell">
+                                      <div className="prob-bar-track">
+                                        <div
+                                          className="prob-bar-fill"
+                                          style={{
+                                            width: `${Math.round(opt.prob * 100)}%`,
+                                            backgroundColor: opt.color,
+                                          }}
+                                        />
+                                      </div>
+                                      <span>{Math.round(opt.prob * 100)}%</span>
+                                    </div>
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      </>
+                    ) : (
+                      <p className="muted-note">
+                        No stored decision record found for <code>{selectedPersonaId}</code> in
+                        this scenario.
+                      </p>
+                    )}
+                  </>
+                )}
+              </>
+            );
+          })()}
+        </aside>
+      )}
 
       {/* Right Analyst Report & Baseline vs. Variant Comparison Drawer */}
       {showReportDrawer && (
@@ -1026,8 +1407,8 @@ export default function JakartaMap() {
             )
           )}
 
-          {/* Drawer Tabs: Analyst Report vs. Per-Kelurahan & Income Breakdown */}
-          <div className="drawer-tabs">
+          {/* Drawer Tabs: Analyst Report vs. Verification vs. Per-Kecamatan & Income Breakdown */}
+          <div className="drawer-tabs three-tabs">
             <button
               type="button"
               className={`tab-btn ${drawerTab === "report" ? "active" : ""}`}
@@ -1037,10 +1418,18 @@ export default function JakartaMap() {
             </button>
             <button
               type="button"
+              className={`tab-btn ${drawerTab === "verification" ? "active" : ""}`}
+              onClick={() => setDrawerTab("verification")}
+            >
+              Verification{" "}
+              {verification ? `(${verification.overall.toUpperCase()})` : ""}
+            </button>
+            <button
+              type="button"
               className={`tab-btn ${drawerTab === "breakdown" ? "active" : ""}`}
               onClick={() => setDrawerTab("breakdown")}
             >
-              By Income &amp; Kelurahan ({kelurahanComparisonRows.length})
+              Income &amp; Kecamatan ({kecamatanComparisonRows.length})
             </button>
           </div>
 
@@ -1105,6 +1494,47 @@ export default function JakartaMap() {
                 </p>
               )}
             </div>
+          ) : drawerTab === "verification" ? (
+            <div className="verification-body">
+              {loadingVerification ? (
+                <p className="muted-note">
+                  Running Verifier Agent checks (first call takes up to ~30s via Gemini)...
+                </p>
+              ) : verification ? (
+                <>
+                  <div className={`verification-overall vstatus-${verification.overall}`}>
+                    <div>
+                      <div className="metric-label">Verifier Overall Status</div>
+                      <strong className="verification-overall-text">
+                        OVERALL: {verification.overall.toUpperCase()}
+                      </strong>
+                    </div>
+                    <span className={`vstatus-badge vstatus-${verification.overall}`}>
+                      {verification.overall.toUpperCase()}
+                    </span>
+                  </div>
+
+                  <div className="verification-checks-list">
+                    {verification.checks.map((chk) => (
+                      <div key={chk.name} className="verification-check-card">
+                        <div className="verification-check-header">
+                          <code className="verification-check-name">{chk.name}</code>
+                          <span className={`vstatus-badge vstatus-${chk.status}`}>
+                            STATUS: {chk.status.toUpperCase()}
+                          </span>
+                        </div>
+                        <p className="verification-check-detail">{chk.detail}</p>
+                      </div>
+                    ))}
+                  </div>
+                </>
+              ) : (
+                <p className="muted-note">
+                  Verification report (<code>GET /v1/scenarios/&#123;id&#125;/verification</code>)
+                  is available once scenario metrics exist.
+                </p>
+              )}
+            </div>
           ) : (
             <div className="breakdown-body">
               {/* By Income Band Table */}
@@ -1154,15 +1584,17 @@ export default function JakartaMap() {
                 </table>
               </div>
 
-              {/* Per-Kelurahan Table */}
+              {/* Per-Kecamatan Resident-Weighted Table */}
               <div className="breakdown-block">
                 <div className="kelurahan-header-row">
-                  <span className="section-caption">Per-Kelurahan Breakdown</span>
+                  <span className="section-caption">
+                    By Kecamatan (Resident-Weighted)
+                  </span>
                   <input
                     type="text"
-                    placeholder="Filter kelurahan..."
-                    value={kelurahanSearch}
-                    onChange={(e) => setKelurahanSearch(e.target.value)}
+                    placeholder="Filter kecamatan..."
+                    value={kecamatanSearch}
+                    onChange={(e) => setKecamatanSearch(e.target.value)}
                     className="kelurahan-filter-input"
                   />
                 </div>
@@ -1170,16 +1602,20 @@ export default function JakartaMap() {
                   <table className="compact-table">
                     <thead>
                       <tr>
-                        <th>Kelurahan</th>
+                        <th>Kecamatan</th>
+                        <th>Residents</th>
                         <th>Time (m)</th>
                         <th>Cost (IDR)</th>
                         <th>Stuck</th>
                       </tr>
                     </thead>
                     <tbody>
-                      {kelurahanComparisonRows.slice(0, 80).map((row) => (
-                        <tr key={row.kelurahan}>
-                          <td>{row.kelurahan}</td>
+                      {kecamatanComparisonRows.map((row) => (
+                        <tr key={row.kecamatan}>
+                          <td>
+                            <b>{row.kecamatan}</b>
+                          </td>
+                          <td>{row.residents}</td>
                           <td>
                             {row.base_min !== null ? (
                               <>
@@ -1202,13 +1638,69 @@ export default function JakartaMap() {
                               <b>{row.var_cost.toLocaleString()}</b>
                             )}
                           </td>
-                          <td>{row.var_stuck}</td>
+                          <td>
+                            {row.base_stuck !== null && row.base_stuck !== row.var_stuck
+                              ? `${row.base_stuck} → ${row.var_stuck}`
+                              : row.var_stuck}
+                          </td>
                         </tr>
                       ))}
                     </tbody>
                   </table>
                 </div>
+                <div className="area-rollup-note">
+                  Kelurahan with &lt; {MIN_AREA_RESIDENTS} residents are aggregated into their
+                  kecamatan, weighted by resident count.
+                </div>
               </div>
+
+              {kelurahanMajorRows.length > 0 && (
+                <div className="breakdown-block">
+                  <div className="section-caption">
+                    Kelurahan (&ge; {MIN_AREA_RESIDENTS} Residents)
+                  </div>
+                  <table className="compact-table">
+                    <thead>
+                      <tr>
+                        <th>Kelurahan</th>
+                        <th>Residents</th>
+                        <th>Time (m)</th>
+                        <th>Cost (IDR)</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {kelurahanMajorRows.map((row) => (
+                        <tr key={row.kelurahan}>
+                          <td>
+                            <b>{row.kelurahan}</b>{" "}
+                            <span className="inline-delta">({row.kecamatan})</span>
+                          </td>
+                          <td>{row.residents}</td>
+                          <td>
+                            {row.base_min !== null ? (
+                              <>
+                                {row.base_min} &rarr; <b>{row.var_min}</b>
+                              </>
+                            ) : (
+                              <b>{row.var_min}</b>
+                            )}
+                          </td>
+                          <td>
+                            {row.base_cost !== null ? (
+                              <>
+                                {(row.base_cost / 1000).toFixed(1)}k &rarr;{" "}
+                                <b>{(row.var_cost / 1000).toFixed(1)}k</b>
+                              </>
+                            ) : (
+                              <b>{row.var_cost.toLocaleString()}</b>
+                            )}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
             </div>
           )}
         </aside>

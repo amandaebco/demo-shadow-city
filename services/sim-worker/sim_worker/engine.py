@@ -83,6 +83,7 @@ class SimulationResult:
     metrics_summary: dict[str, Any]
     decisions: list[dict[str, Any]]
     scenario_memories: dict[str, list[str]] = field(default_factory=dict)
+    persona_decisions: dict[str, list[dict[str, Any]]] = field(default_factory=dict)
 
 
 def run_placeholder_tick_loop(
@@ -200,8 +201,9 @@ def simulate_scenario_layer2(
     responses = decision_provider.decide_batch(request_items)
     response_by_req_id = {r["request_id"]: r for r in responses}
 
-    # 3. Precompute each persona's commute schedule, road trajectory, and scenario memory
+    # 3. Precompute each persona's commute schedule, road trajectory, decision record, and scenario memory
     persona_plans: list[dict[str, Any]] = []
+    persona_decisions: dict[str, list[dict[str, Any]]] = {}
     for p, req in zip(sorted_personas, request_items):
         pid = str(p["persona_id"])
         resp = response_by_req_id.get(req["request_id"], {})
@@ -220,6 +222,20 @@ def simulate_scenario_layer2(
         dep_tick = int(req["tick"])
         travel_ticks = max(1, math.ceil(est_min / MINUTES_PER_TICK))
         arr_tick = dep_tick + travel_ticks
+
+        # Record per-persona decision for evidence chain (CONTRACT.md v1.5 section 4.5)
+        raw_probs = resp.get("probabilities") or {}
+        clean_probs = {str(k): round(float(v), 4) for k, v in raw_probs.items()}
+        persona_decisions[pid] = [
+            {
+                "tick": dep_tick,
+                "options_detail": options_detail,
+                "probabilities": clean_probs,
+                "chosen": str(chosen_mode),
+                "reason_short": str(resp.get("reason_short") or ""),
+                "decided_by": str(resp.get("decided_by") or "gemini-system-two"),
+            }
+        ]
 
         # Update per-scenario memory after decision/commute (capped at 5, newest last)
         mem_entry = (
@@ -305,6 +321,7 @@ def simulate_scenario_layer2(
         metrics_summary=metrics_summary,
         decisions=responses,
         scenario_memories=scenario_memories,
+        persona_decisions=persona_decisions,
     )
 
 
@@ -347,6 +364,7 @@ def _compute_metrics_summary(
         kelurahan_rows.append(
             {
                 "kelurahan": kel,
+                "residents": n,
                 "avg_travel_min": avg_min,
                 "avg_cost_idr": avg_cost,
                 "mode_share": _compute_mode_share([x["chosen_mode"] for x in plans]),
