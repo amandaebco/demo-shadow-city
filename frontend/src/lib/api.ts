@@ -4,6 +4,7 @@ export interface PolicyItem {
   type: "parking_tariff" | "transit_fare" | "road_closure";
   zone?: string;
   change_ratio: number;
+  modes?: string[];
 }
 
 export interface EventItem {
@@ -103,6 +104,8 @@ export interface Persona {
 
 export const SCALE_5000_SCENARIO_ID =
   "s_layer_6_clustered_baseline_run_a_n_5000__0388aa";
+export const RP1_BACKTEST_SCENARIO_ID = "s_rp1_fare_day_24_april_2026_e68060";
+export const DEFAULT_BASELINE_SCENARIO_ID = "s_baseline_weekday_c4d9d5";
 
 export interface PersonaDecisionOptionDetail {
   est_minutes: number;
@@ -223,6 +226,72 @@ export interface VerificationReport {
   scenario_id: string;
   checks: VerificationCheck[];
   overall: VerificationStatus;
+}
+
+export interface BacktestResult {
+  backtest_id: string;
+  description: string | null;
+  scenario_id: string | null;
+  base_scenario_id: string | null;
+  metric: string;
+  simulated_value: number | null;
+  simulated_direction: "increase" | "decrease" | "no change" | null;
+  reference_value: number | null;
+  reference_direction: "increase" | "decrease" | "no change" | null;
+  reference_source: string | null;
+  direction_match: boolean | null;
+  notes: string | null;
+}
+
+const TRANSIT_MODES = ["transjakarta", "mrt", "krl"] as const;
+
+function computeTransitSharePct(metrics: ScenarioMetrics | null | undefined): number {
+  const share = metrics?.citywide?.mode_share || {};
+  return TRANSIT_MODES.reduce((acc, m) => acc + Number(share[m] ?? 0), 0) * 100;
+}
+
+export async function fetchBacktest(
+  backtestId = "b_0001"
+): Promise<BacktestResult | null> {
+  const res = await fetchOrchestrator(`/v1/backtests/${encodeURIComponent(backtestId)}`, {
+    cache: "no-store",
+  });
+  if (res.status === 404) return null;
+  if (!res.ok) {
+    throw new Error(`Failed to fetch backtest ${backtestId}: HTTP ${res.status}`);
+  }
+  const data = (await res.json()) as BacktestResult;
+
+  // If b_0001 has not yet been linked to the Rp1 scenario doc in Firestore, compute from D2 vs A2 metrics
+  if (data.simulated_value === null && backtestId === "b_0001") {
+    const targetScenarioId = data.scenario_id || RP1_BACKTEST_SCENARIO_ID;
+    const targetBaseId = data.base_scenario_id || DEFAULT_BASELINE_SCENARIO_ID;
+    try {
+      const cmp = await fetchScenarioCompare(targetScenarioId, targetBaseId);
+      if (cmp?.base && cmp?.variant) {
+        const changePp = Number(
+          (
+            computeTransitSharePct(cmp.variant) - computeTransitSharePct(cmp.base)
+          ).toFixed(1)
+        );
+        const simDir: "increase" | "decrease" | "no change" =
+          changePp > 0.5 ? "increase" : changePp < -0.5 ? "decrease" : "no change";
+        return {
+          ...data,
+          scenario_id: targetScenarioId,
+          base_scenario_id: targetBaseId,
+          simulated_value: changePp,
+          simulated_direction: simDir,
+          direction_match: data.reference_direction
+            ? simDir === data.reference_direction
+            : null,
+        };
+      }
+    } catch {
+      // Return raw backtest definition if fallback compare is unavailable
+    }
+  }
+  return data;
 }
 
 export async function fetchScenarioReport(scenarioId: string): Promise<AnalystReport | null> {

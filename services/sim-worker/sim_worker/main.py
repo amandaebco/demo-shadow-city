@@ -54,6 +54,11 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         default=None,
         help="When used with --listen, exit after processing N messages (or first empty pull).",
     )
+    parser.add_argument(
+        "--no-clustering",
+        action="store_true",
+        help="Disable Layer 6 clustering (send individual /v1/decide requests per resident).",
+    )
     return parser.parse_args(argv)
 
 
@@ -104,7 +109,8 @@ def main(argv: list[str] | None = None) -> int:
         config.firestore_database,
         args.scenario_id,
     )
-    result = runner.run_scenario(args.scenario_id)
+    use_clustering = False if args.no_clustering else None
+    result = runner.run_scenario(args.scenario_id, use_clustering=use_clustering)
     print(
         json.dumps(
             {

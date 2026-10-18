@@ -6,7 +6,9 @@ import "maplibre-gl/dist/maplibre-gl.css";
 import { APP_CONFIG } from "@/lib/config";
 import {
   AnalystReport,
+  BacktestResult,
   createScenario,
+  fetchBacktest,
   fetchPersona,
   fetchPersonaDecisions,
   fetchScenario,
@@ -18,6 +20,7 @@ import {
   loadScenarioTicks,
   Persona,
   PersonaDecisionRecord,
+  RP1_BACKTEST_SCENARIO_ID,
   SCALE_5000_SCENARIO_ID,
   Scenario,
   ScenarioCompareResponse,
@@ -130,12 +133,6 @@ const CANONICAL_MODE_ORDER = [
   "walk",
 ];
 
-const FEATURED_DEMO_RESIDENTS = [
-  { id: "p_s42_n1000_00954", tag: "p_s42_n1000_00954 (KRL)" },
-  { id: "p_s42_n1000_00026", tag: "p_s42_n1000_00026 (Moto → TJ)" },
-  { id: "p_s42_n1000_00009", tag: "p_s42_n1000_00009 (Car → TJ)" },
-];
-
 const FEATURED_SCALE_5000_RESIDENTS = [
   { id: "p_s42_n5000_00005", tag: "p_s42_n5000_00005 (Transjakarta · Shared)" },
   { id: "p_s42_n5000_00001", tag: "p_s42_n5000_00001 (Ojol · Shared)" },
@@ -173,11 +170,34 @@ const ZONE_LABEL_POINTS: GeoJSON.FeatureCollection = {
 };
 
 const DEMO_SCENARIO_PRIORITY: Record<string, number> = {
-  s_baseline_weekday_ea7247: 1,
-  s_central_parking_100_af902a: 2,
-  s_central_parking_100_with_north_jakarta_t_78f06b: 3,
+  s_baseline_weekday_c4d9d5: 1,
+  s_central_parking_100_3aeda8: 2,
+  s_central_parking_100_with_north_jakarta_t_fe362a: 3,
   [SCALE_5000_SCENARIO_ID]: 4,
+  [RP1_BACKTEST_SCENARIO_ID]: 5,
 };
+
+const V1_UNIFORM_SCENARIO_PRIORITY: Record<string, number> = {
+  s_baseline_weekday_ea7247: 11,
+  s_central_parking_100_af902a: 12,
+  s_central_parking_100_with_north_jakarta_t_78f06b: 13,
+  s_rp1_fare_day_24_april_2026_0acbd5: 14,
+};
+
+function parseReferenceSource(raw: string | null | undefined): {
+  text: string;
+  url: string | null;
+} {
+  if (!raw) return { text: "Reference pending", url: null };
+  const match = raw.match(/https?:\/\/\S+/);
+  if (!match) return { text: raw, url: null };
+  const url = match[0].replace(/[);,]+$/, "");
+  const text = raw
+    .replace(match[0], "")
+    .replace(/[;\s]+$/, "")
+    .trim();
+  return { text: text || url, url };
+}
 
 function formatScenarioPickerLabel(s: Scenario): string {
   if (s.scenario_id === SCALE_5000_SCENARIO_ID) {
@@ -267,6 +287,8 @@ function formatSignedIdr(val: number): string {
 
 export default function JakartaMap() {
   const containerRef = useRef<HTMLDivElement | null>(null);
+  const hudHeaderRef = useRef<HTMLElement | null>(null);
+  const [hudHeight, setHudHeight] = useState(50);
   const mapRef = useRef<maplibregl.Map | null>(null);
   const popupRef = useRef<maplibregl.Popup | null>(null);
   const scenarioCacheRef = useRef<Map<string, CachedScenarioBundle>>(new Map());
@@ -278,9 +300,9 @@ export default function JakartaMap() {
   const [showZones, setShowZones] = useState<boolean>(true);
   const [showReportDrawer, setShowReportDrawer] = useState<boolean>(true);
   const [showCreateModal, setShowCreateModal] = useState<boolean>(false);
-  const [drawerTab, setDrawerTab] = useState<"report" | "breakdown" | "verification">(
-    "report"
-  );
+  const [drawerTab, setDrawerTab] = useState<
+    "report" | "verification" | "backtest" | "breakdown"
+  >("report");
   const [kecamatanSearch, setKecamatanSearch] = useState<string>("");
 
   const [scenarios, setScenarios] = useState<Scenario[]>([]);
@@ -293,6 +315,7 @@ export default function JakartaMap() {
   const [comparison, setComparison] = useState<ScenarioCompareResponse | null>(null);
   const [report, setReport] = useState<AnalystReport | null>(null);
   const [verification, setVerification] = useState<VerificationReport | null>(null);
+  const [backtest, setBacktest] = useState<BacktestResult | null>(null);
   const [ticks, setTicks] = useState<TickData[]>([]);
   const [currentTick, setCurrentTick] = useState<number>(22);
   const [isPlaying, setIsPlaying] = useState<boolean>(true);
@@ -300,6 +323,7 @@ export default function JakartaMap() {
   const [loadingScenario, setLoadingScenario] = useState<boolean>(false);
   const [loadingReport, setLoadingReport] = useState<boolean>(false);
   const [loadingVerification, setLoadingVerification] = useState<boolean>(false);
+  const [loadingBacktest, setLoadingBacktest] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   // Selected & hovered resident decision (evidence chain) state
@@ -324,6 +348,17 @@ export default function JakartaMap() {
   const [createErrorMessage, setCreateErrorMessage] = useState<string | null>(null);
 
   // Initialize MapLibre map
+  // The header wraps to more rows on narrow screens; panels below it follow its real height.
+  useEffect(() => {
+    const header = hudHeaderRef.current;
+    if (!header) return;
+    const update = () => setHudHeight(Math.ceil(header.getBoundingClientRect().height));
+    update();
+    const observer = new ResizeObserver(update);
+    observer.observe(header);
+    return () => observer.disconnect();
+  }, []);
+
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return;
 
@@ -669,15 +704,21 @@ export default function JakartaMap() {
     try {
       const list = await fetchScenarios();
       const sorted = [...list].sort((a, b) => {
-        const pa = DEMO_SCENARIO_PRIORITY[a.scenario_id] ?? 99;
-        const pb = DEMO_SCENARIO_PRIORITY[b.scenario_id] ?? 99;
+        const pa =
+          DEMO_SCENARIO_PRIORITY[a.scenario_id] ??
+          V1_UNIFORM_SCENARIO_PRIORITY[a.scenario_id] ??
+          99;
+        const pb =
+          DEMO_SCENARIO_PRIORITY[b.scenario_id] ??
+          V1_UNIFORM_SCENARIO_PRIORITY[b.scenario_id] ??
+          99;
         if (pa !== pb) return pa - pb;
         return (b.created_at || "").localeCompare(a.created_at || "");
       });
       setScenarios(sorted);
       if (selectPreferredOnFirstLoad && sorted.length > 0) {
         const preferredFloodVariant = sorted.find(
-          (s) => s.scenario_id === "s_central_parking_100_with_north_jakarta_t_78f06b"
+          (s) => s.scenario_id === "s_central_parking_100_with_north_jakarta_t_fe362a"
         );
         const preferredVariant = sorted.find(
           (s) =>
@@ -685,11 +726,13 @@ export default function JakartaMap() {
             s.base_scenario_id &&
             s.name.toLowerCase().includes("central parking")
         );
-        const preferredBase = sorted.find(
-          (s) =>
-            s.status === "completed" &&
-            s.name.toLowerCase() === "baseline weekday"
-        );
+        const preferredBase =
+          sorted.find((s) => s.scenario_id === "s_baseline_weekday_c4d9d5") ||
+          sorted.find(
+            (s) =>
+              s.status === "completed" &&
+              s.name.toLowerCase() === "baseline weekday"
+          );
         if (preferredBase) {
           setNewBaseId(preferredBase.scenario_id);
         }
@@ -706,9 +749,22 @@ export default function JakartaMap() {
     }
   }, []);
 
+  const loadBacktestData = useCallback(async () => {
+    setLoadingBacktest(true);
+    try {
+      const bt = await fetchBacktest("b_0001");
+      setBacktest(bt);
+    } catch {
+      setBacktest(null);
+    } finally {
+      setLoadingBacktest(false);
+    }
+  }, []);
+
   useEffect(() => {
     refreshScenarioList(true);
-  }, [refreshScenarioList]);
+    loadBacktestData();
+  }, [refreshScenarioList, loadBacktestData]);
 
   // Fetch a scenario bundle (used for both active scenario load and background prefetch)
   const fetchScenarioBundleRaw = useCallback(
@@ -819,6 +875,9 @@ export default function JakartaMap() {
 
   useEffect(() => {
     setCompareBaseOverride("");
+    if (selectedScenarioId === RP1_BACKTEST_SCENARIO_ID) {
+      setDrawerTab("backtest");
+    }
     setSelectedPersonaId((prev) => {
       if (!prev) return null;
       const is5000Scenario = selectedScenarioId === SCALE_5000_SCENARIO_ID;
@@ -1120,15 +1179,23 @@ export default function JakartaMap() {
     []
   );
 
-  // Prefetch featured demo residents (especially p_s42_n1000_00954 and 5000-scale examples) so clicking in the video is instant
+  const quickPickResidents = useMemo(() => {
+    if (isLargeScaleScenario || selectedScenarioId === SCALE_5000_SCENARIO_ID) {
+      return FEATURED_SCALE_5000_RESIDENTS;
+    }
+    const ids = currentTickData?.persona_ids || [];
+    const modes = currentTickData?.mode || [];
+    return ids.slice(0, 3).map((id, idx) => {
+      const modeName = MODE_LABELS[modes[idx] || ""] || modes[idx] || "Resident";
+      return { id, tag: `${id} (${modeName})` };
+    });
+  }, [isLargeScaleScenario, selectedScenarioId, currentTickData]);
+
+  // Prefetch quick-pick residents so clicking in the UI is instant
   useEffect(() => {
-    if (!selectedScenarioId) return;
-    const listToPrefetch =
-      selectedScenarioId === SCALE_5000_SCENARIO_ID
-        ? FEATURED_SCALE_5000_RESIDENTS
-        : FEATURED_DEMO_RESIDENTS;
+    if (!selectedScenarioId || quickPickResidents.length === 0) return;
     const timer = setTimeout(() => {
-      for (const item of listToPrefetch) {
+      for (const item of quickPickResidents) {
         getPersonaCached(item.id);
         getDecisionCached(selectedScenarioId, item.id);
         if (effectiveCompareBaseId && effectiveCompareBaseId !== selectedScenarioId) {
@@ -1137,7 +1204,13 @@ export default function JakartaMap() {
       }
     }, 300);
     return () => clearTimeout(timer);
-  }, [selectedScenarioId, effectiveCompareBaseId, getPersonaCached, getDecisionCached]);
+  }, [
+    selectedScenarioId,
+    effectiveCompareBaseId,
+    quickPickResidents,
+    getPersonaCached,
+    getDecisionCached,
+  ]);
 
   // Load selected persona profile + scenario decision evidence chain when selectedPersonaId changes
   useEffect(() => {
@@ -1212,8 +1285,11 @@ export default function JakartaMap() {
       ids.find((id) => id.toLowerCase().includes(query));
 
     if (!matched && /^\d+$/.test(query)) {
-      const popN = activeScenario?.population_size || 1000;
-      matched = `p_s42_n${popN}_${query.padStart(5, "0")}`;
+      const popId =
+        activeScenario?.population_id ||
+        `pop_s${activeScenario?.seed || 2026}_n${activeScenario?.population_size || 1000}_r2`;
+      const prefix = popId.replace(/^pop_/, "p_");
+      matched = `${prefix}_${query.padStart(5, "0")}`;
     } else if (!matched && query.startsWith("p_")) {
       matched = raw;
     }
@@ -1222,7 +1298,7 @@ export default function JakartaMap() {
       handleSelectResident(matched, true);
     } else {
       setResidentSearchFeedback(
-        `No resident matching "${raw}". Try p_s42_n1000_00954 or 00954.`
+        `No resident matching "${raw}". Enter a persona ID or 5-digit index (e.g. 00001).`
       );
     }
   };
@@ -1283,9 +1359,9 @@ export default function JakartaMap() {
   };
 
   return (
-    <div className="map-shell">
+    <div className="map-shell" style={{ "--hud-h": `${hudHeight}px` } as React.CSSProperties}>
       {/* Top HUD Bar */}
-      <header className="hud-header">
+      <header className="hud-header" ref={hudHeaderRef}>
         <div className="hud-brand">
           <span className="status-dot" aria-hidden="true" />
           <div>
@@ -1312,7 +1388,7 @@ export default function JakartaMap() {
               )}
               {scenarios.some((s) => s.scenario_id in DEMO_SCENARIO_PRIORITY) ? (
                 <>
-                  <optgroup label="Demo & Scale Scenarios">
+                  <optgroup label="Demo Scenarios">
                     {scenarios
                       .filter((s) => s.scenario_id in DEMO_SCENARIO_PRIORITY)
                       .map((s) => (
@@ -1321,11 +1397,25 @@ export default function JakartaMap() {
                         </option>
                       ))}
                   </optgroup>
+                  {scenarios.some(
+                    (s) => s.scenario_id in V1_UNIFORM_SCENARIO_PRIORITY
+                  ) && (
+                    <optgroup label="v1 (uniform population)">
+                      {scenarios
+                        .filter((s) => s.scenario_id in V1_UNIFORM_SCENARIO_PRIORITY)
+                        .map((s) => (
+                          <option key={s.scenario_id} value={s.scenario_id}>
+                            {formatScenarioPickerLabel(s)}
+                          </option>
+                        ))}
+                    </optgroup>
+                  )}
                   <optgroup label="Earlier Validation & Test Runs">
                     {scenarios
                       .filter(
                         (s) =>
                           !(s.scenario_id in DEMO_SCENARIO_PRIORITY) &&
+                          !(s.scenario_id in V1_UNIFORM_SCENARIO_PRIORITY) &&
                           (s.status !== "failed" || s.scenario_id === selectedScenarioId)
                       )
                       .map((s) => (
@@ -1355,9 +1445,14 @@ export default function JakartaMap() {
           <button
             type="button"
             className="hud-button"
-            onClick={() =>
-              loadScenarioBundle(selectedScenarioId, compareBaseOverride || undefined, true)
-            }
+            onClick={() => {
+              loadScenarioBundle(
+                selectedScenarioId,
+                compareBaseOverride || undefined,
+                true
+              );
+              loadBacktestData();
+            }}
             disabled={loadingScenario}
           >
             {loadingScenario ? "Syncing..." : "Refresh"}
@@ -1462,7 +1557,7 @@ export default function JakartaMap() {
                 setResidentSearchInput(e.target.value);
                 if (residentSearchFeedback) setResidentSearchFeedback(null);
               }}
-              placeholder="Persona ID (e.g. p_s42_n1000_00954)"
+              placeholder="Persona ID or index (e.g. 00001)"
               className="resident-find-input"
               aria-label="Find resident by persona ID"
             />
@@ -1477,15 +1572,7 @@ export default function JakartaMap() {
             Quick-pick resident (hover to highlight on map):
           </div>
           <div className="resident-pill-group">
-            {(activeScenario?.population_size === 50 && currentTickData?.persona_ids?.length
-              ? currentTickData.persona_ids.slice(0, 3).map((id) => ({
-                  id,
-                  tag: id.replace("p_s42_n50_", "Resident #"),
-                }))
-              : isLargeScaleScenario || selectedScenarioId === SCALE_5000_SCENARIO_ID
-              ? FEATURED_SCALE_5000_RESIDENTS
-              : FEATURED_DEMO_RESIDENTS
-            ).map((item) => (
+            {quickPickResidents.map((item) => (
               <button
                 key={item.id}
                 type="button"
@@ -2025,8 +2112,8 @@ export default function JakartaMap() {
             )
           )}
 
-          {/* Drawer Tabs: Analyst Report vs. Verification vs. Per-Kecamatan & Income Breakdown */}
-          <div className="drawer-tabs three-tabs">
+          {/* Drawer Tabs: Analyst Report vs. Verification vs. Backtest vs. Per-Kecamatan & Income Breakdown */}
+          <div className="drawer-tabs four-tabs">
             <button
               type="button"
               className={`tab-btn ${drawerTab === "report" ? "active" : ""}`}
@@ -2044,10 +2131,22 @@ export default function JakartaMap() {
             </button>
             <button
               type="button"
+              className={`tab-btn ${drawerTab === "backtest" ? "active" : ""}`}
+              onClick={() => setDrawerTab("backtest")}
+            >
+              Backtest{" "}
+              {backtest?.direction_match === true
+                ? "(Yes)"
+                : backtest?.direction_match === false
+                ? "(No)"
+                : ""}
+            </button>
+            <button
+              type="button"
               className={`tab-btn ${drawerTab === "breakdown" ? "active" : ""}`}
               onClick={() => setDrawerTab("breakdown")}
             >
-              Income &amp; Kecamatan ({kecamatanComparisonRows.length})
+              Income &amp; Area ({kecamatanComparisonRows.length})
             </button>
           </div>
 
@@ -2175,6 +2274,129 @@ export default function JakartaMap() {
               ) : (
                 <div className="state-box empty-state-box">
                   Verification report available once the scenario completes.
+                </div>
+              )}
+            </div>
+          ) : drawerTab === "backtest" ? (
+            <div className="backtest-body">
+              {loadingBacktest ? (
+                <div className="state-box loading-state-box">
+                  Loading backtest result (GET /v1/backtests/b_0001)...
+                </div>
+              ) : backtest ? (
+                (() => {
+                  const matchText =
+                    backtest.direction_match === true
+                      ? "Yes"
+                      : backtest.direction_match === false
+                      ? "No"
+                      : "Pending";
+                  const matchStatusClass =
+                    backtest.direction_match === true
+                      ? "vstatus-pass"
+                      : backtest.direction_match === false
+                      ? "vstatus-fail"
+                      : "vstatus-warn";
+                  const parsedSource = parseReferenceSource(backtest.reference_source);
+                  const btScenarioId = RP1_BACKTEST_SCENARIO_ID;
+
+                  return (
+                    <>
+                      <div className={`verification-overall ${matchStatusClass}`}>
+                        <div>
+                          <div className="metric-label">
+                            Backtest {backtest.backtest_id} &middot; Historical Event Check
+                          </div>
+                          <strong className="verification-overall-text">
+                            Direction match: {matchText}
+                          </strong>
+                        </div>
+                        <span className={`vstatus-badge ${matchStatusClass}`}>
+                          Direction match: {matchText}
+                        </span>
+                      </div>
+
+                      {backtest.description && (
+                        <div className="backtest-card">
+                          <div className="metric-label">Backtest description</div>
+                          <div className="backtest-description">
+                            {backtest.description}
+                          </div>
+                        </div>
+                      )}
+
+                      <div className="backtest-grid">
+                        <div className="backtest-card">
+                          <div className="metric-label">
+                            Simulated change in transit share (Transjakarta + MRT + KRL)
+                          </div>
+                          <strong className="backtest-val">
+                            {backtest.simulated_value !== null
+                              ? `${formatSignedDelta(
+                                  backtest.simulated_value,
+                                  1,
+                                  " pp"
+                                )}`
+                              : "Pending"}
+                          </strong>
+                          <div className="backtest-sub">
+                            Simulated direction:{" "}
+                            <b>{backtest.simulated_direction || "pending"}</b>
+                          </div>
+                        </div>
+
+                        <div className="backtest-card">
+                          <div className="metric-label">
+                            Reported direction &amp; magnitude
+                          </div>
+                          <strong className="backtest-val">
+                            Reported direction:{" "}
+                            {backtest.reference_direction || "increase"}
+                          </strong>
+                          <div className="backtest-sub">
+                            Magnitude: reference pending (no official daily ridership
+                            published)
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="backtest-card">
+                        <div className="metric-label">Reference source</div>
+                        <p className="backtest-source-text">{parsedSource.text}</p>
+                        {parsedSource.url && (
+                          <a
+                            href={parsedSource.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="backtest-source-link"
+                          >
+                            Read ANTARA report (24 April 2026) &rarr;
+                          </a>
+                        )}
+                      </div>
+
+                      {backtest.notes && (
+                        <div className="backtest-card">
+                          <div className="metric-label">Notes &amp; scope</div>
+                          <p className="backtest-notes-text">{backtest.notes}</p>
+                        </div>
+                      )}
+
+                      {selectedScenarioId !== btScenarioId && (
+                        <button
+                          type="button"
+                          className="hud-button active backtest-load-btn"
+                          onClick={() => setSelectedScenarioId(btScenarioId)}
+                        >
+                          View Rp1 fare day (24 April 2026) scenario on map &rarr;
+                        </button>
+                      )}
+                    </>
+                  );
+                })()
+              ) : (
+                <div className="state-box empty-state-box">
+                  Backtest result will appear once the Rp1 fare day scenario completes.
                 </div>
               )}
             </div>

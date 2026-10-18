@@ -18,7 +18,7 @@ import requests
 logger = logging.getLogger("sim_worker.system_one")
 
 MAX_BATCH_SIZE = 256
-SAFE_HTTP_CHUNK_SIZE = 64
+SAFE_HTTP_CHUNK_SIZE = 32
 DEFAULT_TIMEOUT_SEC = 300
 
 
@@ -162,23 +162,10 @@ class SystemOneClient:
 
         url = f"{self.base_url}/v1/decide"
         chunk_limit = min(MAX_BATCH_SIZE, SAFE_HTTP_CHUNK_SIZE)
-
-        # Group contiguous items by tick (and cap each HTTP call at chunk_limit <= 256)
-        chunks: list[list[dict[str, Any]]] = []
-        current_chunk: list[dict[str, Any]] = []
-        current_tick: Any = None
-        for item in items:
-            item_tick = item.get("tick")
-            if (
-                current_chunk
-                and (item_tick != current_tick or len(current_chunk) >= chunk_limit)
-            ):
-                chunks.append(current_chunk)
-                current_chunk = []
-            current_chunk.append(item)
-            current_tick = item_tick
-        if current_chunk:
-            chunks.append(current_chunk)
+        chunks = [
+            items[start : start + chunk_limit]
+            for start in range(0, len(items), chunk_limit)
+        ]
 
         if len(chunks) == 1:
             return self._post_chunk(url, headers, chunks[0])
