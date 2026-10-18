@@ -1454,3 +1454,10 @@ body {
   white-space: nowrap;
   vertical-align: middle;
 }
+
+.decision-persona-full-id {
+  display: block;
+  font-size: 0.62rem;
+  font-weight: 500;
+  color: #94a3b8;
+}

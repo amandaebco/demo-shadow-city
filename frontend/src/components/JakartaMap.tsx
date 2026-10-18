@@ -133,6 +133,13 @@ const CANONICAL_MODE_ORDER = [
   "walk",
 ];
 
+// Short on-screen alias for a persona ID: p_s2026_n1000_r2_00747 -> "Resident #747".
+// The full ID stays in tooltips, the API and Firestore.
+function residentAlias(personaId: string): string {
+  const n = Number(personaId.split("_").pop());
+  return Number.isFinite(n) ? `Resident #${n}` : personaId;
+}
+
 // Resident shown in the demo video (C2: motorcycle route flooded, switches to KRL).
 const FEATURED_DEMO_RESIDENT_ID = "p_s2026_n1000_r2_00747";
 
@@ -1560,7 +1567,7 @@ export default function JakartaMap() {
                 setResidentSearchInput(e.target.value);
                 if (residentSearchFeedback) setResidentSearchFeedback(null);
               }}
-              placeholder="Persona ID or index (e.g. 00001)"
+              placeholder="Resident number (e.g. 747) or full ID"
               className="resident-find-input"
               aria-label="Find resident by persona ID"
             />
@@ -1585,8 +1592,9 @@ export default function JakartaMap() {
                 onMouseEnter={() => setHoveredPersonaId(item.id)}
                 onMouseLeave={() => setHoveredPersonaId(null)}
                 onClick={() => handleSelectResident(item.id, true)}
+                title={item.id}
               >
-                {item.tag}
+                {item.tag.replace(item.id, residentAlias(item.id))}
               </button>
             ))}
           </div>
@@ -1624,7 +1632,10 @@ export default function JakartaMap() {
                     <div className="decision-eyebrow">
                       Resident Commute Decision &middot; Evidence Chain
                     </div>
-                    <h3 className="decision-persona-id">{selectedPersonaId}</h3>
+                    <h3 className="decision-persona-id" title={selectedPersonaId}>
+                      {residentAlias(selectedPersonaId)}{" "}
+                      <span className="decision-persona-full-id">{selectedPersonaId}</span>
+                    </h3>
                   </div>
                   <div className="decision-header-right">
                     {decEntry?.decided_by && (
