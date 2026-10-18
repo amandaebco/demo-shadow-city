@@ -150,10 +150,14 @@ def deps():
 
 @pytest.fixture
 def client(deps):
+    from app.quota import DailyQuota
+
+    app.state.quota = DailyQuota(100)
+    app.state.max_population_size = 20000
     names = ("store", "generator", "publisher", "report_writer", "verifier")
     for name in names:
         setattr(app.state, name, getattr(deps, name))
     with TestClient(app) as test_client:
         yield test_client
-    for name in names:
+    for name in names + ("quota", "max_population_size"):
         delattr(app.state, name)
