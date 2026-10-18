@@ -16,6 +16,7 @@ from app.backtest import evaluate_backtest
 from app.config import Settings, load_settings
 from app.models import ScenarioCreate, ScenarioStatus
 from app.pipeline import prepare_scenario, utc_now
+from app.quota import DailyQuota
 from app.report import report_id_for
 
 SERVICE_VERSION = "0.2.0"
@@ -53,6 +54,11 @@ def build_dependencies(settings: Settings) -> dict:
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    settings = load_settings()
+    if not hasattr(app.state, "quota"):
+        app.state.quota = DailyQuota(settings.max_new_scenarios_per_day)
+    if not hasattr(app.state, "max_population_size"):
+        app.state.max_population_size = settings.max_population_size
     if not hasattr(app.state, "store"):
         for name, dependency in build_dependencies(load_settings()).items():
             setattr(app.state, name, dependency)
@@ -116,9 +122,16 @@ def health() -> dict:
 @app.post("/v1/scenarios", status_code=201)
 async def create_scenario(body: ScenarioCreate, request: Request) -> dict:
     state = request.app.state
+    if body.population_size > state.max_population_size:
+        raise ApiError(400, "INVALID_SCENARIO",
+                       f"population_size above this deployment's limit of {state.max_population_size}",
+                       {"field": "population_size"})
     if body.base_scenario_id and not await asyncio.to_thread(state.store.get_scenario, body.base_scenario_id):
         raise ApiError(400, "INVALID_SCENARIO", f"base_scenario_id '{body.base_scenario_id}' does not exist",
                        {"field": "base_scenario_id"})
+    if not state.quota.try_take():
+        raise ApiError(429, "RATE_LIMITED",
+                       f"Daily limit of {state.quota.limit} new scenarios reached; existing scenarios stay available")
     now = utc_now()
     scenario = {
         **body.model_dump(mode="json"),

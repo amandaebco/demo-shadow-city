@@ -1,0 +1,3941 @@
+{
+ "source": "Satu Data Jakarta / Dinas Dukcapil DKI Jakarta: Data Jumlah Penduduk Berdasarkan Usia Per Kelurahan",
+ "url": "https://satudata.jakarta.go.id/backend/restapi/v1/datasets/export/15f39fbf390306e6318d58c3244796d8/data-jumlah-penduduk-berdasarkan-usia-per-kelurahan-dki-jakarta.csv",
+ "period": [
+  "2013"
+ ],
+ "retrieved": "2026-10-18",
+ "note": "Relative shares only; totals are Dukcapil registrations. Kelurahan without a record get weight 0.",
+ "age_bins": [
+  "15 s.d 19 tahun",
+  "20 s.d 24 tahun",
+  "25 s.d 29 tahun",
+  "30 s.d 34 tahun",
+  "35 s.d 39 tahun",
+  "40 s.d 44 tahun",
+  "45 s.d 49 tahun",
+  "50 s.d 54 tahun",
+  "55 s.d 59 tahun",
+  "60 s.d 64 tahun"
+ ],
+ "missing": [
+  "Taman Mini Indonesia Indah (TMII)"
+ ],
+ "kelurahan": {
+  "Cakung Barat": {
+   "total": 62084,
+   "age_bins": {
+    "15 s.d 19 tahun": 4585,
+    "20 s.d 24 tahun": 4736,
+    "25 s.d 29 tahun": 5967,
+    "30 s.d 34 tahun": 7778,
+    "35 s.d 39 tahun": 6560,
+    "40 s.d 44 tahun": 5245,
+    "45 s.d 49 tahun": 3500,
+    "50 s.d 54 tahun": 2384,
+    "55 s.d 59 tahun": 1738,
+    "60 s.d 64 tahun": 949
+   }
+  },
+  "Cakung Timur": {
+   "total": 63407,
+   "age_bins": {
+    "15 s.d 19 tahun": 4915,
+    "20 s.d 24 tahun": 5104,
+    "25 s.d 29 tahun": 6227,
+    "30 s.d 34 tahun": 7254,
+    "35 s.d 39 tahun": 6006,
+    "40 s.d 44 tahun": 5059,
+    "45 s.d 49 tahun": 3865,
+    "50 s.d 54 tahun": 2989,
+    "55 s.d 59 tahun": 2381,
+    "60 s.d 64 tahun": 1390
+   }
+  },
+  "Jatinegara": {
+   "total": 97079,
+   "age_bins": {
+    "15 s.d 19 tahun": 7149,
+    "20 s.d 24 tahun": 7637,
+    "25 s.d 29 tahun": 9270,
+    "30 s.d 34 tahun": 11431,
+    "35 s.d 39 tahun": 9810,
+    "40 s.d 44 tahun": 8363,
+    "45 s.d 49 tahun": 6108,
+    "50 s.d 54 tahun": 4434,
+    "55 s.d 59 tahun": 2849,
+    "60 s.d 64 tahun": 1594
+   }
+  },
+  "Penggilingan": {
+   "total": 100719,
+   "age_bins": {
+    "15 s.d 19 tahun": 7953,
+    "20 s.d 24 tahun": 8150,
+    "25 s.d 29 tahun": 9556,
+    "30 s.d 34 tahun": 11107,
+    "35 s.d 39 tahun": 9036,
+    "40 s.d 44 tahun": 7911,
+    "45 s.d 49 tahun": 6242,
+    "50 s.d 54 tahun": 4962,
+    "55 s.d 59 tahun": 3983,
+    "60 s.d 64 tahun": 2356
+   }
+  },
+  "Pulo Gebang": {
+   "total": 94091,
+   "age_bins": {
+    "15 s.d 19 tahun": 7314,
+    "20 s.d 24 tahun": 7880,
+    "25 s.d 29 tahun": 8740,
+    "30 s.d 34 tahun": 9863,
+    "35 s.d 39 tahun": 8192,
+    "40 s.d 44 tahun": 7355,
+    "45 s.d 49 tahun": 5979,
+    "50 s.d 54 tahun": 5049,
+    "55 s.d 59 tahun": 4126,
+    "60 s.d 64 tahun": 2646
+   }
+  },
+  "Ujung Menteng": {
+   "total": 30882,
+   "age_bins": {
+    "15 s.d 19 tahun": 2420,
+    "20 s.d 24 tahun": 2533,
+    "25 s.d 29 tahun": 2746,
+    "30 s.d 34 tahun": 3254,
+    "35 s.d 39 tahun": 2861,
+    "40 s.d 44 tahun": 2634,
+    "45 s.d 49 tahun": 2084,
+    "50 s.d 54 tahun": 1646,
+    "55 s.d 59 tahun": 1217,
+    "60 s.d 64 tahun": 688
+   }
+  },
+  "Cempaka Putih Barat": {
+   "total": 41102,
+   "age_bins": {
+    "15 s.d 19 tahun": 3164,
+    "20 s.d 24 tahun": 2776,
+    "25 s.d 29 tahun": 2908,
+    "30 s.d 34 tahun": 3377,
+    "35 s.d 39 tahun": 3669,
+    "40 s.d 44 tahun": 3770,
+    "45 s.d 49 tahun": 3424,
+    "50 s.d 54 tahun": 2553,
+    "55 s.d 59 tahun": 2025,
+    "60 s.d 64 tahun": 1443
+   }
+  },
+  "Cempaka Putih Timur": {
+   "total": 28061,
+   "age_bins": {
+    "15 s.d 19 tahun": 2025,
+    "20 s.d 24 tahun": 1835,
+    "25 s.d 29 tahun": 2014,
+    "30 s.d 34 tahun": 2278,
+    "35 s.d 39 tahun": 2531,
+    "40 s.d 44 tahun": 2644,
+    "45 s.d 49 tahun": 2476,
+    "50 s.d 54 tahun": 1855,
+    "55 s.d 59 tahun": 1363,
+    "60 s.d 64 tahun": 1095
+   }
+  },
+  "Rawasari": {
+   "total": 25691,
+   "age_bins": {
+    "15 s.d 19 tahun": 1903,
+    "20 s.d 24 tahun": 1755,
+    "25 s.d 29 tahun": 1838,
+    "30 s.d 34 tahun": 2208,
+    "35 s.d 39 tahun": 2360,
+    "40 s.d 44 tahun": 2292,
+    "45 s.d 49 tahun": 2186,
+    "50 s.d 54 tahun": 1730,
+    "55 s.d 59 tahun": 1316,
+    "60 s.d 64 tahun": 928
+   }
+  },
+  "Cengkareng Barat": {
+   "total": 123096,
+   "age_bins": {
+    "15 s.d 19 tahun": 6080,
+    "20 s.d 24 tahun": 8751,
+    "25 s.d 29 tahun": 7457,
+    "30 s.d 34 tahun": 5316,
+    "35 s.d 39 tahun": 8537,
+    "40 s.d 44 tahun": 9495,
+    "45 s.d 49 tahun": 7443,
+    "50 s.d 54 tahun": 10874,
+    "55 s.d 59 tahun": 10291,
+    "60 s.d 64 tahun": 5856
+   }
+  },
+  "Cengkareng Timur": {
+   "total": 155589,
+   "age_bins": {
+    "15 s.d 19 tahun": 7266,
+    "20 s.d 24 tahun": 10558,
+    "25 s.d 29 tahun": 9572,
+    "30 s.d 34 tahun": 7146,
+    "35 s.d 39 tahun": 11293,
+    "40 s.d 44 tahun": 12407,
+    "45 s.d 49 tahun": 9962,
+    "50 s.d 54 tahun": 14307,
+    "55 s.d 59 tahun": 12267,
+    "60 s.d 64 tahun": 7164
+   }
+  },
+  "Duri Kosambi": {
+   "total": 142411,
+   "age_bins": {
+    "15 s.d 19 tahun": 6966,
+    "20 s.d 24 tahun": 10207,
+    "25 s.d 29 tahun": 9497,
+    "30 s.d 34 tahun": 6922,
+    "35 s.d 39 tahun": 10686,
+    "40 s.d 44 tahun": 11256,
+    "45 s.d 49 tahun": 8455,
+    "50 s.d 54 tahun": 12153,
+    "55 s.d 59 tahun": 10594,
+    "60 s.d 64 tahun": 6210
+   }
+  },
+  "Kapuk": {
+   "total": 272907,
+   "age_bins": {
+    "15 s.d 19 tahun": 13214,
+    "20 s.d 24 tahun": 19164,
+    "25 s.d 29 tahun": 17392,
+    "30 s.d 34 tahun": 13011,
+    "35 s.d 39 tahun": 20499,
+    "40 s.d 44 tahun": 21974,
+    "45 s.d 49 tahun": 17174,
+    "50 s.d 54 tahun": 24654,
+    "55 s.d 59 tahun": 21172,
+    "60 s.d 64 tahun": 11809
+   }
+  },
+  "Kedaung Kali Angke": {
+   "total": 67864,
+   "age_bins": {
+    "15 s.d 19 tahun": 3246,
+    "20 s.d 24 tahun": 4736,
+    "25 s.d 29 tahun": 4178,
+    "30 s.d 34 tahun": 2951,
+    "35 s.d 39 tahun": 4707,
+    "40 s.d 44 tahun": 5122,
+    "45 s.d 49 tahun": 4099,
+    "50 s.d 54 tahun": 6055,
+    "55 s.d 59 tahun": 5546,
+    "60 s.d 64 tahun": 3272
+   }
+  },
+  "Rawa Buaya": {
+   "total": 124512,
+   "age_bins": {
+    "15 s.d 19 tahun": 6097,
+    "20 s.d 24 tahun": 8797,
+    "25 s.d 29 tahun": 7692,
+    "30 s.d 34 tahun": 5632,
+    "35 s.d 39 tahun": 9028,
+    "40 s.d 44 tahun": 10314,
+    "45 s.d 49 tahun": 7921,
+    "50 s.d 54 tahun": 11417,
+    "55 s.d 59 tahun": 9752,
+    "60 s.d 64 tahun": 5695
+   }
+  },
+  "Cilandak Barat": {
+   "total": 57681,
+   "age_bins": {
+    "15 s.d 19 tahun": 4220,
+    "20 s.d 24 tahun": 4106,
+    "25 s.d 29 tahun": 4585,
+    "30 s.d 34 tahun": 5632,
+    "35 s.d 39 tahun": 5378,
+    "40 s.d 44 tahun": 5357,
+    "45 s.d 49 tahun": 4456,
+    "50 s.d 54 tahun": 3337,
+    "55 s.d 59 tahun": 2486,
+    "60 s.d 64 tahun": 1668
+   }
+  },
+  "Cipete Selatan": {
+   "total": 30207,
+   "age_bins": {
+    "15 s.d 19 tahun": 2365,
+    "20 s.d 24 tahun": 2280,
+    "25 s.d 29 tahun": 2534,
+    "30 s.d 34 tahun": 2897,
+    "35 s.d 39 tahun": 2718,
+    "40 s.d 44 tahun": 2667,
+    "45 s.d 49 tahun": 2350,
+    "50 s.d 54 tahun": 1899,
+    "55 s.d 59 tahun": 1201,
+    "60 s.d 64 tahun": 768
+   }
+  },
+  "Lebak Bulus": {
+   "total": 38968,
+   "age_bins": {
+    "15 s.d 19 tahun": 2986,
+    "20 s.d 24 tahun": 2882,
+    "25 s.d 29 tahun": 3150,
+    "30 s.d 34 tahun": 3716,
+    "35 s.d 39 tahun": 3675,
+    "40 s.d 44 tahun": 3351,
+    "45 s.d 49 tahun": 2711,
+    "50 s.d 54 tahun": 2319,
+    "55 s.d 59 tahun": 1727,
+    "60 s.d 64 tahun": 1237
+   }
+  },
+  "Pondok Labu": {
+   "total": 48185,
+   "age_bins": {
+    "15 s.d 19 tahun": 3475,
+    "20 s.d 24 tahun": 3250,
+    "25 s.d 29 tahun": 3721,
+    "30 s.d 34 tahun": 4836,
+    "35 s.d 39 tahun": 4697,
+    "40 s.d 44 tahun": 4384,
+    "45 s.d 49 tahun": 3545,
+    "50 s.d 54 tahun": 2552,
+    "55 s.d 59 tahun": 1878,
+    "60 s.d 64 tahun": 1281
+   }
+  },
+  "Cilincing": {
+   "total": 94246,
+   "age_bins": {
+    "15 s.d 19 tahun": 4658,
+    "20 s.d 24 tahun": 6776,
+    "25 s.d 29 tahun": 6056,
+    "30 s.d 34 tahun": 4654,
+    "35 s.d 39 tahun": 7268,
+    "40 s.d 44 tahun": 7660,
+    "45 s.d 49 tahun": 5944,
+    "50 s.d 54 tahun": 8408,
+    "55 s.d 59 tahun": 7096,
+    "60 s.d 64 tahun": 3814
+   }
+  },
+  "Kalibaru": {
+   "total": 153278,
+   "age_bins": {
+    "15 s.d 19 tahun": 8145,
+    "20 s.d 24 tahun": 11864,
+    "25 s.d 29 tahun": 10855,
+    "30 s.d 34 tahun": 7616,
+    "35 s.d 39 tahun": 11712,
+    "40 s.d 44 tahun": 11762,
+    "45 s.d 49 tahun": 9094,
+    "50 s.d 54 tahun": 12941,
+    "55 s.d 59 tahun": 11315,
+    "60 s.d 64 tahun": 5946
+   }
+  },
+  "Marunda": {
+   "total": 44649,
+   "age_bins": {
+    "15 s.d 19 tahun": 2364,
+    "20 s.d 24 tahun": 3468,
+    "25 s.d 29 tahun": 3166,
+    "30 s.d 34 tahun": 2187,
+    "35 s.d 39 tahun": 3394,
+    "40 s.d 44 tahun": 3449,
+    "45 s.d 49 tahun": 2600,
+    "50 s.d 54 tahun": 3624,
+    "55 s.d 59 tahun": 2978,
+    "60 s.d 64 tahun": 1817
+   }
+  },
+  "Rorotan": {
+   "total": 74164,
+   "age_bins": {
+    "15 s.d 19 tahun": 3830,
+    "20 s.d 24 tahun": 5597,
+    "25 s.d 29 tahun": 5097,
+    "30 s.d 34 tahun": 3442,
+    "35 s.d 39 tahun": 5318,
+    "40 s.d 44 tahun": 5744,
+    "45 s.d 49 tahun": 4511,
+    "50 s.d 54 tahun": 6377,
+    "55 s.d 59 tahun": 5640,
+    "60 s.d 64 tahun": 3105
+   }
+  },
+  "Semper Barat": {
+   "total": 141675,
+   "age_bins": {
+    "15 s.d 19 tahun": 6992,
+    "20 s.d 24 tahun": 10105,
+    "25 s.d 29 tahun": 9075,
+    "30 s.d 34 tahun": 6419,
+    "35 s.d 39 tahun": 9998,
+    "40 s.d 44 tahun": 10985,
+    "45 s.d 49 tahun": 8812,
+    "50 s.d 54 tahun": 12638,
+    "55 s.d 59 tahun": 11378,
+    "60 s.d 64 tahun": 6545
+   }
+  },
+  "Semper Timur": {
+   "total": 71757,
+   "age_bins": {
+    "15 s.d 19 tahun": 3756,
+    "20 s.d 24 tahun": 5434,
+    "25 s.d 29 tahun": 4780,
+    "30 s.d 34 tahun": 3230,
+    "35 s.d 39 tahun": 4913,
+    "40 s.d 44 tahun": 5019,
+    "45 s.d 49 tahun": 4143,
+    "50 s.d 54 tahun": 6037,
+    "55 s.d 59 tahun": 5822,
+    "60 s.d 64 tahun": 3471
+   }
+  },
+  "Sukapura": {
+   "total": 120087,
+   "age_bins": {
+    "15 s.d 19 tahun": 5425,
+    "20 s.d 24 tahun": 7637,
+    "25 s.d 29 tahun": 6594,
+    "30 s.d 34 tahun": 5221,
+    "35 s.d 39 tahun": 8597,
+    "40 s.d 44 tahun": 10768,
+    "45 s.d 49 tahun": 9632,
+    "50 s.d 54 tahun": 13227,
+    "55 s.d 59 tahun": 10739,
+    "60 s.d 64 tahun": 4877
+   }
+  },
+  "Bambu Apus": {
+   "total": 26626,
+   "age_bins": {
+    "15 s.d 19 tahun": 2149,
+    "20 s.d 24 tahun": 2204,
+    "25 s.d 29 tahun": 2263,
+    "30 s.d 34 tahun": 2661,
+    "35 s.d 39 tahun": 2429,
+    "40 s.d 44 tahun": 2125,
+    "45 s.d 49 tahun": 1901,
+    "50 s.d 54 tahun": 1572,
+    "55 s.d 59 tahun": 1072,
+    "60 s.d 64 tahun": 627
+   }
+  },
+  "Ceger": {
+   "total": 19935,
+   "age_bins": {
+    "15 s.d 19 tahun": 1584,
+    "20 s.d 24 tahun": 1610,
+    "25 s.d 29 tahun": 1723,
+    "30 s.d 34 tahun": 2043,
+    "35 s.d 39 tahun": 1937,
+    "40 s.d 44 tahun": 1678,
+    "45 s.d 49 tahun": 1353,
+    "50 s.d 54 tahun": 996,
+    "55 s.d 59 tahun": 806,
+    "60 s.d 64 tahun": 493
+   }
+  },
+  "Cilangkap": {
+   "total": 26506,
+   "age_bins": {
+    "15 s.d 19 tahun": 2223,
+    "20 s.d 24 tahun": 2243,
+    "25 s.d 29 tahun": 2258,
+    "30 s.d 34 tahun": 2499,
+    "35 s.d 39 tahun": 2513,
+    "40 s.d 44 tahun": 2309,
+    "45 s.d 49 tahun": 1878,
+    "50 s.d 54 tahun": 1263,
+    "55 s.d 59 tahun": 849,
+    "60 s.d 64 tahun": 502
+   }
+  },
+  "Cipayung": {
+   "total": 25995,
+   "age_bins": {
+    "15 s.d 19 tahun": 2021,
+    "20 s.d 24 tahun": 2154,
+    "25 s.d 29 tahun": 2336,
+    "30 s.d 34 tahun": 2612,
+    "35 s.d 39 tahun": 2413,
+    "40 s.d 44 tahun": 2066,
+    "45 s.d 49 tahun": 1855,
+    "50 s.d 54 tahun": 1398,
+    "55 s.d 59 tahun": 1008,
+    "60 s.d 64 tahun": 652
+   }
+  },
+  "Lubang Buaya": {
+   "total": 67163,
+   "age_bins": {
+    "15 s.d 19 tahun": 5225,
+    "20 s.d 24 tahun": 5342,
+    "25 s.d 29 tahun": 5971,
+    "30 s.d 34 tahun": 6868,
+    "35 s.d 39 tahun": 6246,
+    "40 s.d 44 tahun": 5392,
+    "45 s.d 49 tahun": 4533,
+    "50 s.d 54 tahun": 3554,
+    "55 s.d 59 tahun": 2684,
+    "60 s.d 64 tahun": 1698
+   }
+  },
+  "Munjul": {
+   "total": 24194,
+   "age_bins": {
+    "15 s.d 19 tahun": 1916,
+    "20 s.d 24 tahun": 1921,
+    "25 s.d 29 tahun": 2030,
+    "30 s.d 34 tahun": 2487,
+    "35 s.d 39 tahun": 2279,
+    "40 s.d 44 tahun": 2003,
+    "45 s.d 49 tahun": 1639,
+    "50 s.d 54 tahun": 1290,
+    "55 s.d 59 tahun": 964,
+    "60 s.d 64 tahun": 593
+   }
+  },
+  "Pondok Ranggon": {
+   "total": 24787,
+   "age_bins": {
+    "15 s.d 19 tahun": 2078,
+    "20 s.d 24 tahun": 2118,
+    "25 s.d 29 tahun": 2266,
+    "30 s.d 34 tahun": 2464,
+    "35 s.d 39 tahun": 2152,
+    "40 s.d 44 tahun": 1914,
+    "45 s.d 49 tahun": 1766,
+    "50 s.d 54 tahun": 1320,
+    "55 s.d 59 tahun": 844,
+    "60 s.d 64 tahun": 498
+   }
+  },
+  "Setu": {
+   "total": 19589,
+   "age_bins": {
+    "15 s.d 19 tahun": 1560,
+    "20 s.d 24 tahun": 1574,
+    "25 s.d 29 tahun": 1593,
+    "30 s.d 34 tahun": 1927,
+    "35 s.d 39 tahun": 1865,
+    "40 s.d 44 tahun": 1681,
+    "45 s.d 49 tahun": 1345,
+    "50 s.d 54 tahun": 983,
+    "55 s.d 59 tahun": 746,
+    "60 s.d 64 tahun": 465
+   }
+  },
+  "Cibubur": {
+   "total": 70580,
+   "age_bins": {
+    "15 s.d 19 tahun": 5393,
+    "20 s.d 24 tahun": 5571,
+    "25 s.d 29 tahun": 6048,
+    "30 s.d 34 tahun": 7146,
+    "35 s.d 39 tahun": 6486,
+    "40 s.d 44 tahun": 5843,
+    "45 s.d 49 tahun": 4895,
+    "50 s.d 54 tahun": 3862,
+    "55 s.d 59 tahun": 3061,
+    "60 s.d 64 tahun": 2005
+   }
+  },
+  "Ciracas": {
+   "total": 69357,
+   "age_bins": {
+    "15 s.d 19 tahun": 5523,
+    "20 s.d 24 tahun": 5687,
+    "25 s.d 29 tahun": 6252,
+    "30 s.d 34 tahun": 7236,
+    "35 s.d 39 tahun": 6264,
+    "40 s.d 44 tahun": 5636,
+    "45 s.d 49 tahun": 4781,
+    "50 s.d 54 tahun": 3873,
+    "55 s.d 59 tahun": 2979,
+    "60 s.d 64 tahun": 1747
+   }
+  },
+  "Kelapa Dua Wetan": {
+   "total": 47862,
+   "age_bins": {
+    "15 s.d 19 tahun": 3687,
+    "20 s.d 24 tahun": 3965,
+    "25 s.d 29 tahun": 4515,
+    "30 s.d 34 tahun": 5017,
+    "35 s.d 39 tahun": 4362,
+    "40 s.d 44 tahun": 3745,
+    "45 s.d 49 tahun": 3145,
+    "50 s.d 54 tahun": 2624,
+    "55 s.d 59 tahun": 2301,
+    "60 s.d 64 tahun": 1393
+   }
+  },
+  "Rambutan": {
+   "total": 40387,
+   "age_bins": {
+    "15 s.d 19 tahun": 3052,
+    "20 s.d 24 tahun": 3292,
+    "25 s.d 29 tahun": 3633,
+    "30 s.d 34 tahun": 4342,
+    "35 s.d 39 tahun": 3706,
+    "40 s.d 44 tahun": 3296,
+    "45 s.d 49 tahun": 2646,
+    "50 s.d 54 tahun": 2076,
+    "55 s.d 59 tahun": 1589,
+    "60 s.d 64 tahun": 1032
+   }
+  },
+  "Susukan": {
+   "total": 41650,
+   "age_bins": {
+    "15 s.d 19 tahun": 3149,
+    "20 s.d 24 tahun": 3350,
+    "25 s.d 29 tahun": 3954,
+    "30 s.d 34 tahun": 4640,
+    "35 s.d 39 tahun": 3834,
+    "40 s.d 44 tahun": 3371,
+    "45 s.d 49 tahun": 2779,
+    "50 s.d 54 tahun": 2141,
+    "55 s.d 59 tahun": 1644,
+    "60 s.d 64 tahun": 1087
+   }
+  },
+  "Duren Sawit": {
+   "total": 64577,
+   "age_bins": {
+    "15 s.d 19 tahun": 4703,
+    "20 s.d 24 tahun": 4808,
+    "25 s.d 29 tahun": 5521,
+    "30 s.d 34 tahun": 6951,
+    "35 s.d 39 tahun": 6265,
+    "40 s.d 44 tahun": 5343,
+    "45 s.d 49 tahun": 4257,
+    "50 s.d 54 tahun": 3444,
+    "55 s.d 59 tahun": 2863,
+    "60 s.d 64 tahun": 2146
+   }
+  },
+  "Klender": {
+   "total": 78400,
+   "age_bins": {
+    "15 s.d 19 tahun": 5776,
+    "20 s.d 24 tahun": 5904,
+    "25 s.d 29 tahun": 7078,
+    "30 s.d 34 tahun": 8425,
+    "35 s.d 39 tahun": 7465,
+    "40 s.d 44 tahun": 6299,
+    "45 s.d 49 tahun": 5001,
+    "50 s.d 54 tahun": 3911,
+    "55 s.d 59 tahun": 3256,
+    "60 s.d 64 tahun": 2177
+   }
+  },
+  "Malaka Jaya": {
+   "total": 36169,
+   "age_bins": {
+    "15 s.d 19 tahun": 2243,
+    "20 s.d 24 tahun": 2094,
+    "25 s.d 29 tahun": 2552,
+    "30 s.d 34 tahun": 3616,
+    "35 s.d 39 tahun": 3933,
+    "40 s.d 44 tahun": 3568,
+    "45 s.d 49 tahun": 2432,
+    "50 s.d 54 tahun": 1683,
+    "55 s.d 59 tahun": 1451,
+    "60 s.d 64 tahun": 1314
+   }
+  },
+  "Malaka Sari": {
+   "total": 32555,
+   "age_bins": {
+    "15 s.d 19 tahun": 2100,
+    "20 s.d 24 tahun": 1973,
+    "25 s.d 29 tahun": 2490,
+    "30 s.d 34 tahun": 3270,
+    "35 s.d 39 tahun": 3385,
+    "40 s.d 44 tahun": 3035,
+    "45 s.d 49 tahun": 2198,
+    "50 s.d 54 tahun": 1621,
+    "55 s.d 59 tahun": 1494,
+    "60 s.d 64 tahun": 1282
+   }
+  },
+  "Pondok Bambu": {
+   "total": 66415,
+   "age_bins": {
+    "15 s.d 19 tahun": 4715,
+    "20 s.d 24 tahun": 4857,
+    "25 s.d 29 tahun": 5896,
+    "30 s.d 34 tahun": 7087,
+    "35 s.d 39 tahun": 6549,
+    "40 s.d 44 tahun": 5666,
+    "45 s.d 49 tahun": 4350,
+    "50 s.d 54 tahun": 3468,
+    "55 s.d 59 tahun": 2898,
+    "60 s.d 64 tahun": 2142
+   }
+  },
+  "Pondok Kelapa": {
+   "total": 72480,
+   "age_bins": {
+    "15 s.d 19 tahun": 5309,
+    "20 s.d 24 tahun": 5564,
+    "25 s.d 29 tahun": 6612,
+    "30 s.d 34 tahun": 7535,
+    "35 s.d 39 tahun": 6823,
+    "40 s.d 44 tahun": 5931,
+    "45 s.d 49 tahun": 4707,
+    "50 s.d 54 tahun": 3973,
+    "55 s.d 59 tahun": 3473,
+    "60 s.d 64 tahun": 2520
+   }
+  },
+  "Pondok Kopi": {
+   "total": 37359,
+   "age_bins": {
+    "15 s.d 19 tahun": 2905,
+    "20 s.d 24 tahun": 3007,
+    "25 s.d 29 tahun": 3564,
+    "30 s.d 34 tahun": 3993,
+    "35 s.d 39 tahun": 3215,
+    "40 s.d 44 tahun": 2894,
+    "45 s.d 49 tahun": 2475,
+    "50 s.d 54 tahun": 1997,
+    "55 s.d 59 tahun": 1775,
+    "60 s.d 64 tahun": 1221
+   }
+  },
+  "Cideng": {
+   "total": 18711,
+   "age_bins": {
+    "15 s.d 19 tahun": 1247,
+    "20 s.d 24 tahun": 1328,
+    "25 s.d 29 tahun": 1398,
+    "30 s.d 34 tahun": 1541,
+    "35 s.d 39 tahun": 1598,
+    "40 s.d 44 tahun": 1547,
+    "45 s.d 49 tahun": 1545,
+    "50 s.d 54 tahun": 1377,
+    "55 s.d 59 tahun": 1151,
+    "60 s.d 64 tahun": 898
+   }
+  },
+  "Gambir": {
+   "total": 3559,
+   "age_bins": {
+    "15 s.d 19 tahun": 254,
+    "20 s.d 24 tahun": 280,
+    "25 s.d 29 tahun": 289,
+    "30 s.d 34 tahun": 292,
+    "35 s.d 39 tahun": 340,
+    "40 s.d 44 tahun": 295,
+    "45 s.d 49 tahun": 338,
+    "50 s.d 54 tahun": 226,
+    "55 s.d 59 tahun": 198,
+    "60 s.d 64 tahun": 130
+   }
+  },
+  "Kebon Kelapa": {
+   "total": 12687,
+   "age_bins": {
+    "15 s.d 19 tahun": 923,
+    "20 s.d 24 tahun": 966,
+    "25 s.d 29 tahun": 962,
+    "30 s.d 34 tahun": 1060,
+    "35 s.d 39 tahun": 1083,
+    "40 s.d 44 tahun": 969,
+    "45 s.d 49 tahun": 950,
+    "50 s.d 54 tahun": 858,
+    "55 s.d 59 tahun": 761,
+    "60 s.d 64 tahun": 616
+   }
+  },
+  "Petojo Selatan": {
+   "total": 16812,
+   "age_bins": {
+    "15 s.d 19 tahun": 1237,
+    "20 s.d 24 tahun": 1335,
+    "25 s.d 29 tahun": 1361,
+    "30 s.d 34 tahun": 1393,
+    "35 s.d 39 tahun": 1427,
+    "40 s.d 44 tahun": 1382,
+    "45 s.d 49 tahun": 1290,
+    "50 s.d 54 tahun": 1125,
+    "55 s.d 59 tahun": 1005,
+    "60 s.d 64 tahun": 707
+   }
+  },
+  "Petojo Utara": {
+   "total": 21749,
+   "age_bins": {
+    "15 s.d 19 tahun": 1645,
+    "20 s.d 24 tahun": 1543,
+    "25 s.d 29 tahun": 1657,
+    "30 s.d 34 tahun": 1903,
+    "35 s.d 39 tahun": 1874,
+    "40 s.d 44 tahun": 1857,
+    "45 s.d 49 tahun": 1694,
+    "50 s.d 54 tahun": 1415,
+    "55 s.d 59 tahun": 1190,
+    "60 s.d 64 tahun": 965
+   }
+  },
+  "Grogol": {
+   "total": 34210,
+   "age_bins": {
+    "15 s.d 19 tahun": 1569,
+    "20 s.d 24 tahun": 2306,
+    "25 s.d 29 tahun": 2129,
+    "30 s.d 34 tahun": 1530,
+    "35 s.d 39 tahun": 2433,
+    "40 s.d 44 tahun": 2593,
+    "45 s.d 49 tahun": 1991,
+    "50 s.d 54 tahun": 2927,
+    "55 s.d 59 tahun": 2686,
+    "60 s.d 64 tahun": 1825
+   }
+  },
+  "Jelambar": {
+   "total": 58393,
+   "age_bins": {
+    "15 s.d 19 tahun": 2586,
+    "20 s.d 24 tahun": 3702,
+    "25 s.d 29 tahun": 3494,
+    "30 s.d 34 tahun": 2358,
+    "35 s.d 39 tahun": 3939,
+    "40 s.d 44 tahun": 4629,
+    "45 s.d 49 tahun": 3737,
+    "50 s.d 54 tahun": 5443,
+    "55 s.d 59 tahun": 5098,
+    "60 s.d 64 tahun": 3054
+   }
+  },
+  "Jelambar Baru": {
+   "total": 74335,
+   "age_bins": {
+    "15 s.d 19 tahun": 3316,
+    "20 s.d 24 tahun": 4804,
+    "25 s.d 29 tahun": 4212,
+    "30 s.d 34 tahun": 3165,
+    "35 s.d 39 tahun": 5281,
+    "40 s.d 44 tahun": 6246,
+    "45 s.d 49 tahun": 5055,
+    "50 s.d 54 tahun": 7243,
+    "55 s.d 59 tahun": 6434,
+    "60 s.d 64 tahun": 3531
+   }
+  },
+  "Tanjung Duren Selatan": {
+   "total": 47188,
+   "age_bins": {
+    "15 s.d 19 tahun": 1973,
+    "20 s.d 24 tahun": 2828,
+    "25 s.d 29 tahun": 2527,
+    "30 s.d 34 tahun": 1857,
+    "35 s.d 39 tahun": 3077,
+    "40 s.d 44 tahun": 3640,
+    "45 s.d 49 tahun": 3275,
+    "50 s.d 54 tahun": 4688,
+    "55 s.d 59 tahun": 4307,
+    "60 s.d 64 tahun": 2512
+   }
+  },
+  "Tanjung Duren Utara": {
+   "total": 32575,
+   "age_bins": {
+    "15 s.d 19 tahun": 1409,
+    "20 s.d 24 tahun": 2029,
+    "25 s.d 29 tahun": 1744,
+    "30 s.d 34 tahun": 1277,
+    "35 s.d 39 tahun": 2089,
+    "40 s.d 44 tahun": 2530,
+    "45 s.d 49 tahun": 2273,
+    "50 s.d 54 tahun": 3303,
+    "55 s.d 59 tahun": 3024,
+    "60 s.d 64 tahun": 1649
+   }
+  },
+  "Tomang": {
+   "total": 56774,
+   "age_bins": {
+    "15 s.d 19 tahun": 2643,
+    "20 s.d 24 tahun": 3868,
+    "25 s.d 29 tahun": 3559,
+    "30 s.d 34 tahun": 2404,
+    "35 s.d 39 tahun": 3853,
+    "40 s.d 44 tahun": 4179,
+    "45 s.d 49 tahun": 3295,
+    "50 s.d 54 tahun": 4878,
+    "55 s.d 59 tahun": 4761,
+    "60 s.d 64 tahun": 3050
+   }
+  },
+  "Wijaya Kusuma": {
+   "total": 77075,
+   "age_bins": {
+    "15 s.d 19 tahun": 3501,
+    "20 s.d 24 tahun": 5030,
+    "25 s.d 29 tahun": 4425,
+    "30 s.d 34 tahun": 3523,
+    "35 s.d 39 tahun": 5824,
+    "40 s.d 44 tahun": 6533,
+    "45 s.d 49 tahun": 5233,
+    "50 s.d 54 tahun": 7475,
+    "55 s.d 59 tahun": 6250,
+    "60 s.d 64 tahun": 3519
+   }
+  },
+  "Ciganjur": {
+   "total": 37301,
+   "age_bins": {
+    "15 s.d 19 tahun": 2876,
+    "20 s.d 24 tahun": 2733,
+    "25 s.d 29 tahun": 3011,
+    "30 s.d 34 tahun": 3964,
+    "35 s.d 39 tahun": 3676,
+    "40 s.d 44 tahun": 3218,
+    "45 s.d 49 tahun": 2524,
+    "50 s.d 54 tahun": 1886,
+    "55 s.d 59 tahun": 1377,
+    "60 s.d 64 tahun": 858
+   }
+  },
+  "Cipedak": {
+   "total": 35925,
+   "age_bins": {
+    "15 s.d 19 tahun": 2947,
+    "20 s.d 24 tahun": 2706,
+    "25 s.d 29 tahun": 2840,
+    "30 s.d 34 tahun": 3524,
+    "35 s.d 39 tahun": 3482,
+    "40 s.d 44 tahun": 3035,
+    "45 s.d 49 tahun": 2425,
+    "50 s.d 54 tahun": 1893,
+    "55 s.d 59 tahun": 1406,
+    "60 s.d 64 tahun": 765
+   }
+  },
+  "Jagakarsa": {
+   "total": 62750,
+   "age_bins": {
+    "15 s.d 19 tahun": 4842,
+    "20 s.d 24 tahun": 4686,
+    "25 s.d 29 tahun": 5068,
+    "30 s.d 34 tahun": 6507,
+    "35 s.d 39 tahun": 6014,
+    "40 s.d 44 tahun": 5350,
+    "45 s.d 49 tahun": 4231,
+    "50 s.d 54 tahun": 3370,
+    "55 s.d 59 tahun": 2522,
+    "60 s.d 64 tahun": 1494
+   }
+  },
+  "Lenteng Agung": {
+   "total": 56321,
+   "age_bins": {
+    "15 s.d 19 tahun": 4253,
+    "20 s.d 24 tahun": 4207,
+    "25 s.d 29 tahun": 4738,
+    "30 s.d 34 tahun": 5841,
+    "35 s.d 39 tahun": 5213,
+    "40 s.d 44 tahun": 4558,
+    "45 s.d 49 tahun": 3734,
+    "50 s.d 54 tahun": 2930,
+    "55 s.d 59 tahun": 2318,
+    "60 s.d 64 tahun": 1604
+   }
+  },
+  "Srengseng Sawah": {
+   "total": 60152,
+   "age_bins": {
+    "15 s.d 19 tahun": 4648,
+    "20 s.d 24 tahun": 4430,
+    "25 s.d 29 tahun": 4770,
+    "30 s.d 34 tahun": 5934,
+    "35 s.d 39 tahun": 5657,
+    "40 s.d 44 tahun": 5297,
+    "45 s.d 49 tahun": 4261,
+    "50 s.d 54 tahun": 2975,
+    "55 s.d 59 tahun": 2246,
+    "60 s.d 64 tahun": 1542
+   }
+  },
+  "Tanjung Barat": {
+   "total": 41824,
+   "age_bins": {
+    "15 s.d 19 tahun": 3238,
+    "20 s.d 24 tahun": 3127,
+    "25 s.d 29 tahun": 3488,
+    "30 s.d 34 tahun": 4270,
+    "35 s.d 39 tahun": 4039,
+    "40 s.d 44 tahun": 3509,
+    "45 s.d 49 tahun": 2748,
+    "50 s.d 54 tahun": 2179,
+    "55 s.d 59 tahun": 1626,
+    "60 s.d 64 tahun": 1101
+   }
+  },
+  "Bali Mester": {
+   "total": 11591,
+   "age_bins": {
+    "15 s.d 19 tahun": 878,
+    "20 s.d 24 tahun": 849,
+    "25 s.d 29 tahun": 873,
+    "30 s.d 34 tahun": 1012,
+    "35 s.d 39 tahun": 910,
+    "40 s.d 44 tahun": 920,
+    "45 s.d 49 tahun": 966,
+    "50 s.d 54 tahun": 820,
+    "55 s.d 59 tahun": 680,
+    "60 s.d 64 tahun": 475
+   }
+  },
+  "Bidara Cina": {
+   "total": 44712,
+   "age_bins": {
+    "15 s.d 19 tahun": 3274,
+    "20 s.d 24 tahun": 3321,
+    "25 s.d 29 tahun": 3772,
+    "30 s.d 34 tahun": 4379,
+    "35 s.d 39 tahun": 4169,
+    "40 s.d 44 tahun": 3776,
+    "45 s.d 49 tahun": 3356,
+    "50 s.d 54 tahun": 2653,
+    "55 s.d 59 tahun": 2022,
+    "60 s.d 64 tahun": 1325
+   }
+  },
+  "Cipinang Besar Selatan": {
+   "total": 38162,
+   "age_bins": {
+    "15 s.d 19 tahun": 2904,
+    "20 s.d 24 tahun": 2990,
+    "25 s.d 29 tahun": 3345,
+    "30 s.d 34 tahun": 3851,
+    "35 s.d 39 tahun": 3557,
+    "40 s.d 44 tahun": 3205,
+    "45 s.d 49 tahun": 2521,
+    "50 s.d 54 tahun": 1940,
+    "55 s.d 59 tahun": 1562,
+    "60 s.d 64 tahun": 1036
+   }
+  },
+  "Cipinang Besar Utara": {
+   "total": 56175,
+   "age_bins": {
+    "15 s.d 19 tahun": 4370,
+    "20 s.d 24 tahun": 4514,
+    "25 s.d 29 tahun": 4827,
+    "30 s.d 34 tahun": 5820,
+    "35 s.d 39 tahun": 5113,
+    "40 s.d 44 tahun": 4524,
+    "45 s.d 49 tahun": 3640,
+    "50 s.d 54 tahun": 2943,
+    "55 s.d 59 tahun": 2296,
+    "60 s.d 64 tahun": 1507
+   }
+  },
+  "Cipinang Cempedak": {
+   "total": 38261,
+   "age_bins": {
+    "15 s.d 19 tahun": 2795,
+    "20 s.d 24 tahun": 2706,
+    "25 s.d 29 tahun": 2872,
+    "30 s.d 34 tahun": 3423,
+    "35 s.d 39 tahun": 3372,
+    "40 s.d 44 tahun": 3374,
+    "45 s.d 49 tahun": 3126,
+    "50 s.d 54 tahun": 2453,
+    "55 s.d 59 tahun": 1897,
+    "60 s.d 64 tahun": 1345
+   }
+  },
+  "Cipinang Muara": {
+   "total": 62416,
+   "age_bins": {
+    "15 s.d 19 tahun": 4266,
+    "20 s.d 24 tahun": 4541,
+    "25 s.d 29 tahun": 5355,
+    "30 s.d 34 tahun": 6696,
+    "35 s.d 39 tahun": 6016,
+    "40 s.d 44 tahun": 5162,
+    "45 s.d 49 tahun": 3950,
+    "50 s.d 54 tahun": 3363,
+    "55 s.d 59 tahun": 2816,
+    "60 s.d 64 tahun": 2102
+   }
+  },
+  "Rawa Bunga": {
+   "total": 25056,
+   "age_bins": {
+    "15 s.d 19 tahun": 1890,
+    "20 s.d 24 tahun": 1901,
+    "25 s.d 29 tahun": 2124,
+    "30 s.d 34 tahun": 2331,
+    "35 s.d 39 tahun": 2139,
+    "40 s.d 44 tahun": 2055,
+    "45 s.d 49 tahun": 1745,
+    "50 s.d 54 tahun": 1446,
+    "55 s.d 59 tahun": 1223,
+    "60 s.d 64 tahun": 767
+   }
+  },
+  "Galur": {
+   "total": 22154,
+   "age_bins": {
+    "15 s.d 19 tahun": 1694,
+    "20 s.d 24 tahun": 1730,
+    "25 s.d 29 tahun": 1762,
+    "30 s.d 34 tahun": 2037,
+    "35 s.d 39 tahun": 2059,
+    "40 s.d 44 tahun": 1907,
+    "45 s.d 49 tahun": 1615,
+    "50 s.d 54 tahun": 1348,
+    "55 s.d 59 tahun": 971,
+    "60 s.d 64 tahun": 680
+   }
+  },
+  "Johar Baru": {
+   "total": 43533,
+   "age_bins": {
+    "15 s.d 19 tahun": 3334,
+    "20 s.d 24 tahun": 2963,
+    "25 s.d 29 tahun": 3181,
+    "30 s.d 34 tahun": 3640,
+    "35 s.d 39 tahun": 3914,
+    "40 s.d 44 tahun": 3901,
+    "45 s.d 49 tahun": 3416,
+    "50 s.d 54 tahun": 2707,
+    "55 s.d 59 tahun": 2097,
+    "60 s.d 64 tahun": 1529
+   }
+  },
+  "Kampung Rawa": {
+   "total": 26888,
+   "age_bins": {
+    "15 s.d 19 tahun": 2151,
+    "20 s.d 24 tahun": 2003,
+    "25 s.d 29 tahun": 2127,
+    "30 s.d 34 tahun": 2524,
+    "35 s.d 39 tahun": 2465,
+    "40 s.d 44 tahun": 2320,
+    "45 s.d 49 tahun": 1864,
+    "50 s.d 54 tahun": 1493,
+    "55 s.d 59 tahun": 1210,
+    "60 s.d 64 tahun": 795
+   }
+  },
+  "Tanah Tinggi": {
+   "total": 45784,
+   "age_bins": {
+    "15 s.d 19 tahun": 3742,
+    "20 s.d 24 tahun": 3479,
+    "25 s.d 29 tahun": 3631,
+    "30 s.d 34 tahun": 4111,
+    "35 s.d 39 tahun": 4131,
+    "40 s.d 44 tahun": 3617,
+    "45 s.d 49 tahun": 3274,
+    "50 s.d 54 tahun": 2700,
+    "55 s.d 59 tahun": 2154,
+    "60 s.d 64 tahun": 1601
+   }
+  },
+  "Kalideres": {
+   "total": 141073,
+   "age_bins": {
+    "15 s.d 19 tahun": 6970,
+    "20 s.d 24 tahun": 10148,
+    "25 s.d 29 tahun": 9248,
+    "30 s.d 34 tahun": 6660,
+    "35 s.d 39 tahun": 10319,
+    "40 s.d 44 tahun": 10783,
+    "45 s.d 49 tahun": 8340,
+    "50 s.d 54 tahun": 12073,
+    "55 s.d 59 tahun": 11101,
+    "60 s.d 64 tahun": 6607
+   }
+  },
+  "Kamal": {
+   "total": 101279,
+   "age_bins": {
+    "15 s.d 19 tahun": 5293,
+    "20 s.d 24 tahun": 7802,
+    "25 s.d 29 tahun": 7177,
+    "30 s.d 34 tahun": 4847,
+    "35 s.d 39 tahun": 7487,
+    "40 s.d 44 tahun": 7782,
+    "45 s.d 49 tahun": 5989,
+    "50 s.d 54 tahun": 8574,
+    "55 s.d 59 tahun": 7495,
+    "60 s.d 64 tahun": 4482
+   }
+  },
+  "Pegadungan": {
+   "total": 133809,
+   "age_bins": {
+    "15 s.d 19 tahun": 7062,
+    "20 s.d 24 tahun": 10275,
+    "25 s.d 29 tahun": 9295,
+    "30 s.d 34 tahun": 5990,
+    "35 s.d 39 tahun": 9110,
+    "40 s.d 44 tahun": 9662,
+    "45 s.d 49 tahun": 7763,
+    "50 s.d 54 tahun": 11135,
+    "55 s.d 59 tahun": 10110,
+    "60 s.d 64 tahun": 6436
+   }
+  },
+  "Semanan": {
+   "total": 143279,
+   "age_bins": {
+    "15 s.d 19 tahun": 7311,
+    "20 s.d 24 tahun": 10574,
+    "25 s.d 29 tahun": 9349,
+    "30 s.d 34 tahun": 6508,
+    "35 s.d 39 tahun": 10195,
+    "40 s.d 44 tahun": 10861,
+    "45 s.d 49 tahun": 8780,
+    "50 s.d 54 tahun": 12705,
+    "55 s.d 59 tahun": 11237,
+    "60 s.d 64 tahun": 6425
+   }
+  },
+  "Tegal Alur": {
+   "total": 170204,
+   "age_bins": {
+    "15 s.d 19 tahun": 8319,
+    "20 s.d 24 tahun": 11898,
+    "25 s.d 29 tahun": 10697,
+    "30 s.d 34 tahun": 8053,
+    "35 s.d 39 tahun": 12644,
+    "40 s.d 44 tahun": 13697,
+    "45 s.d 49 tahun": 11122,
+    "50 s.d 54 tahun": 15653,
+    "55 s.d 59 tahun": 13181,
+    "60 s.d 64 tahun": 7266
+   }
+  },
+  "Cipete Utara": {
+   "total": 37795,
+   "age_bins": {
+    "15 s.d 19 tahun": 2868,
+    "20 s.d 24 tahun": 2736,
+    "25 s.d 29 tahun": 3078,
+    "30 s.d 34 tahun": 3852,
+    "35 s.d 39 tahun": 3665,
+    "40 s.d 44 tahun": 3339,
+    "45 s.d 49 tahun": 2733,
+    "50 s.d 54 tahun": 2070,
+    "55 s.d 59 tahun": 1437,
+    "60 s.d 64 tahun": 983
+   }
+  },
+  "Gandaria Utara": {
+   "total": 44443,
+   "age_bins": {
+    "15 s.d 19 tahun": 3249,
+    "20 s.d 24 tahun": 3044,
+    "25 s.d 29 tahun": 3546,
+    "30 s.d 34 tahun": 4294,
+    "35 s.d 39 tahun": 4164,
+    "40 s.d 44 tahun": 4119,
+    "45 s.d 49 tahun": 3511,
+    "50 s.d 54 tahun": 2536,
+    "55 s.d 59 tahun": 2054,
+    "60 s.d 64 tahun": 1354
+   }
+  },
+  "Gunung": {
+   "total": 10595,
+   "age_bins": {
+    "15 s.d 19 tahun": 825,
+    "20 s.d 24 tahun": 739,
+    "25 s.d 29 tahun": 823,
+    "30 s.d 34 tahun": 856,
+    "35 s.d 39 tahun": 865,
+    "40 s.d 44 tahun": 911,
+    "45 s.d 49 tahun": 943,
+    "50 s.d 54 tahun": 684,
+    "55 s.d 59 tahun": 571,
+    "60 s.d 64 tahun": 348
+   }
+  },
+  "Kramat Pela": {
+   "total": 15821,
+   "age_bins": {
+    "15 s.d 19 tahun": 1219,
+    "20 s.d 24 tahun": 1169,
+    "25 s.d 29 tahun": 1302,
+    "30 s.d 34 tahun": 1510,
+    "35 s.d 39 tahun": 1366,
+    "40 s.d 44 tahun": 1288,
+    "45 s.d 49 tahun": 1273,
+    "50 s.d 54 tahun": 999,
+    "55 s.d 59 tahun": 766,
+    "60 s.d 64 tahun": 473
+   }
+  },
+  "Melawai": {
+   "total": 3174,
+   "age_bins": {
+    "15 s.d 19 tahun": 235,
+    "20 s.d 24 tahun": 230,
+    "25 s.d 29 tahun": 264,
+    "30 s.d 34 tahun": 269,
+    "35 s.d 39 tahun": 243,
+    "40 s.d 44 tahun": 253,
+    "45 s.d 49 tahun": 287,
+    "50 s.d 54 tahun": 253,
+    "55 s.d 59 tahun": 206,
+    "60 s.d 64 tahun": 138
+   }
+  },
+  "Petogogan": {
+   "total": 13664,
+   "age_bins": {
+    "15 s.d 19 tahun": 976,
+    "20 s.d 24 tahun": 881,
+    "25 s.d 29 tahun": 1164,
+    "30 s.d 34 tahun": 1344,
+    "35 s.d 39 tahun": 1183,
+    "40 s.d 44 tahun": 1215,
+    "45 s.d 49 tahun": 1055,
+    "50 s.d 54 tahun": 859,
+    "55 s.d 59 tahun": 666,
+    "60 s.d 64 tahun": 458
+   }
+  },
+  "Pulo": {
+   "total": 6856,
+   "age_bins": {
+    "15 s.d 19 tahun": 509,
+    "20 s.d 24 tahun": 465,
+    "25 s.d 29 tahun": 471,
+    "30 s.d 34 tahun": 561,
+    "35 s.d 39 tahun": 551,
+    "40 s.d 44 tahun": 594,
+    "45 s.d 49 tahun": 589,
+    "50 s.d 54 tahun": 563,
+    "55 s.d 59 tahun": 434,
+    "60 s.d 64 tahun": 281
+   }
+  },
+  "Rawa Barat": {
+   "total": 6738,
+   "age_bins": {
+    "15 s.d 19 tahun": 520,
+    "20 s.d 24 tahun": 439,
+    "25 s.d 29 tahun": 510,
+    "30 s.d 34 tahun": 571,
+    "35 s.d 39 tahun": 546,
+    "40 s.d 44 tahun": 534,
+    "45 s.d 49 tahun": 608,
+    "50 s.d 54 tahun": 514,
+    "55 s.d 59 tahun": 377,
+    "60 s.d 64 tahun": 269
+   }
+  },
+  "Selong": {
+   "total": 4207,
+   "age_bins": {
+    "15 s.d 19 tahun": 310,
+    "20 s.d 24 tahun": 240,
+    "25 s.d 29 tahun": 269,
+    "30 s.d 34 tahun": 336,
+    "35 s.d 39 tahun": 366,
+    "40 s.d 44 tahun": 376,
+    "45 s.d 49 tahun": 382,
+    "50 s.d 54 tahun": 316,
+    "55 s.d 59 tahun": 224,
+    "60 s.d 64 tahun": 173
+   }
+  },
+  "Senayan": {
+   "total": 4353,
+   "age_bins": {
+    "15 s.d 19 tahun": 310,
+    "20 s.d 24 tahun": 291,
+    "25 s.d 29 tahun": 344,
+    "30 s.d 34 tahun": 410,
+    "35 s.d 39 tahun": 368,
+    "40 s.d 44 tahun": 419,
+    "45 s.d 49 tahun": 337,
+    "50 s.d 54 tahun": 284,
+    "55 s.d 59 tahun": 213,
+    "60 s.d 64 tahun": 145
+   }
+  },
+  "Cipulir": {
+   "total": 43634,
+   "age_bins": {
+    "15 s.d 19 tahun": 3284,
+    "20 s.d 24 tahun": 3131,
+    "25 s.d 29 tahun": 3524,
+    "30 s.d 34 tahun": 4421,
+    "35 s.d 39 tahun": 4300,
+    "40 s.d 44 tahun": 3893,
+    "45 s.d 49 tahun": 3085,
+    "50 s.d 54 tahun": 2408,
+    "55 s.d 59 tahun": 1730,
+    "60 s.d 64 tahun": 1152
+   }
+  },
+  "Gandaria Selatan": {
+   "total": 24314,
+   "age_bins": {
+    "15 s.d 19 tahun": 1784,
+    "20 s.d 24 tahun": 1726,
+    "25 s.d 29 tahun": 1960,
+    "30 s.d 34 tahun": 2423,
+    "35 s.d 39 tahun": 2310,
+    "40 s.d 44 tahun": 2175,
+    "45 s.d 49 tahun": 1843,
+    "50 s.d 54 tahun": 1461,
+    "55 s.d 59 tahun": 965,
+    "60 s.d 64 tahun": 619
+   }
+  },
+  "Grogol Selatan": {
+   "total": 48444,
+   "age_bins": {
+    "15 s.d 19 tahun": 3685,
+    "20 s.d 24 tahun": 3605,
+    "25 s.d 29 tahun": 3952,
+    "30 s.d 34 tahun": 4761,
+    "35 s.d 39 tahun": 4575,
+    "40 s.d 44 tahun": 4353,
+    "45 s.d 49 tahun": 3578,
+    "50 s.d 54 tahun": 2784,
+    "55 s.d 59 tahun": 2069,
+    "60 s.d 64 tahun": 1279
+   }
+  },
+  "Grogol Utara": {
+   "total": 47725,
+   "age_bins": {
+    "15 s.d 19 tahun": 3621,
+    "20 s.d 24 tahun": 3551,
+    "25 s.d 29 tahun": 3927,
+    "30 s.d 34 tahun": 4721,
+    "35 s.d 39 tahun": 4493,
+    "40 s.d 44 tahun": 4258,
+    "45 s.d 49 tahun": 3564,
+    "50 s.d 54 tahun": 2709,
+    "55 s.d 59 tahun": 1907,
+    "60 s.d 64 tahun": 1285
+   }
+  },
+  "Kebayoran Lama Selatan": {
+   "total": 45213,
+   "age_bins": {
+    "15 s.d 19 tahun": 3152,
+    "20 s.d 24 tahun": 2915,
+    "25 s.d 29 tahun": 3475,
+    "30 s.d 34 tahun": 4573,
+    "35 s.d 39 tahun": 4568,
+    "40 s.d 44 tahun": 4197,
+    "45 s.d 49 tahun": 3255,
+    "50 s.d 54 tahun": 2557,
+    "55 s.d 59 tahun": 1883,
+    "60 s.d 64 tahun": 1414
+   }
+  },
+  "Kebayoran Lama Utara": {
+   "total": 49570,
+   "age_bins": {
+    "15 s.d 19 tahun": 3528,
+    "20 s.d 24 tahun": 3542,
+    "25 s.d 29 tahun": 4279,
+    "30 s.d 34 tahun": 5309,
+    "35 s.d 39 tahun": 5034,
+    "40 s.d 44 tahun": 4301,
+    "45 s.d 49 tahun": 3356,
+    "50 s.d 54 tahun": 2654,
+    "55 s.d 59 tahun": 1936,
+    "60 s.d 64 tahun": 1382
+   }
+  },
+  "Pondok Pinang": {
+   "total": 60785,
+   "age_bins": {
+    "15 s.d 19 tahun": 4447,
+    "20 s.d 24 tahun": 4486,
+    "25 s.d 29 tahun": 5014,
+    "30 s.d 34 tahun": 5973,
+    "35 s.d 39 tahun": 5535,
+    "40 s.d 44 tahun": 5148,
+    "45 s.d 49 tahun": 4268,
+    "50 s.d 54 tahun": 3455,
+    "55 s.d 59 tahun": 2741,
+    "60 s.d 64 tahun": 2012
+   }
+  },
+  "Duri Kepa": {
+   "total": 111993,
+   "age_bins": {
+    "15 s.d 19 tahun": 4940,
+    "20 s.d 24 tahun": 7199,
+    "25 s.d 29 tahun": 6621,
+    "30 s.d 34 tahun": 5160,
+    "35 s.d 39 tahun": 8324,
+    "40 s.d 44 tahun": 9670,
+    "45 s.d 49 tahun": 7389,
+    "50 s.d 54 tahun": 10593,
+    "55 s.d 59 tahun": 9284,
+    "60 s.d 64 tahun": 5126
+   }
+  },
+  "Kebon Jeruk": {
+   "total": 98557,
+   "age_bins": {
+    "15 s.d 19 tahun": 4560,
+    "20 s.d 24 tahun": 6629,
+    "25 s.d 29 tahun": 6251,
+    "30 s.d 34 tahun": 4362,
+    "35 s.d 39 tahun": 6925,
+    "40 s.d 44 tahun": 7495,
+    "45 s.d 49 tahun": 5879,
+    "50 s.d 54 tahun": 8618,
+    "55 s.d 59 tahun": 8063,
+    "60 s.d 64 tahun": 4780
+   }
+  },
+  "Kedoya Selatan": {
+   "total": 60929,
+   "age_bins": {
+    "15 s.d 19 tahun": 2806,
+    "20 s.d 24 tahun": 4031,
+    "25 s.d 29 tahun": 3553,
+    "30 s.d 34 tahun": 2709,
+    "35 s.d 39 tahun": 4384,
+    "40 s.d 44 tahun": 5069,
+    "45 s.d 49 tahun": 3923,
+    "50 s.d 54 tahun": 5619,
+    "55 s.d 59 tahun": 5016,
+    "60 s.d 64 tahun": 2755
+   }
+  },
+  "Kedoya Utara": {
+   "total": 85605,
+   "age_bins": {
+    "15 s.d 19 tahun": 3932,
+    "20 s.d 24 tahun": 5906,
+    "25 s.d 29 tahun": 5516,
+    "30 s.d 34 tahun": 3914,
+    "35 s.d 39 tahun": 6269,
+    "40 s.d 44 tahun": 7081,
+    "45 s.d 49 tahun": 5497,
+    "50 s.d 54 tahun": 7869,
+    "55 s.d 59 tahun": 6866,
+    "60 s.d 64 tahun": 3924
+   }
+  },
+  "Kelapa Dua": {
+   "total": 45231,
+   "age_bins": {
+    "15 s.d 19 tahun": 2122,
+    "20 s.d 24 tahun": 3069,
+    "25 s.d 29 tahun": 2765,
+    "30 s.d 34 tahun": 1962,
+    "35 s.d 39 tahun": 3123,
+    "40 s.d 44 tahun": 3409,
+    "45 s.d 49 tahun": 2694,
+    "50 s.d 54 tahun": 3950,
+    "55 s.d 59 tahun": 3720,
+    "60 s.d 64 tahun": 2162
+   }
+  },
+  "Sukabumi Selatan": {
+   "total": 74640,
+   "age_bins": {
+    "15 s.d 19 tahun": 3577,
+    "20 s.d 24 tahun": 5157,
+    "25 s.d 29 tahun": 4546,
+    "30 s.d 34 tahun": 3396,
+    "35 s.d 39 tahun": 5445,
+    "40 s.d 44 tahun": 6053,
+    "45 s.d 49 tahun": 4582,
+    "50 s.d 54 tahun": 6676,
+    "55 s.d 59 tahun": 5862,
+    "60 s.d 64 tahun": 3394
+   }
+  },
+  "Sukabumi Utara": {
+   "total": 73731,
+   "age_bins": {
+    "15 s.d 19 tahun": 3451,
+    "20 s.d 24 tahun": 4995,
+    "25 s.d 29 tahun": 4638,
+    "30 s.d 34 tahun": 3197,
+    "35 s.d 39 tahun": 5202,
+    "40 s.d 44 tahun": 5803,
+    "45 s.d 49 tahun": 4465,
+    "50 s.d 54 tahun": 6491,
+    "55 s.d 59 tahun": 5982,
+    "60 s.d 64 tahun": 3579
+   }
+  },
+  "Kelapa Gading Barat": {
+   "total": 64857,
+   "age_bins": {
+    "15 s.d 19 tahun": 3113,
+    "20 s.d 24 tahun": 4539,
+    "25 s.d 29 tahun": 4222,
+    "30 s.d 34 tahun": 2628,
+    "35 s.d 39 tahun": 4061,
+    "40 s.d 44 tahun": 4643,
+    "45 s.d 49 tahun": 3767,
+    "50 s.d 54 tahun": 5555,
+    "55 s.d 59 tahun": 5444,
+    "60 s.d 64 tahun": 3617
+   }
+  },
+  "Kelapa Gading Timur": {
+   "total": 58187,
+   "age_bins": {
+    "15 s.d 19 tahun": 2337,
+    "20 s.d 24 tahun": 3463,
+    "25 s.d 29 tahun": 3232,
+    "30 s.d 34 tahun": 2539,
+    "35 s.d 39 tahun": 4283,
+    "40 s.d 44 tahun": 5230,
+    "45 s.d 49 tahun": 4037,
+    "50 s.d 54 tahun": 5694,
+    "55 s.d 59 tahun": 5071,
+    "60 s.d 64 tahun": 2765
+   }
+  },
+  "Pegangsaan Dua": {
+   "total": 86280,
+   "age_bins": {
+    "15 s.d 19 tahun": 3679,
+    "20 s.d 24 tahun": 5571,
+    "25 s.d 29 tahun": 5686,
+    "30 s.d 34 tahun": 4170,
+    "35 s.d 39 tahun": 6429,
+    "40 s.d 44 tahun": 6935,
+    "45 s.d 49 tahun": 5230,
+    "50 s.d 54 tahun": 7511,
+    "55 s.d 59 tahun": 6975,
+    "60 s.d 64 tahun": 4025
+   }
+  },
+  "Rawa Terate": {
+   "total": 30285,
+   "age_bins": {
+    "15 s.d 19 tahun": 2212,
+    "20 s.d 24 tahun": 2493,
+    "25 s.d 29 tahun": 2948,
+    "30 s.d 34 tahun": 3524,
+    "35 s.d 39 tahun": 2982,
+    "40 s.d 44 tahun": 2530,
+    "45 s.d 49 tahun": 1878,
+    "50 s.d 54 tahun": 1456,
+    "55 s.d 59 tahun": 1033,
+    "60 s.d 64 tahun": 536
+   }
+  },
+  "Cempaka Baru": {
+   "total": 39053,
+   "age_bins": {
+    "15 s.d 19 tahun": 2970,
+    "20 s.d 24 tahun": 2720,
+    "25 s.d 29 tahun": 2776,
+    "30 s.d 34 tahun": 3290,
+    "35 s.d 39 tahun": 3460,
+    "40 s.d 44 tahun": 3719,
+    "45 s.d 49 tahun": 3129,
+    "50 s.d 54 tahun": 2370,
+    "55 s.d 59 tahun": 1738,
+    "60 s.d 64 tahun": 1268
+   }
+  },
+  "Gunung Sahari Selatan": {
+   "total": 23912,
+   "age_bins": {
+    "15 s.d 19 tahun": 1825,
+    "20 s.d 24 tahun": 1662,
+    "25 s.d 29 tahun": 1753,
+    "30 s.d 34 tahun": 2035,
+    "35 s.d 39 tahun": 2050,
+    "40 s.d 44 tahun": 1989,
+    "45 s.d 49 tahun": 1857,
+    "50 s.d 54 tahun": 1581,
+    "55 s.d 59 tahun": 1319,
+    "60 s.d 64 tahun": 981
+   }
+  },
+  "Harapan Mulya": {
+   "total": 27561,
+   "age_bins": {
+    "15 s.d 19 tahun": 2096,
+    "20 s.d 24 tahun": 1907,
+    "25 s.d 29 tahun": 2027,
+    "30 s.d 34 tahun": 2532,
+    "35 s.d 39 tahun": 2469,
+    "40 s.d 44 tahun": 2426,
+    "45 s.d 49 tahun": 2133,
+    "50 s.d 54 tahun": 1614,
+    "55 s.d 59 tahun": 1321,
+    "60 s.d 64 tahun": 965
+   }
+  },
+  "Kebon Kosong": {
+   "total": 32926,
+   "age_bins": {
+    "15 s.d 19 tahun": 2533,
+    "20 s.d 24 tahun": 2218,
+    "25 s.d 29 tahun": 2406,
+    "30 s.d 34 tahun": 2889,
+    "35 s.d 39 tahun": 3186,
+    "40 s.d 44 tahun": 2812,
+    "45 s.d 49 tahun": 2499,
+    "50 s.d 54 tahun": 1906,
+    "55 s.d 59 tahun": 1487,
+    "60 s.d 64 tahun": 1133
+   }
+  },
+  "Kemayoran": {
+   "total": 25089,
+   "age_bins": {
+    "15 s.d 19 tahun": 1908,
+    "20 s.d 24 tahun": 1834,
+    "25 s.d 29 tahun": 1988,
+    "30 s.d 34 tahun": 2214,
+    "35 s.d 39 tahun": 2227,
+    "40 s.d 44 tahun": 2039,
+    "45 s.d 49 tahun": 1877,
+    "50 s.d 54 tahun": 1632,
+    "55 s.d 59 tahun": 1297,
+    "60 s.d 64 tahun": 1018
+   }
+  },
+  "Serdang": {
+   "total": 35596,
+   "age_bins": {
+    "15 s.d 19 tahun": 2896,
+    "20 s.d 24 tahun": 2437,
+    "25 s.d 29 tahun": 2359,
+    "30 s.d 34 tahun": 2751,
+    "35 s.d 39 tahun": 3162,
+    "40 s.d 44 tahun": 3326,
+    "45 s.d 49 tahun": 3100,
+    "50 s.d 54 tahun": 2223,
+    "55 s.d 59 tahun": 1528,
+    "60 s.d 64 tahun": 1068
+   }
+  },
+  "Sumur Batu": {
+   "total": 27723,
+   "age_bins": {
+    "15 s.d 19 tahun": 1991,
+    "20 s.d 24 tahun": 1807,
+    "25 s.d 29 tahun": 1850,
+    "30 s.d 34 tahun": 2472,
+    "35 s.d 39 tahun": 2824,
+    "40 s.d 44 tahun": 2531,
+    "45 s.d 49 tahun": 2142,
+    "50 s.d 54 tahun": 1570,
+    "55 s.d 59 tahun": 1238,
+    "60 s.d 64 tahun": 1019
+   }
+  },
+  "Utan Panjang": {
+   "total": 34787,
+   "age_bins": {
+    "15 s.d 19 tahun": 2706,
+    "20 s.d 24 tahun": 2527,
+    "25 s.d 29 tahun": 2750,
+    "30 s.d 34 tahun": 3092,
+    "35 s.d 39 tahun": 3159,
+    "40 s.d 44 tahun": 2904,
+    "45 s.d 49 tahun": 2575,
+    "50 s.d 54 tahun": 2083,
+    "55 s.d 59 tahun": 1643,
+    "60 s.d 64 tahun": 1143
+   }
+  },
+  "Joglo": {
+   "total": 74428,
+   "age_bins": {
+    "15 s.d 19 tahun": 3585,
+    "20 s.d 24 tahun": 5252,
+    "25 s.d 29 tahun": 4695,
+    "30 s.d 34 tahun": 3226,
+    "35 s.d 39 tahun": 5066,
+    "40 s.d 44 tahun": 5750,
+    "45 s.d 49 tahun": 4677,
+    "50 s.d 54 tahun": 6665,
+    "55 s.d 59 tahun": 5890,
+    "60 s.d 64 tahun": 3418
+   }
+  },
+  "Kembangan Selatan": {
+   "total": 48479,
+   "age_bins": {
+    "15 s.d 19 tahun": 2189,
+    "20 s.d 24 tahun": 3224,
+    "25 s.d 29 tahun": 3193,
+    "30 s.d 34 tahun": 2439,
+    "35 s.d 39 tahun": 3799,
+    "40 s.d 44 tahun": 4196,
+    "45 s.d 49 tahun": 2910,
+    "50 s.d 54 tahun": 4216,
+    "55 s.d 59 tahun": 3636,
+    "60 s.d 64 tahun": 2126
+   }
+  },
+  "Kembangan Utara": {
+   "total": 102532,
+   "age_bins": {
+    "15 s.d 19 tahun": 5035,
+    "20 s.d 24 tahun": 7311,
+    "25 s.d 29 tahun": 6618,
+    "30 s.d 34 tahun": 4531,
+    "35 s.d 39 tahun": 7265,
+    "40 s.d 44 tahun": 8320,
+    "45 s.d 49 tahun": 5995,
+    "50 s.d 54 tahun": 8758,
+    "55 s.d 59 tahun": 8149,
+    "60 s.d 64 tahun": 4632
+   }
+  },
+  "Meruya Selatan": {
+   "total": 55708,
+   "age_bins": {
+    "15 s.d 19 tahun": 2636,
+    "20 s.d 24 tahun": 3871,
+    "25 s.d 29 tahun": 3451,
+    "30 s.d 34 tahun": 2471,
+    "35 s.d 39 tahun": 3898,
+    "40 s.d 44 tahun": 4429,
+    "45 s.d 49 tahun": 3306,
+    "50 s.d 54 tahun": 4841,
+    "55 s.d 59 tahun": 4503,
+    "60 s.d 64 tahun": 2650
+   }
+  },
+  "Meruya Utara": {
+   "total": 78534,
+   "age_bins": {
+    "15 s.d 19 tahun": 3412,
+    "20 s.d 24 tahun": 5035,
+    "25 s.d 29 tahun": 4699,
+    "30 s.d 34 tahun": 3545,
+    "35 s.d 39 tahun": 5771,
+    "40 s.d 44 tahun": 6612,
+    "45 s.d 49 tahun": 5252,
+    "50 s.d 54 tahun": 7408,
+    "55 s.d 59 tahun": 6440,
+    "60 s.d 64 tahun": 3740
+   }
+  },
+  "Srengseng": {
+   "total": 81755,
+   "age_bins": {
+    "15 s.d 19 tahun": 3930,
+    "20 s.d 24 tahun": 5780,
+    "25 s.d 29 tahun": 5338,
+    "30 s.d 34 tahun": 3761,
+    "35 s.d 39 tahun": 5870,
+    "40 s.d 44 tahun": 6327,
+    "45 s.d 49 tahun": 4768,
+    "50 s.d 54 tahun": 7038,
+    "55 s.d 59 tahun": 6718,
+    "60 s.d 64 tahun": 3728
+   }
+  },
+  "Koja": {
+   "total": 63145,
+   "age_bins": {
+    "15 s.d 19 tahun": 3063,
+    "20 s.d 24 tahun": 4494,
+    "25 s.d 29 tahun": 3957,
+    "30 s.d 34 tahun": 3088,
+    "35 s.d 39 tahun": 4855,
+    "40 s.d 44 tahun": 5037,
+    "45 s.d 49 tahun": 3779,
+    "50 s.d 54 tahun": 5523,
+    "55 s.d 59 tahun": 4696,
+    "60 s.d 64 tahun": 2753
+   }
+  },
+  "Lagoa": {
+   "total": 123351,
+   "age_bins": {
+    "15 s.d 19 tahun": 5986,
+    "20 s.d 24 tahun": 8835,
+    "25 s.d 29 tahun": 8303,
+    "30 s.d 34 tahun": 5931,
+    "35 s.d 39 tahun": 9273,
+    "40 s.d 44 tahun": 9588,
+    "45 s.d 49 tahun": 7009,
+    "50 s.d 54 tahun": 10214,
+    "55 s.d 59 tahun": 9193,
+    "60 s.d 64 tahun": 5536
+   }
+  },
+  "Rawa Badak Selatan": {
+   "total": 84601,
+   "age_bins": {
+    "15 s.d 19 tahun": 4099,
+    "20 s.d 24 tahun": 5924,
+    "25 s.d 29 tahun": 5265,
+    "30 s.d 34 tahun": 3910,
+    "35 s.d 39 tahun": 6330,
+    "40 s.d 44 tahun": 7008,
+    "45 s.d 49 tahun": 5307,
+    "50 s.d 54 tahun": 7546,
+    "55 s.d 59 tahun": 6459,
+    "60 s.d 64 tahun": 3566
+   }
+  },
+  "Rawa Badak Utara": {
+   "total": 73591,
+   "age_bins": {
+    "15 s.d 19 tahun": 3560,
+    "20 s.d 24 tahun": 5208,
+    "25 s.d 29 tahun": 4518,
+    "30 s.d 34 tahun": 3260,
+    "35 s.d 39 tahun": 5324,
+    "40 s.d 44 tahun": 5798,
+    "45 s.d 49 tahun": 4527,
+    "50 s.d 54 tahun": 6622,
+    "55 s.d 59 tahun": 5891,
+    "60 s.d 64 tahun": 3472
+   }
+  },
+  "Tugu Selatan": {
+   "total": 77559,
+   "age_bins": {
+    "15 s.d 19 tahun": 3697,
+    "20 s.d 24 tahun": 5410,
+    "25 s.d 29 tahun": 4907,
+    "30 s.d 34 tahun": 3744,
+    "35 s.d 39 tahun": 5979,
+    "40 s.d 44 tahun": 6421,
+    "45 s.d 49 tahun": 4887,
+    "50 s.d 54 tahun": 6879,
+    "55 s.d 59 tahun": 5970,
+    "60 s.d 64 tahun": 3219
+   }
+  },
+  "Tugu Utara": {
+   "total": 142982,
+   "age_bins": {
+    "15 s.d 19 tahun": 6865,
+    "20 s.d 24 tahun": 10028,
+    "25 s.d 29 tahun": 9085,
+    "30 s.d 34 tahun": 6608,
+    "35 s.d 39 tahun": 10562,
+    "40 s.d 44 tahun": 11450,
+    "45 s.d 49 tahun": 8670,
+    "50 s.d 54 tahun": 12562,
+    "55 s.d 59 tahun": 11372,
+    "60 s.d 64 tahun": 6308
+   }
+  },
+  "Bale Kambang": {
+   "total": 30080,
+   "age_bins": {
+    "15 s.d 19 tahun": 2294,
+    "20 s.d 24 tahun": 2373,
+    "25 s.d 29 tahun": 2633,
+    "30 s.d 34 tahun": 3060,
+    "35 s.d 39 tahun": 2838,
+    "40 s.d 44 tahun": 2552,
+    "45 s.d 49 tahun": 2010,
+    "50 s.d 54 tahun": 1529,
+    "55 s.d 59 tahun": 1286,
+    "60 s.d 64 tahun": 799
+   }
+  },
+  "Batu Ampar": {
+   "total": 50953,
+   "age_bins": {
+    "15 s.d 19 tahun": 3870,
+    "20 s.d 24 tahun": 3806,
+    "25 s.d 29 tahun": 4396,
+    "30 s.d 34 tahun": 5326,
+    "35 s.d 39 tahun": 4897,
+    "40 s.d 44 tahun": 4348,
+    "45 s.d 49 tahun": 3417,
+    "50 s.d 54 tahun": 2579,
+    "55 s.d 59 tahun": 2060,
+    "60 s.d 64 tahun": 1425
+   }
+  },
+  "Cawang": {
+   "total": 39065,
+   "age_bins": {
+    "15 s.d 19 tahun": 2707,
+    "20 s.d 24 tahun": 2909,
+    "25 s.d 29 tahun": 3517,
+    "30 s.d 34 tahun": 4023,
+    "35 s.d 39 tahun": 3742,
+    "40 s.d 44 tahun": 3346,
+    "45 s.d 49 tahun": 2704,
+    "50 s.d 54 tahun": 2231,
+    "55 s.d 59 tahun": 1652,
+    "60 s.d 64 tahun": 1074
+   }
+  },
+  "Cililitan": {
+   "total": 46968,
+   "age_bins": {
+    "15 s.d 19 tahun": 3425,
+    "20 s.d 24 tahun": 3479,
+    "25 s.d 29 tahun": 4073,
+    "30 s.d 34 tahun": 4793,
+    "35 s.d 39 tahun": 4406,
+    "40 s.d 44 tahun": 3963,
+    "45 s.d 49 tahun": 3316,
+    "50 s.d 54 tahun": 2538,
+    "55 s.d 59 tahun": 2009,
+    "60 s.d 64 tahun": 1398
+   }
+  },
+  "Dukuh": {
+   "total": 26535,
+   "age_bins": {
+    "15 s.d 19 tahun": 1977,
+    "20 s.d 24 tahun": 1980,
+    "25 s.d 29 tahun": 2395,
+    "30 s.d 34 tahun": 2710,
+    "35 s.d 39 tahun": 2487,
+    "40 s.d 44 tahun": 2145,
+    "45 s.d 49 tahun": 1752,
+    "50 s.d 54 tahun": 1402,
+    "55 s.d 59 tahun": 1094,
+    "60 s.d 64 tahun": 661
+   }
+  },
+  "Kramat Jati": {
+   "total": 39217,
+   "age_bins": {
+    "15 s.d 19 tahun": 2980,
+    "20 s.d 24 tahun": 3063,
+    "25 s.d 29 tahun": 3311,
+    "30 s.d 34 tahun": 3873,
+    "35 s.d 39 tahun": 3745,
+    "40 s.d 44 tahun": 3343,
+    "45 s.d 49 tahun": 2846,
+    "50 s.d 54 tahun": 2251,
+    "55 s.d 59 tahun": 1659,
+    "60 s.d 64 tahun": 956
+   }
+  },
+  "Tengah": {
+   "total": 49290,
+   "age_bins": {
+    "15 s.d 19 tahun": 3902,
+    "20 s.d 24 tahun": 4165,
+    "25 s.d 29 tahun": 4408,
+    "30 s.d 34 tahun": 4927,
+    "35 s.d 39 tahun": 4359,
+    "40 s.d 44 tahun": 3766,
+    "45 s.d 49 tahun": 3391,
+    "50 s.d 54 tahun": 2570,
+    "55 s.d 59 tahun": 1879,
+    "60 s.d 64 tahun": 1230
+   }
+  },
+  "Cipinang Melayu": {
+   "total": 46928,
+   "age_bins": {
+    "15 s.d 19 tahun": 3404,
+    "20 s.d 24 tahun": 3480,
+    "25 s.d 29 tahun": 3933,
+    "30 s.d 34 tahun": 4796,
+    "35 s.d 39 tahun": 4312,
+    "40 s.d 44 tahun": 3911,
+    "45 s.d 49 tahun": 3345,
+    "50 s.d 54 tahun": 2746,
+    "55 s.d 59 tahun": 2201,
+    "60 s.d 64 tahun": 1451
+   }
+  },
+  "Halim Perdana Kusuma": {
+   "total": 33279,
+   "age_bins": {
+    "15 s.d 19 tahun": 2699,
+    "20 s.d 24 tahun": 2620,
+    "25 s.d 29 tahun": 2962,
+    "30 s.d 34 tahun": 2948,
+    "35 s.d 39 tahun": 3055,
+    "40 s.d 44 tahun": 3335,
+    "45 s.d 49 tahun": 2639,
+    "50 s.d 54 tahun": 1960,
+    "55 s.d 59 tahun": 1103,
+    "60 s.d 64 tahun": 559
+   }
+  },
+  "Kebon Pala": {
+   "total": 52088,
+   "age_bins": {
+    "15 s.d 19 tahun": 3645,
+    "20 s.d 24 tahun": 3908,
+    "25 s.d 29 tahun": 4488,
+    "30 s.d 34 tahun": 5682,
+    "35 s.d 39 tahun": 5191,
+    "40 s.d 44 tahun": 4488,
+    "45 s.d 49 tahun": 3529,
+    "50 s.d 54 tahun": 2769,
+    "55 s.d 59 tahun": 2125,
+    "60 s.d 64 tahun": 1535
+   }
+  },
+  "Makasar": {
+   "total": 38285,
+   "age_bins": {
+    "15 s.d 19 tahun": 2792,
+    "20 s.d 24 tahun": 2925,
+    "25 s.d 29 tahun": 3260,
+    "30 s.d 34 tahun": 4025,
+    "35 s.d 39 tahun": 3703,
+    "40 s.d 44 tahun": 3098,
+    "45 s.d 49 tahun": 2562,
+    "50 s.d 54 tahun": 2145,
+    "55 s.d 59 tahun": 1745,
+    "60 s.d 64 tahun": 1206
+   }
+  },
+  "Pinang Ranti": {
+   "total": 27959,
+   "age_bins": {
+    "15 s.d 19 tahun": 2218,
+    "20 s.d 24 tahun": 2204,
+    "25 s.d 29 tahun": 2450,
+    "30 s.d 34 tahun": 2931,
+    "35 s.d 39 tahun": 2583,
+    "40 s.d 44 tahun": 2309,
+    "45 s.d 49 tahun": 1875,
+    "50 s.d 54 tahun": 1411,
+    "55 s.d 59 tahun": 1118,
+    "60 s.d 64 tahun": 699
+   }
+  },
+  "Bangka": {
+   "total": 24195,
+   "age_bins": {
+    "15 s.d 19 tahun": 1856,
+    "20 s.d 24 tahun": 1908,
+    "25 s.d 29 tahun": 2029,
+    "30 s.d 34 tahun": 2355,
+    "35 s.d 39 tahun": 2217,
+    "40 s.d 44 tahun": 2088,
+    "45 s.d 49 tahun": 1856,
+    "50 s.d 54 tahun": 1432,
+    "55 s.d 59 tahun": 1035,
+    "60 s.d 64 tahun": 538
+   }
+  },
+  "Mampang Prapatan": {
+   "total": 21654,
+   "age_bins": {
+    "15 s.d 19 tahun": 1632,
+    "20 s.d 24 tahun": 1603,
+    "25 s.d 29 tahun": 1845,
+    "30 s.d 34 tahun": 2184,
+    "35 s.d 39 tahun": 2077,
+    "40 s.d 44 tahun": 1914,
+    "45 s.d 49 tahun": 1506,
+    "50 s.d 54 tahun": 1171,
+    "55 s.d 59 tahun": 816,
+    "60 s.d 64 tahun": 517
+   }
+  },
+  "Pela Mampang": {
+   "total": 50102,
+   "age_bins": {
+    "15 s.d 19 tahun": 3826,
+    "20 s.d 24 tahun": 3580,
+    "25 s.d 29 tahun": 4042,
+    "30 s.d 34 tahun": 5040,
+    "35 s.d 39 tahun": 4779,
+    "40 s.d 44 tahun": 4518,
+    "45 s.d 49 tahun": 3730,
+    "50 s.d 54 tahun": 2862,
+    "55 s.d 59 tahun": 2131,
+    "60 s.d 64 tahun": 1370
+   }
+  },
+  "Tegal Parang": {
+   "total": 36919,
+   "age_bins": {
+    "15 s.d 19 tahun": 2790,
+    "20 s.d 24 tahun": 2936,
+    "25 s.d 29 tahun": 3326,
+    "30 s.d 34 tahun": 3841,
+    "35 s.d 39 tahun": 3509,
+    "40 s.d 44 tahun": 3063,
+    "45 s.d 49 tahun": 2494,
+    "50 s.d 54 tahun": 1881,
+    "55 s.d 59 tahun": 1371,
+    "60 s.d 64 tahun": 887
+   }
+  },
+  "Kayu Manis": {
+   "total": 30060,
+   "age_bins": {
+    "15 s.d 19 tahun": 2172,
+    "20 s.d 24 tahun": 2117,
+    "25 s.d 29 tahun": 2479,
+    "30 s.d 34 tahun": 2873,
+    "35 s.d 39 tahun": 2713,
+    "40 s.d 44 tahun": 2608,
+    "45 s.d 49 tahun": 2317,
+    "50 s.d 54 tahun": 1767,
+    "55 s.d 59 tahun": 1366,
+    "60 s.d 64 tahun": 900
+   }
+  },
+  "Kebon Manggis": {
+   "total": 19969,
+   "age_bins": {
+    "15 s.d 19 tahun": 1474,
+    "20 s.d 24 tahun": 1463,
+    "25 s.d 29 tahun": 1547,
+    "30 s.d 34 tahun": 1674,
+    "35 s.d 39 tahun": 1713,
+    "40 s.d 44 tahun": 1790,
+    "45 s.d 49 tahun": 1658,
+    "50 s.d 54 tahun": 1337,
+    "55 s.d 59 tahun": 969,
+    "60 s.d 64 tahun": 648
+   }
+  },
+  "Palmeriam": {
+   "total": 23931,
+   "age_bins": {
+    "15 s.d 19 tahun": 1711,
+    "20 s.d 24 tahun": 1804,
+    "25 s.d 29 tahun": 2081,
+    "30 s.d 34 tahun": 2353,
+    "35 s.d 39 tahun": 2162,
+    "40 s.d 44 tahun": 2062,
+    "45 s.d 49 tahun": 1813,
+    "50 s.d 54 tahun": 1512,
+    "55 s.d 59 tahun": 1140,
+    "60 s.d 64 tahun": 749
+   }
+  },
+  "Pisangan Baru": {
+   "total": 37340,
+   "age_bins": {
+    "15 s.d 19 tahun": 2806,
+    "20 s.d 24 tahun": 2713,
+    "25 s.d 29 tahun": 2958,
+    "30 s.d 34 tahun": 3515,
+    "35 s.d 39 tahun": 3397,
+    "40 s.d 44 tahun": 3245,
+    "45 s.d 49 tahun": 2827,
+    "50 s.d 54 tahun": 2223,
+    "55 s.d 59 tahun": 1685,
+    "60 s.d 64 tahun": 1131
+   }
+  },
+  "Utan Kayu Selatan": {
+   "total": 38565,
+   "age_bins": {
+    "15 s.d 19 tahun": 2824,
+    "20 s.d 24 tahun": 2525,
+    "25 s.d 29 tahun": 2950,
+    "30 s.d 34 tahun": 3659,
+    "35 s.d 39 tahun": 3630,
+    "40 s.d 44 tahun": 3426,
+    "45 s.d 49 tahun": 2998,
+    "50 s.d 54 tahun": 2377,
+    "55 s.d 59 tahun": 1734,
+    "60 s.d 64 tahun": 1217
+   }
+  },
+  "Utan Kayu Utara": {
+   "total": 33275,
+   "age_bins": {
+    "15 s.d 19 tahun": 2354,
+    "20 s.d 24 tahun": 2371,
+    "25 s.d 29 tahun": 2683,
+    "30 s.d 34 tahun": 3304,
+    "35 s.d 39 tahun": 3148,
+    "40 s.d 44 tahun": 2990,
+    "45 s.d 49 tahun": 2475,
+    "50 s.d 54 tahun": 1919,
+    "55 s.d 59 tahun": 1428,
+    "60 s.d 64 tahun": 979
+   }
+  },
+  "Cikini": {
+   "total": 9832,
+   "age_bins": {
+    "15 s.d 19 tahun": 748,
+    "20 s.d 24 tahun": 695,
+    "25 s.d 29 tahun": 764,
+    "30 s.d 34 tahun": 802,
+    "35 s.d 39 tahun": 852,
+    "40 s.d 44 tahun": 775,
+    "45 s.d 49 tahun": 785,
+    "50 s.d 54 tahun": 690,
+    "55 s.d 59 tahun": 599,
+    "60 s.d 64 tahun": 423
+   }
+  },
+  "Gondangdia": {
+   "total": 4654,
+   "age_bins": {
+    "15 s.d 19 tahun": 291,
+    "20 s.d 24 tahun": 321,
+    "25 s.d 29 tahun": 333,
+    "30 s.d 34 tahun": 372,
+    "35 s.d 39 tahun": 357,
+    "40 s.d 44 tahun": 392,
+    "45 s.d 49 tahun": 366,
+    "50 s.d 54 tahun": 369,
+    "55 s.d 59 tahun": 314,
+    "60 s.d 64 tahun": 245
+   }
+  },
+  "Kebon Sirih": {
+   "total": 15917,
+   "age_bins": {
+    "15 s.d 19 tahun": 1225,
+    "20 s.d 24 tahun": 1113,
+    "25 s.d 29 tahun": 1269,
+    "30 s.d 34 tahun": 1374,
+    "35 s.d 39 tahun": 1450,
+    "40 s.d 44 tahun": 1358,
+    "45 s.d 49 tahun": 1178,
+    "50 s.d 54 tahun": 1001,
+    "55 s.d 59 tahun": 845,
+    "60 s.d 64 tahun": 634
+   }
+  },
+  "Menteng": {
+   "total": 29975,
+   "age_bins": {
+    "15 s.d 19 tahun": 2417,
+    "20 s.d 24 tahun": 2178,
+    "25 s.d 29 tahun": 2379,
+    "30 s.d 34 tahun": 2482,
+    "35 s.d 39 tahun": 2543,
+    "40 s.d 44 tahun": 2368,
+    "45 s.d 49 tahun": 2212,
+    "50 s.d 54 tahun": 2076,
+    "55 s.d 59 tahun": 1797,
+    "60 s.d 64 tahun": 1197
+   }
+  },
+  "Pegangsaan": {
+   "total": 27463,
+   "age_bins": {
+    "15 s.d 19 tahun": 2214,
+    "20 s.d 24 tahun": 2023,
+    "25 s.d 29 tahun": 2079,
+    "30 s.d 34 tahun": 2149,
+    "35 s.d 39 tahun": 2268,
+    "40 s.d 44 tahun": 2238,
+    "45 s.d 49 tahun": 2146,
+    "50 s.d 54 tahun": 1886,
+    "55 s.d 59 tahun": 1539,
+    "60 s.d 64 tahun": 1114
+   }
+  },
+  "Ancol": {
+   "total": 51215,
+   "age_bins": {
+    "15 s.d 19 tahun": 2598,
+    "20 s.d 24 tahun": 3709,
+    "25 s.d 29 tahun": 3157,
+    "30 s.d 34 tahun": 2259,
+    "35 s.d 39 tahun": 3639,
+    "40 s.d 44 tahun": 4088,
+    "45 s.d 49 tahun": 3149,
+    "50 s.d 54 tahun": 4591,
+    "55 s.d 59 tahun": 3938,
+    "60 s.d 64 tahun": 2334
+   }
+  },
+  "Pademangan Barat": {
+   "total": 154628,
+   "age_bins": {
+    "15 s.d 19 tahun": 7142,
+    "20 s.d 24 tahun": 10449,
+    "25 s.d 29 tahun": 9739,
+    "30 s.d 34 tahun": 7178,
+    "35 s.d 39 tahun": 11442,
+    "40 s.d 44 tahun": 12530,
+    "45 s.d 49 tahun": 9721,
+    "50 s.d 54 tahun": 14095,
+    "55 s.d 59 tahun": 12030,
+    "60 s.d 64 tahun": 6897
+   }
+  },
+  "Pademangan Timur": {
+   "total": 71228,
+   "age_bins": {
+    "15 s.d 19 tahun": 3238,
+    "20 s.d 24 tahun": 4637,
+    "25 s.d 29 tahun": 4259,
+    "30 s.d 34 tahun": 3005,
+    "35 s.d 39 tahun": 4940,
+    "40 s.d 44 tahun": 5831,
+    "45 s.d 49 tahun": 4476,
+    "50 s.d 54 tahun": 6521,
+    "55 s.d 59 tahun": 6073,
+    "60 s.d 64 tahun": 3493
+   }
+  },
+  "Pinangsia": {
+   "total": 21996,
+   "age_bins": {
+    "15 s.d 19 tahun": 939,
+    "20 s.d 24 tahun": 1391,
+    "25 s.d 29 tahun": 1334,
+    "30 s.d 34 tahun": 991,
+    "35 s.d 39 tahun": 1591,
+    "40 s.d 44 tahun": 1824,
+    "45 s.d 49 tahun": 1445,
+    "50 s.d 54 tahun": 2071,
+    "55 s.d 59 tahun": 1798,
+    "60 s.d 64 tahun": 1095
+   }
+  },
+  "Jati Pulo": {
+   "total": 58223,
+   "age_bins": {
+    "15 s.d 19 tahun": 2857,
+    "20 s.d 24 tahun": 4156,
+    "25 s.d 29 tahun": 3827,
+    "30 s.d 34 tahun": 2575,
+    "35 s.d 39 tahun": 4026,
+    "40 s.d 44 tahun": 4327,
+    "45 s.d 49 tahun": 3462,
+    "50 s.d 54 tahun": 4993,
+    "55 s.d 59 tahun": 4387,
+    "60 s.d 64 tahun": 2808
+   }
+  },
+  "Kemanggisan": {
+   "total": 64902,
+   "age_bins": {
+    "15 s.d 19 tahun": 3175,
+    "20 s.d 24 tahun": 4643,
+    "25 s.d 29 tahun": 4122,
+    "30 s.d 34 tahun": 2642,
+    "35 s.d 39 tahun": 4238,
+    "40 s.d 44 tahun": 4756,
+    "45 s.d 49 tahun": 3635,
+    "50 s.d 54 tahun": 5401,
+    "55 s.d 59 tahun": 5208,
+    "60 s.d 64 tahun": 3477
+   }
+  },
+  "Kota Bambu Selatan": {
+   "total": 44070,
+   "age_bins": {
+    "15 s.d 19 tahun": 2211,
+    "20 s.d 24 tahun": 3133,
+    "25 s.d 29 tahun": 2846,
+    "30 s.d 34 tahun": 1967,
+    "35 s.d 39 tahun": 3108,
+    "40 s.d 44 tahun": 3275,
+    "45 s.d 49 tahun": 2619,
+    "50 s.d 54 tahun": 3807,
+    "55 s.d 59 tahun": 3458,
+    "60 s.d 64 tahun": 2069
+   }
+  },
+  "Kota Bambu Utara": {
+   "total": 51165,
+   "age_bins": {
+    "15 s.d 19 tahun": 2463,
+    "20 s.d 24 tahun": 3586,
+    "25 s.d 29 tahun": 3167,
+    "30 s.d 34 tahun": 2268,
+    "35 s.d 39 tahun": 3627,
+    "40 s.d 44 tahun": 4103,
+    "45 s.d 49 tahun": 3115,
+    "50 s.d 54 tahun": 4476,
+    "55 s.d 59 tahun": 3803,
+    "60 s.d 64 tahun": 2304
+   }
+  },
+  "Palmerah": {
+   "total": 122784,
+   "age_bins": {
+    "15 s.d 19 tahun": 5945,
+    "20 s.d 24 tahun": 8623,
+    "25 s.d 29 tahun": 7726,
+    "30 s.d 34 tahun": 5308,
+    "35 s.d 39 tahun": 8391,
+    "40 s.d 44 tahun": 9245,
+    "45 s.d 49 tahun": 7376,
+    "50 s.d 54 tahun": 10823,
+    "55 s.d 59 tahun": 10085,
+    "60 s.d 64 tahun": 6099
+   }
+  },
+  "Slipi": {
+   "total": 33144,
+   "age_bins": {
+    "15 s.d 19 tahun": 1527,
+    "20 s.d 24 tahun": 2302,
+    "25 s.d 29 tahun": 2077,
+    "30 s.d 34 tahun": 1445,
+    "35 s.d 39 tahun": 2301,
+    "40 s.d 44 tahun": 2560,
+    "45 s.d 49 tahun": 1994,
+    "50 s.d 54 tahun": 2869,
+    "55 s.d 59 tahun": 2555,
+    "60 s.d 64 tahun": 1568
+   }
+  },
+  "Cikoko": {
+   "total": 12716,
+   "age_bins": {
+    "15 s.d 19 tahun": 891,
+    "20 s.d 24 tahun": 863,
+    "25 s.d 29 tahun": 1055,
+    "30 s.d 34 tahun": 1360,
+    "35 s.d 39 tahun": 1293,
+    "40 s.d 44 tahun": 1122,
+    "45 s.d 49 tahun": 877,
+    "50 s.d 54 tahun": 718,
+    "55 s.d 59 tahun": 531,
+    "60 s.d 64 tahun": 399
+   }
+  },
+  "Duren Tiga": {
+   "total": 31811,
+   "age_bins": {
+    "15 s.d 19 tahun": 2481,
+    "20 s.d 24 tahun": 2289,
+    "25 s.d 29 tahun": 2466,
+    "30 s.d 34 tahun": 3116,
+    "35 s.d 39 tahun": 3000,
+    "40 s.d 44 tahun": 2931,
+    "45 s.d 49 tahun": 2385,
+    "50 s.d 54 tahun": 1788,
+    "55 s.d 59 tahun": 1209,
+    "60 s.d 64 tahun": 824
+   }
+  },
+  "Kalibata": {
+   "total": 46968,
+   "age_bins": {
+    "15 s.d 19 tahun": 3383,
+    "20 s.d 24 tahun": 3440,
+    "25 s.d 29 tahun": 3997,
+    "30 s.d 34 tahun": 4796,
+    "35 s.d 39 tahun": 4542,
+    "40 s.d 44 tahun": 4168,
+    "45 s.d 49 tahun": 3201,
+    "50 s.d 54 tahun": 2340,
+    "55 s.d 59 tahun": 1847,
+    "60 s.d 64 tahun": 1233
+   }
+  },
+  "Pancoran": {
+   "total": 21228,
+   "age_bins": {
+    "15 s.d 19 tahun": 1521,
+    "20 s.d 24 tahun": 1481,
+    "25 s.d 29 tahun": 1876,
+    "30 s.d 34 tahun": 2170,
+    "35 s.d 39 tahun": 2075,
+    "40 s.d 44 tahun": 1815,
+    "45 s.d 49 tahun": 1402,
+    "50 s.d 54 tahun": 1065,
+    "55 s.d 59 tahun": 920,
+    "60 s.d 64 tahun": 594
+   }
+  },
+  "Pengadegan": {
+   "total": 22867,
+   "age_bins": {
+    "15 s.d 19 tahun": 1644,
+    "20 s.d 24 tahun": 1618,
+    "25 s.d 29 tahun": 1858,
+    "30 s.d 34 tahun": 2376,
+    "35 s.d 39 tahun": 2181,
+    "40 s.d 44 tahun": 2066,
+    "45 s.d 49 tahun": 1722,
+    "50 s.d 54 tahun": 1320,
+    "55 s.d 59 tahun": 962,
+    "60 s.d 64 tahun": 687
+   }
+  },
+  "Rawajati": {
+   "total": 20037,
+   "age_bins": {
+    "15 s.d 19 tahun": 1432,
+    "20 s.d 24 tahun": 1367,
+    "25 s.d 29 tahun": 1744,
+    "30 s.d 34 tahun": 2044,
+    "35 s.d 39 tahun": 1975,
+    "40 s.d 44 tahun": 1872,
+    "45 s.d 49 tahun": 1469,
+    "50 s.d 54 tahun": 1044,
+    "55 s.d 59 tahun": 839,
+    "60 s.d 64 tahun": 603
+   }
+  },
+  "Cilandak Timur": {
+   "total": 28478,
+   "age_bins": {
+    "15 s.d 19 tahun": 1938,
+    "20 s.d 24 tahun": 2182,
+    "25 s.d 29 tahun": 2887,
+    "30 s.d 34 tahun": 3118,
+    "35 s.d 39 tahun": 2787,
+    "40 s.d 44 tahun": 2403,
+    "45 s.d 49 tahun": 1890,
+    "50 s.d 54 tahun": 1412,
+    "55 s.d 59 tahun": 977,
+    "60 s.d 64 tahun": 623
+   }
+  },
+  "Jati Padang": {
+   "total": 41309,
+   "age_bins": {
+    "15 s.d 19 tahun": 3008,
+    "20 s.d 24 tahun": 3083,
+    "25 s.d 29 tahun": 3469,
+    "30 s.d 34 tahun": 4226,
+    "35 s.d 39 tahun": 3933,
+    "40 s.d 44 tahun": 3485,
+    "45 s.d 49 tahun": 2785,
+    "50 s.d 54 tahun": 2303,
+    "55 s.d 59 tahun": 1671,
+    "60 s.d 64 tahun": 1197
+   }
+  },
+  "Kebagusan": {
+   "total": 46789,
+   "age_bins": {
+    "15 s.d 19 tahun": 3708,
+    "20 s.d 24 tahun": 3535,
+    "25 s.d 29 tahun": 4052,
+    "30 s.d 34 tahun": 4917,
+    "35 s.d 39 tahun": 4493,
+    "40 s.d 44 tahun": 3736,
+    "45 s.d 49 tahun": 3030,
+    "50 s.d 54 tahun": 2428,
+    "55 s.d 59 tahun": 1813,
+    "60 s.d 64 tahun": 1080
+   }
+  },
+  "Pasar Minggu": {
+   "total": 27795,
+   "age_bins": {
+    "15 s.d 19 tahun": 2010,
+    "20 s.d 24 tahun": 2207,
+    "25 s.d 29 tahun": 2132,
+    "30 s.d 34 tahun": 2563,
+    "35 s.d 39 tahun": 2584,
+    "40 s.d 44 tahun": 2467,
+    "45 s.d 49 tahun": 2113,
+    "50 s.d 54 tahun": 1574,
+    "55 s.d 59 tahun": 1090,
+    "60 s.d 64 tahun": 842
+   }
+  },
+  "Pejaten Barat": {
+   "total": 41558,
+   "age_bins": {
+    "15 s.d 19 tahun": 3090,
+    "20 s.d 24 tahun": 3066,
+    "25 s.d 29 tahun": 3511,
+    "30 s.d 34 tahun": 4224,
+    "35 s.d 39 tahun": 3857,
+    "40 s.d 44 tahun": 3536,
+    "45 s.d 49 tahun": 3054,
+    "50 s.d 54 tahun": 2291,
+    "55 s.d 59 tahun": 1717,
+    "60 s.d 64 tahun": 1110
+   }
+  },
+  "Pejaten Timur": {
+   "total": 65150,
+   "age_bins": {
+    "15 s.d 19 tahun": 4884,
+    "20 s.d 24 tahun": 4889,
+    "25 s.d 29 tahun": 5582,
+    "30 s.d 34 tahun": 6733,
+    "35 s.d 39 tahun": 6087,
+    "40 s.d 44 tahun": 5533,
+    "45 s.d 49 tahun": 4420,
+    "50 s.d 54 tahun": 3373,
+    "55 s.d 59 tahun": 2463,
+    "60 s.d 64 tahun": 1666
+   }
+  },
+  "Ragunan": {
+   "total": 43829,
+   "age_bins": {
+    "15 s.d 19 tahun": 3102,
+    "20 s.d 24 tahun": 3058,
+    "25 s.d 29 tahun": 3545,
+    "30 s.d 34 tahun": 4536,
+    "35 s.d 39 tahun": 4444,
+    "40 s.d 44 tahun": 3865,
+    "45 s.d 49 tahun": 3170,
+    "50 s.d 54 tahun": 2306,
+    "55 s.d 59 tahun": 1784,
+    "60 s.d 64 tahun": 1210
+   }
+  },
+  "Baru": {
+   "total": 26711,
+   "age_bins": {
+    "15 s.d 19 tahun": 1816,
+    "20 s.d 24 tahun": 2090,
+    "25 s.d 29 tahun": 2390,
+    "30 s.d 34 tahun": 2800,
+    "35 s.d 39 tahun": 3019,
+    "40 s.d 44 tahun": 2242,
+    "45 s.d 49 tahun": 1598,
+    "50 s.d 54 tahun": 1351,
+    "55 s.d 59 tahun": 832,
+    "60 s.d 64 tahun": 456
+   }
+  },
+  "Cijantung": {
+   "total": 44055,
+   "age_bins": {
+    "15 s.d 19 tahun": 3332,
+    "20 s.d 24 tahun": 3550,
+    "25 s.d 29 tahun": 3975,
+    "30 s.d 34 tahun": 4541,
+    "35 s.d 39 tahun": 4105,
+    "40 s.d 44 tahun": 3661,
+    "45 s.d 49 tahun": 3091,
+    "50 s.d 54 tahun": 2416,
+    "55 s.d 59 tahun": 1914,
+    "60 s.d 64 tahun": 1200
+   }
+  },
+  "Gedong": {
+   "total": 38904,
+   "age_bins": {
+    "15 s.d 19 tahun": 2943,
+    "20 s.d 24 tahun": 2954,
+    "25 s.d 29 tahun": 3370,
+    "30 s.d 34 tahun": 3825,
+    "35 s.d 39 tahun": 3627,
+    "40 s.d 44 tahun": 3300,
+    "45 s.d 49 tahun": 2688,
+    "50 s.d 54 tahun": 2153,
+    "55 s.d 59 tahun": 1571,
+    "60 s.d 64 tahun": 1183
+   }
+  },
+  "Kalisari": {
+   "total": 44840,
+   "age_bins": {
+    "15 s.d 19 tahun": 3615,
+    "20 s.d 24 tahun": 3831,
+    "25 s.d 29 tahun": 4008,
+    "30 s.d 34 tahun": 4390,
+    "35 s.d 39 tahun": 3957,
+    "40 s.d 44 tahun": 3626,
+    "45 s.d 49 tahun": 3095,
+    "50 s.d 54 tahun": 2606,
+    "55 s.d 59 tahun": 1886,
+    "60 s.d 64 tahun": 1095
+   }
+  },
+  "Pekayon": {
+   "total": 45843,
+   "age_bins": {
+    "15 s.d 19 tahun": 3378,
+    "20 s.d 24 tahun": 3745,
+    "25 s.d 29 tahun": 4192,
+    "30 s.d 34 tahun": 5156,
+    "35 s.d 39 tahun": 4199,
+    "40 s.d 44 tahun": 3607,
+    "45 s.d 49 tahun": 3003,
+    "50 s.d 54 tahun": 2417,
+    "55 s.d 59 tahun": 1933,
+    "60 s.d 64 tahun": 1050
+   }
+  },
+  "Kamal Muara": {
+   "total": 21426,
+   "age_bins": {
+    "15 s.d 19 tahun": 1099,
+    "20 s.d 24 tahun": 1610,
+    "25 s.d 29 tahun": 1415,
+    "30 s.d 34 tahun": 1045,
+    "35 s.d 39 tahun": 1562,
+    "40 s.d 44 tahun": 1661,
+    "45 s.d 49 tahun": 1321,
+    "50 s.d 54 tahun": 1854,
+    "55 s.d 59 tahun": 1615,
+    "60 s.d 64 tahun": 956
+   }
+  },
+  "Kapuk Muara": {
+   "total": 59558,
+   "age_bins": {
+    "15 s.d 19 tahun": 2732,
+    "20 s.d 24 tahun": 4128,
+    "25 s.d 29 tahun": 3908,
+    "30 s.d 34 tahun": 2763,
+    "35 s.d 39 tahun": 4394,
+    "40 s.d 44 tahun": 4901,
+    "45 s.d 49 tahun": 3711,
+    "50 s.d 54 tahun": 5256,
+    "55 s.d 59 tahun": 4451,
+    "60 s.d 64 tahun": 2632
+   }
+  },
+  "Pejagalan": {
+   "total": 153060,
+   "age_bins": {
+    "15 s.d 19 tahun": 6836,
+    "20 s.d 24 tahun": 10046,
+    "25 s.d 29 tahun": 9218,
+    "30 s.d 34 tahun": 7137,
+    "35 s.d 39 tahun": 11605,
+    "40 s.d 44 tahun": 13374,
+    "45 s.d 49 tahun": 9999,
+    "50 s.d 54 tahun": 14332,
+    "55 s.d 59 tahun": 12369,
+    "60 s.d 64 tahun": 6953
+   }
+  },
+  "Penjaringan": {
+   "total": 200319,
+   "age_bins": {
+    "15 s.d 19 tahun": 9999,
+    "20 s.d 24 tahun": 14157,
+    "25 s.d 29 tahun": 12324,
+    "30 s.d 34 tahun": 9225,
+    "35 s.d 39 tahun": 14760,
+    "40 s.d 44 tahun": 15783,
+    "45 s.d 49 tahun": 12488,
+    "50 s.d 54 tahun": 18246,
+    "55 s.d 59 tahun": 15442,
+    "60 s.d 64 tahun": 8989
+   }
+  },
+  "Pluit": {
+   "total": 77436,
+   "age_bins": {
+    "15 s.d 19 tahun": 3262,
+    "20 s.d 24 tahun": 4842,
+    "25 s.d 29 tahun": 4732,
+    "30 s.d 34 tahun": 3656,
+    "35 s.d 39 tahun": 5920,
+    "40 s.d 44 tahun": 6870,
+    "45 s.d 49 tahun": 5123,
+    "50 s.d 54 tahun": 7292,
+    "55 s.d 59 tahun": 6433,
+    "60 s.d 64 tahun": 3458
+   }
+  },
+  "Bintaro": {
+   "total": 53835,
+   "age_bins": {
+    "15 s.d 19 tahun": 3938,
+    "20 s.d 24 tahun": 3929,
+    "25 s.d 29 tahun": 4380,
+    "30 s.d 34 tahun": 5414,
+    "35 s.d 39 tahun": 5291,
+    "40 s.d 44 tahun": 4836,
+    "45 s.d 49 tahun": 3870,
+    "50 s.d 54 tahun": 2956,
+    "55 s.d 59 tahun": 2229,
+    "60 s.d 64 tahun": 1557
+   }
+  },
+  "Pesanggrahan": {
+   "total": 29103,
+   "age_bins": {
+    "15 s.d 19 tahun": 2042,
+    "20 s.d 24 tahun": 2098,
+    "25 s.d 29 tahun": 2393,
+    "30 s.d 34 tahun": 3053,
+    "35 s.d 39 tahun": 2983,
+    "40 s.d 44 tahun": 2502,
+    "45 s.d 49 tahun": 1973,
+    "50 s.d 54 tahun": 1356,
+    "55 s.d 59 tahun": 1151,
+    "60 s.d 64 tahun": 880
+   }
+  },
+  "Petukangan Selatan": {
+   "total": 38526,
+   "age_bins": {
+    "15 s.d 19 tahun": 2939,
+    "20 s.d 24 tahun": 3029,
+    "25 s.d 29 tahun": 3348,
+    "30 s.d 34 tahun": 4189,
+    "35 s.d 39 tahun": 3563,
+    "40 s.d 44 tahun": 3110,
+    "45 s.d 49 tahun": 2541,
+    "50 s.d 54 tahun": 2103,
+    "55 s.d 59 tahun": 1702,
+    "60 s.d 64 tahun": 1071
+   }
+  },
+  "Petukangan Utara": {
+   "total": 56813,
+   "age_bins": {
+    "15 s.d 19 tahun": 4223,
+    "20 s.d 24 tahun": 4091,
+    "25 s.d 29 tahun": 4861,
+    "30 s.d 34 tahun": 6092,
+    "35 s.d 39 tahun": 5578,
+    "40 s.d 44 tahun": 4691,
+    "45 s.d 49 tahun": 3709,
+    "50 s.d 54 tahun": 2841,
+    "55 s.d 59 tahun": 2418,
+    "60 s.d 64 tahun": 1669
+   }
+  },
+  "Ulujami": {
+   "total": 44735,
+   "age_bins": {
+    "15 s.d 19 tahun": 3233,
+    "20 s.d 24 tahun": 3186,
+    "25 s.d 29 tahun": 3824,
+    "30 s.d 34 tahun": 4825,
+    "35 s.d 39 tahun": 4490,
+    "40 s.d 44 tahun": 3873,
+    "45 s.d 49 tahun": 2910,
+    "50 s.d 54 tahun": 2327,
+    "55 s.d 59 tahun": 1688,
+    "60 s.d 64 tahun": 1173
+   }
+  },
+  "Cipinang": {
+   "total": 45822,
+   "age_bins": {
+    "15 s.d 19 tahun": 3378,
+    "20 s.d 24 tahun": 3286,
+    "25 s.d 29 tahun": 3691,
+    "30 s.d 34 tahun": 4365,
+    "35 s.d 39 tahun": 4316,
+    "40 s.d 44 tahun": 4280,
+    "45 s.d 49 tahun": 3492,
+    "50 s.d 54 tahun": 2705,
+    "55 s.d 59 tahun": 1877,
+    "60 s.d 64 tahun": 1210
+   }
+  },
+  "Jati": {
+   "total": 37128,
+   "age_bins": {
+    "15 s.d 19 tahun": 2655,
+    "20 s.d 24 tahun": 2450,
+    "25 s.d 29 tahun": 2877,
+    "30 s.d 34 tahun": 3426,
+    "35 s.d 39 tahun": 3561,
+    "40 s.d 44 tahun": 3551,
+    "45 s.d 49 tahun": 2811,
+    "50 s.d 54 tahun": 2157,
+    "55 s.d 59 tahun": 1649,
+    "60 s.d 64 tahun": 1259
+   }
+  },
+  "Jatinegara Kaum": {
+   "total": 26802,
+   "age_bins": {
+    "15 s.d 19 tahun": 2090,
+    "20 s.d 24 tahun": 2077,
+    "25 s.d 29 tahun": 2319,
+    "30 s.d 34 tahun": 2752,
+    "35 s.d 39 tahun": 2468,
+    "40 s.d 44 tahun": 2346,
+    "45 s.d 49 tahun": 1829,
+    "50 s.d 54 tahun": 1492,
+    "55 s.d 59 tahun": 1025,
+    "60 s.d 64 tahun": 641
+   }
+  },
+  "Kayu Putih": {
+   "total": 48810,
+   "age_bins": {
+    "15 s.d 19 tahun": 3358,
+    "20 s.d 24 tahun": 3435,
+    "25 s.d 29 tahun": 4122,
+    "30 s.d 34 tahun": 4953,
+    "35 s.d 39 tahun": 4779,
+    "40 s.d 44 tahun": 4498,
+    "45 s.d 49 tahun": 3570,
+    "50 s.d 54 tahun": 2543,
+    "55 s.d 59 tahun": 1938,
+    "60 s.d 64 tahun": 1545
+   }
+  },
+  "Pisangan Timur": {
+   "total": 48469,
+   "age_bins": {
+    "15 s.d 19 tahun": 3510,
+    "20 s.d 24 tahun": 3483,
+    "25 s.d 29 tahun": 4097,
+    "30 s.d 34 tahun": 4735,
+    "35 s.d 39 tahun": 4449,
+    "40 s.d 44 tahun": 4256,
+    "45 s.d 49 tahun": 3605,
+    "50 s.d 54 tahun": 2824,
+    "55 s.d 59 tahun": 2098,
+    "60 s.d 64 tahun": 1414
+   }
+  },
+  "Pulo Gadung": {
+   "total": 39030,
+   "age_bins": {
+    "15 s.d 19 tahun": 2818,
+    "20 s.d 24 tahun": 2929,
+    "25 s.d 29 tahun": 3604,
+    "30 s.d 34 tahun": 4238,
+    "35 s.d 39 tahun": 3834,
+    "40 s.d 44 tahun": 3384,
+    "45 s.d 49 tahun": 2815,
+    "50 s.d 54 tahun": 2162,
+    "55 s.d 59 tahun": 1451,
+    "60 s.d 64 tahun": 1025
+   }
+  },
+  "Rawamangun": {
+   "total": 44103,
+   "age_bins": {
+    "15 s.d 19 tahun": 3133,
+    "20 s.d 24 tahun": 2942,
+    "25 s.d 29 tahun": 3548,
+    "30 s.d 34 tahun": 4335,
+    "35 s.d 39 tahun": 4111,
+    "40 s.d 44 tahun": 4033,
+    "45 s.d 49 tahun": 3406,
+    "50 s.d 54 tahun": 2481,
+    "55 s.d 59 tahun": 1887,
+    "60 s.d 64 tahun": 1227
+   }
+  },
+  "Gunung Sahari Utara": {
+   "total": 19990,
+   "age_bins": {
+    "15 s.d 19 tahun": 1463,
+    "20 s.d 24 tahun": 1355,
+    "25 s.d 29 tahun": 1447,
+    "30 s.d 34 tahun": 1480,
+    "35 s.d 39 tahun": 1652,
+    "40 s.d 44 tahun": 1701,
+    "45 s.d 49 tahun": 1708,
+    "50 s.d 54 tahun": 1495,
+    "55 s.d 59 tahun": 1173,
+    "60 s.d 64 tahun": 927
+   }
+  },
+  "Karang Anyar": {
+   "total": 33196,
+   "age_bins": {
+    "15 s.d 19 tahun": 2327,
+    "20 s.d 24 tahun": 2376,
+    "25 s.d 29 tahun": 2647,
+    "30 s.d 34 tahun": 3140,
+    "35 s.d 39 tahun": 3060,
+    "40 s.d 44 tahun": 2752,
+    "45 s.d 49 tahun": 2396,
+    "50 s.d 54 tahun": 2073,
+    "55 s.d 59 tahun": 1684,
+    "60 s.d 64 tahun": 1280
+   }
+  },
+  "Kartini": {
+   "total": 28207,
+   "age_bins": {
+    "15 s.d 19 tahun": 2046,
+    "20 s.d 24 tahun": 1999,
+    "25 s.d 29 tahun": 2130,
+    "30 s.d 34 tahun": 2479,
+    "35 s.d 39 tahun": 2484,
+    "40 s.d 44 tahun": 2325,
+    "45 s.d 49 tahun": 2100,
+    "50 s.d 54 tahun": 1898,
+    "55 s.d 59 tahun": 1565,
+    "60 s.d 64 tahun": 1258
+   }
+  },
+  "Mangga Dua Selatan": {
+   "total": 34777,
+   "age_bins": {
+    "15 s.d 19 tahun": 2413,
+    "20 s.d 24 tahun": 2481,
+    "25 s.d 29 tahun": 2950,
+    "30 s.d 34 tahun": 3451,
+    "35 s.d 39 tahun": 3345,
+    "40 s.d 44 tahun": 2940,
+    "45 s.d 49 tahun": 2541,
+    "50 s.d 54 tahun": 2153,
+    "55 s.d 59 tahun": 1768,
+    "60 s.d 64 tahun": 1257
+   }
+  },
+  "Pasar Baru": {
+   "total": 15359,
+   "age_bins": {
+    "15 s.d 19 tahun": 1013,
+    "20 s.d 24 tahun": 981,
+    "25 s.d 29 tahun": 1127,
+    "30 s.d 34 tahun": 1358,
+    "35 s.d 39 tahun": 1325,
+    "40 s.d 44 tahun": 1201,
+    "45 s.d 49 tahun": 1187,
+    "50 s.d 54 tahun": 1110,
+    "55 s.d 59 tahun": 930,
+    "60 s.d 64 tahun": 887
+   }
+  },
+  "Bungur": {
+   "total": 22715,
+   "age_bins": {
+    "15 s.d 19 tahun": 1606,
+    "20 s.d 24 tahun": 1688,
+    "25 s.d 29 tahun": 1924,
+    "30 s.d 34 tahun": 2002,
+    "35 s.d 39 tahun": 2039,
+    "40 s.d 44 tahun": 1840,
+    "45 s.d 49 tahun": 1685,
+    "50 s.d 54 tahun": 1477,
+    "55 s.d 59 tahun": 1178,
+    "60 s.d 64 tahun": 954
+   }
+  },
+  "Kenari": {
+   "total": 10987,
+   "age_bins": {
+    "15 s.d 19 tahun": 834,
+    "20 s.d 24 tahun": 853,
+    "25 s.d 29 tahun": 888,
+    "30 s.d 34 tahun": 909,
+    "35 s.d 39 tahun": 903,
+    "40 s.d 44 tahun": 888,
+    "45 s.d 49 tahun": 862,
+    "50 s.d 54 tahun": 806,
+    "55 s.d 59 tahun": 627,
+    "60 s.d 64 tahun": 462
+   }
+  },
+  "Kramat": {
+   "total": 34945,
+   "age_bins": {
+    "15 s.d 19 tahun": 2809,
+    "20 s.d 24 tahun": 2612,
+    "25 s.d 29 tahun": 2791,
+    "30 s.d 34 tahun": 3116,
+    "35 s.d 39 tahun": 3031,
+    "40 s.d 44 tahun": 2828,
+    "45 s.d 49 tahun": 2550,
+    "50 s.d 54 tahun": 2150,
+    "55 s.d 59 tahun": 1726,
+    "60 s.d 64 tahun": 1243
+   }
+  },
+  "Kwitang": {
+   "total": 18879,
+   "age_bins": {
+    "15 s.d 19 tahun": 1359,
+    "20 s.d 24 tahun": 1359,
+    "25 s.d 29 tahun": 1450,
+    "30 s.d 34 tahun": 1717,
+    "35 s.d 39 tahun": 1701,
+    "40 s.d 44 tahun": 1517,
+    "45 s.d 49 tahun": 1315,
+    "50 s.d 54 tahun": 1154,
+    "55 s.d 59 tahun": 1046,
+    "60 s.d 64 tahun": 769
+   }
+  },
+  "Paseban": {
+   "total": 28090,
+   "age_bins": {
+    "15 s.d 19 tahun": 2138,
+    "20 s.d 24 tahun": 2071,
+    "25 s.d 29 tahun": 2304,
+    "30 s.d 34 tahun": 2478,
+    "35 s.d 39 tahun": 2498,
+    "40 s.d 44 tahun": 2235,
+    "45 s.d 49 tahun": 2175,
+    "50 s.d 54 tahun": 1905,
+    "55 s.d 59 tahun": 1611,
+    "60 s.d 64 tahun": 1102
+   }
+  },
+  "Senen": {
+   "total": 8469,
+   "age_bins": {
+    "15 s.d 19 tahun": 563,
+    "20 s.d 24 tahun": 571,
+    "25 s.d 29 tahun": 772,
+    "30 s.d 34 tahun": 820,
+    "35 s.d 39 tahun": 826,
+    "40 s.d 44 tahun": 677,
+    "45 s.d 49 tahun": 580,
+    "50 s.d 54 tahun": 528,
+    "55 s.d 59 tahun": 431,
+    "60 s.d 64 tahun": 336
+   }
+  },
+  "Guntur": {
+   "total": 4657,
+   "age_bins": {
+    "15 s.d 19 tahun": 334,
+    "20 s.d 24 tahun": 299,
+    "25 s.d 29 tahun": 346,
+    "30 s.d 34 tahun": 389,
+    "35 s.d 39 tahun": 414,
+    "40 s.d 44 tahun": 378,
+    "45 s.d 49 tahun": 386,
+    "50 s.d 54 tahun": 320,
+    "55 s.d 59 tahun": 297,
+    "60 s.d 64 tahun": 229
+   }
+  },
+  "Karet": {
+   "total": 12163,
+   "age_bins": {
+    "15 s.d 19 tahun": 854,
+    "20 s.d 24 tahun": 768,
+    "25 s.d 29 tahun": 907,
+    "30 s.d 34 tahun": 1197,
+    "35 s.d 39 tahun": 1160,
+    "40 s.d 44 tahun": 1192,
+    "45 s.d 49 tahun": 1022,
+    "50 s.d 54 tahun": 710,
+    "55 s.d 59 tahun": 550,
+    "60 s.d 64 tahun": 344
+   }
+  },
+  "Karet Kuningan": {
+   "total": 18636,
+   "age_bins": {
+    "15 s.d 19 tahun": 1448,
+    "20 s.d 24 tahun": 1441,
+    "25 s.d 29 tahun": 1605,
+    "30 s.d 34 tahun": 1831,
+    "35 s.d 39 tahun": 1762,
+    "40 s.d 44 tahun": 1545,
+    "45 s.d 49 tahun": 1342,
+    "50 s.d 54 tahun": 1115,
+    "55 s.d 59 tahun": 871,
+    "60 s.d 64 tahun": 533
+   }
+  },
+  "Karet Semanggi": {
+   "total": 2878,
+   "age_bins": {
+    "15 s.d 19 tahun": 207,
+    "20 s.d 24 tahun": 212,
+    "25 s.d 29 tahun": 239,
+    "30 s.d 34 tahun": 263,
+    "35 s.d 39 tahun": 260,
+    "40 s.d 44 tahun": 276,
+    "45 s.d 49 tahun": 203,
+    "50 s.d 54 tahun": 177,
+    "55 s.d 59 tahun": 144,
+    "60 s.d 64 tahun": 105
+   }
+  },
+  "Kuningan Barat": {
+   "total": 14817,
+   "age_bins": {
+    "15 s.d 19 tahun": 1116,
+    "20 s.d 24 tahun": 1118,
+    "25 s.d 29 tahun": 1247,
+    "30 s.d 34 tahun": 1529,
+    "35 s.d 39 tahun": 1383,
+    "40 s.d 44 tahun": 1324,
+    "45 s.d 49 tahun": 1101,
+    "50 s.d 54 tahun": 816,
+    "55 s.d 59 tahun": 604,
+    "60 s.d 64 tahun": 423
+   }
+  },
+  "Kuningan Timur": {
+   "total": 7148,
+   "age_bins": {
+    "15 s.d 19 tahun": 574,
+    "20 s.d 24 tahun": 537,
+    "25 s.d 29 tahun": 635,
+    "30 s.d 34 tahun": 691,
+    "35 s.d 39 tahun": 632,
+    "40 s.d 44 tahun": 663,
+    "45 s.d 49 tahun": 503,
+    "50 s.d 54 tahun": 402,
+    "55 s.d 59 tahun": 294,
+    "60 s.d 64 tahun": 196
+   }
+  },
+  "Menteng Atas": {
+   "total": 31938,
+   "age_bins": {
+    "15 s.d 19 tahun": 2267,
+    "20 s.d 24 tahun": 2128,
+    "25 s.d 29 tahun": 2383,
+    "30 s.d 34 tahun": 3241,
+    "35 s.d 39 tahun": 3027,
+    "40 s.d 44 tahun": 2947,
+    "45 s.d 49 tahun": 2366,
+    "50 s.d 54 tahun": 1915,
+    "55 s.d 59 tahun": 1392,
+    "60 s.d 64 tahun": 910
+   }
+  },
+  "Pasar Manggis": {
+   "total": 31505,
+   "age_bins": {
+    "15 s.d 19 tahun": 2391,
+    "20 s.d 24 tahun": 2332,
+    "25 s.d 29 tahun": 2768,
+    "30 s.d 34 tahun": 3020,
+    "35 s.d 39 tahun": 2882,
+    "40 s.d 44 tahun": 2600,
+    "45 s.d 49 tahun": 2256,
+    "50 s.d 54 tahun": 1814,
+    "55 s.d 59 tahun": 1407,
+    "60 s.d 64 tahun": 923
+   }
+  },
+  "Setiabudi": {
+   "total": 3615,
+   "age_bins": {
+    "15 s.d 19 tahun": 264,
+    "20 s.d 24 tahun": 228,
+    "25 s.d 29 tahun": 275,
+    "30 s.d 34 tahun": 371,
+    "35 s.d 39 tahun": 347,
+    "40 s.d 44 tahun": 317,
+    "45 s.d 49 tahun": 309,
+    "50 s.d 54 tahun": 232,
+    "55 s.d 59 tahun": 158,
+    "60 s.d 64 tahun": 113
+   }
+  },
+  "Glodok": {
+   "total": 13353,
+   "age_bins": {
+    "15 s.d 19 tahun": 571,
+    "20 s.d 24 tahun": 877,
+    "25 s.d 29 tahun": 866,
+    "30 s.d 34 tahun": 650,
+    "35 s.d 39 tahun": 1009,
+    "40 s.d 44 tahun": 1095,
+    "45 s.d 49 tahun": 799,
+    "50 s.d 54 tahun": 1134,
+    "55 s.d 59 tahun": 1019,
+    "60 s.d 64 tahun": 662
+   }
+  },
+  "Keagungan": {
+   "total": 35628,
+   "age_bins": {
+    "15 s.d 19 tahun": 1602,
+    "20 s.d 24 tahun": 2371,
+    "25 s.d 29 tahun": 2207,
+    "30 s.d 34 tahun": 1673,
+    "35 s.d 39 tahun": 2648,
+    "40 s.d 44 tahun": 2839,
+    "45 s.d 49 tahun": 2134,
+    "50 s.d 54 tahun": 3164,
+    "55 s.d 59 tahun": 2850,
+    "60 s.d 64 tahun": 1719
+   }
+  },
+  "Krukut": {
+   "total": 38736,
+   "age_bins": {
+    "15 s.d 19 tahun": 1911,
+    "20 s.d 24 tahun": 2794,
+    "25 s.d 29 tahun": 2623,
+    "30 s.d 34 tahun": 1848,
+    "35 s.d 39 tahun": 2955,
+    "40 s.d 44 tahun": 3087,
+    "45 s.d 49 tahun": 2213,
+    "50 s.d 54 tahun": 3221,
+    "55 s.d 59 tahun": 2856,
+    "60 s.d 64 tahun": 1785
+   }
+  },
+  "Mangga Besar": {
+   "total": 14222,
+   "age_bins": {
+    "15 s.d 19 tahun": 647,
+    "20 s.d 24 tahun": 963,
+    "25 s.d 29 tahun": 978,
+    "30 s.d 34 tahun": 675,
+    "35 s.d 39 tahun": 1061,
+    "40 s.d 44 tahun": 1194,
+    "45 s.d 49 tahun": 843,
+    "50 s.d 54 tahun": 1229,
+    "55 s.d 59 tahun": 1132,
+    "60 s.d 64 tahun": 670
+   }
+  },
+  "Maphar": {
+   "total": 33374,
+   "age_bins": {
+    "15 s.d 19 tahun": 1541,
+    "20 s.d 24 tahun": 2282,
+    "25 s.d 29 tahun": 2141,
+    "30 s.d 34 tahun": 1555,
+    "35 s.d 39 tahun": 2474,
+    "40 s.d 44 tahun": 2701,
+    "45 s.d 49 tahun": 1952,
+    "50 s.d 54 tahun": 2827,
+    "55 s.d 59 tahun": 2621,
+    "60 s.d 64 tahun": 1599
+   }
+  },
+  "Taman Sari": {
+   "total": 28923,
+   "age_bins": {
+    "15 s.d 19 tahun": 1404,
+    "20 s.d 24 tahun": 2073,
+    "25 s.d 29 tahun": 1917,
+    "30 s.d 34 tahun": 1365,
+    "35 s.d 39 tahun": 2094,
+    "40 s.d 44 tahun": 2279,
+    "45 s.d 49 tahun": 1663,
+    "50 s.d 54 tahun": 2400,
+    "55 s.d 59 tahun": 2217,
+    "60 s.d 64 tahun": 1428
+   }
+  },
+  "Tangki": {
+   "total": 26702,
+   "age_bins": {
+    "15 s.d 19 tahun": 1205,
+    "20 s.d 24 tahun": 1790,
+    "25 s.d 29 tahun": 1657,
+    "30 s.d 34 tahun": 1248,
+    "35 s.d 39 tahun": 1939,
+    "40 s.d 44 tahun": 2287,
+    "45 s.d 49 tahun": 1615,
+    "50 s.d 54 tahun": 2333,
+    "55 s.d 59 tahun": 2186,
+    "60 s.d 64 tahun": 1333
+   }
+  },
+  "Angke": {
+   "total": 60329,
+   "age_bins": {
+    "15 s.d 19 tahun": 2968,
+    "20 s.d 24 tahun": 4348,
+    "25 s.d 29 tahun": 3838,
+    "30 s.d 34 tahun": 2767,
+    "35 s.d 39 tahun": 4488,
+    "40 s.d 44 tahun": 4879,
+    "45 s.d 49 tahun": 3643,
+    "50 s.d 54 tahun": 5294,
+    "55 s.d 59 tahun": 4571,
+    "60 s.d 64 tahun": 2876
+   }
+  },
+  "Duri Pulo": {
+   "total": 26494,
+   "age_bins": {
+    "15 s.d 19 tahun": 2034,
+    "20 s.d 24 tahun": 1986,
+    "25 s.d 29 tahun": 2140,
+    "30 s.d 34 tahun": 2356,
+    "35 s.d 39 tahun": 2319,
+    "40 s.d 44 tahun": 2188,
+    "45 s.d 49 tahun": 1974,
+    "50 s.d 54 tahun": 1682,
+    "55 s.d 59 tahun": 1358,
+    "60 s.d 64 tahun": 1001
+   }
+  },
+  "Duri Selatan": {
+   "total": 29198,
+   "age_bins": {
+    "15 s.d 19 tahun": 1435,
+    "20 s.d 24 tahun": 2128,
+    "25 s.d 29 tahun": 1929,
+    "30 s.d 34 tahun": 1319,
+    "35 s.d 39 tahun": 2088,
+    "40 s.d 44 tahun": 2329,
+    "45 s.d 49 tahun": 1713,
+    "50 s.d 54 tahun": 2483,
+    "55 s.d 59 tahun": 2218,
+    "60 s.d 64 tahun": 1432
+   }
+  },
+  "Duri Utara": {
+   "total": 41374,
+   "age_bins": {
+    "15 s.d 19 tahun": 1979,
+    "20 s.d 24 tahun": 2898,
+    "25 s.d 29 tahun": 2645,
+    "30 s.d 34 tahun": 1919,
+    "35 s.d 39 tahun": 3039,
+    "40 s.d 44 tahun": 3310,
+    "45 s.d 49 tahun": 2413,
+    "50 s.d 54 tahun": 3538,
+    "55 s.d 59 tahun": 3157,
+    "60 s.d 64 tahun": 1905
+   }
+  },
+  "Jembatan Besi": {
+   "total": 65611,
+   "age_bins": {
+    "15 s.d 19 tahun": 3044,
+    "20 s.d 24 tahun": 4463,
+    "25 s.d 29 tahun": 4281,
+    "30 s.d 34 tahun": 3124,
+    "35 s.d 39 tahun": 5199,
+    "40 s.d 44 tahun": 5833,
+    "45 s.d 49 tahun": 4182,
+    "50 s.d 54 tahun": 6148,
+    "55 s.d 59 tahun": 4958,
+    "60 s.d 64 tahun": 2923
+   }
+  },
+  "Jembatan Lima": {
+   "total": 42898,
+   "age_bins": {
+    "15 s.d 19 tahun": 2030,
+    "20 s.d 24 tahun": 2929,
+    "25 s.d 29 tahun": 2801,
+    "30 s.d 34 tahun": 2104,
+    "35 s.d 39 tahun": 3381,
+    "40 s.d 44 tahun": 3535,
+    "45 s.d 49 tahun": 2628,
+    "50 s.d 54 tahun": 3839,
+    "55 s.d 59 tahun": 3317,
+    "60 s.d 64 tahun": 2009
+   }
+  },
+  "Kalianyar": {
+   "total": 53418,
+   "age_bins": {
+    "15 s.d 19 tahun": 2553,
+    "20 s.d 24 tahun": 3714,
+    "25 s.d 29 tahun": 3295,
+    "30 s.d 34 tahun": 2532,
+    "35 s.d 39 tahun": 4099,
+    "40 s.d 44 tahun": 4627,
+    "45 s.d 49 tahun": 3329,
+    "50 s.d 54 tahun": 4878,
+    "55 s.d 59 tahun": 4099,
+    "60 s.d 64 tahun": 2273
+   }
+  },
+  "Krendang": {
+   "total": 41616,
+   "age_bins": {
+    "15 s.d 19 tahun": 1972,
+    "20 s.d 24 tahun": 2885,
+    "25 s.d 29 tahun": 2609,
+    "30 s.d 34 tahun": 2057,
+    "35 s.d 39 tahun": 3269,
+    "40 s.d 44 tahun": 3534,
+    "45 s.d 49 tahun": 2493,
+    "50 s.d 54 tahun": 3703,
+    "55 s.d 59 tahun": 3090,
+    "60 s.d 64 tahun": 1905
+   }
+  },
+  "Pekojan": {
+   "total": 45234,
+   "age_bins": {
+    "15 s.d 19 tahun": 2224,
+    "20 s.d 24 tahun": 3283,
+    "25 s.d 29 tahun": 3035,
+    "30 s.d 34 tahun": 2061,
+    "35 s.d 39 tahun": 3258,
+    "40 s.d 44 tahun": 3531,
+    "45 s.d 49 tahun": 2573,
+    "50 s.d 54 tahun": 3794,
+    "55 s.d 59 tahun": 3501,
+    "60 s.d 64 tahun": 2206
+   }
+  },
+  "Roa Malaka": {
+   "total": 6504,
+   "age_bins": {
+    "15 s.d 19 tahun": 317,
+    "20 s.d 24 tahun": 468,
+    "25 s.d 29 tahun": 429,
+    "30 s.d 34 tahun": 257,
+    "35 s.d 39 tahun": 437,
+    "40 s.d 44 tahun": 480,
+    "45 s.d 49 tahun": 393,
+    "50 s.d 54 tahun": 572,
+    "55 s.d 59 tahun": 561,
+    "60 s.d 64 tahun": 339
+   }
+  },
+  "Tambora": {
+   "total": 21165,
+   "age_bins": {
+    "15 s.d 19 tahun": 999,
+    "20 s.d 24 tahun": 1496,
+    "25 s.d 29 tahun": 1375,
+    "30 s.d 34 tahun": 968,
+    "35 s.d 39 tahun": 1556,
+    "40 s.d 44 tahun": 1676,
+    "45 s.d 49 tahun": 1239,
+    "50 s.d 54 tahun": 1837,
+    "55 s.d 59 tahun": 1642,
+    "60 s.d 64 tahun": 995
+   }
+  },
+  "Tanah Sereal": {
+   "total": 51455,
+   "age_bins": {
+    "15 s.d 19 tahun": 2456,
+    "20 s.d 24 tahun": 3555,
+    "25 s.d 29 tahun": 3447,
+    "30 s.d 34 tahun": 2485,
+    "35 s.d 39 tahun": 3871,
+    "40 s.d 44 tahun": 4162,
+    "45 s.d 49 tahun": 2918,
+    "50 s.d 54 tahun": 4262,
+    "55 s.d 59 tahun": 3886,
+    "60 s.d 64 tahun": 2459
+   }
+  },
+  "Bendungan Hilir": {
+   "total": 25947,
+   "age_bins": {
+    "15 s.d 19 tahun": 1922,
+    "20 s.d 24 tahun": 1901,
+    "25 s.d 29 tahun": 1747,
+    "30 s.d 34 tahun": 2022,
+    "35 s.d 39 tahun": 2262,
+    "40 s.d 44 tahun": 2286,
+    "45 s.d 49 tahun": 2304,
+    "50 s.d 54 tahun": 1967,
+    "55 s.d 59 tahun": 1434,
+    "60 s.d 64 tahun": 917
+   }
+  },
+  "Gelora": {
+   "total": 3864,
+   "age_bins": {
+    "15 s.d 19 tahun": 262,
+    "20 s.d 24 tahun": 270,
+    "25 s.d 29 tahun": 287,
+    "30 s.d 34 tahun": 307,
+    "35 s.d 39 tahun": 363,
+    "40 s.d 44 tahun": 368,
+    "45 s.d 49 tahun": 343,
+    "50 s.d 54 tahun": 256,
+    "55 s.d 59 tahun": 196,
+    "60 s.d 64 tahun": 151
+   }
+  },
+  "Kampung Bali": {
+   "total": 15016,
+   "age_bins": {
+    "15 s.d 19 tahun": 1192,
+    "20 s.d 24 tahun": 1084,
+    "25 s.d 29 tahun": 1131,
+    "30 s.d 34 tahun": 1288,
+    "35 s.d 39 tahun": 1225,
+    "40 s.d 44 tahun": 1189,
+    "45 s.d 49 tahun": 1129,
+    "50 s.d 54 tahun": 1001,
+    "55 s.d 59 tahun": 828,
+    "60 s.d 64 tahun": 621
+   }
+  },
+  "Karet Tengsin": {
+   "total": 22093,
+   "age_bins": {
+    "15 s.d 19 tahun": 1653,
+    "20 s.d 24 tahun": 1493,
+    "25 s.d 29 tahun": 1609,
+    "30 s.d 34 tahun": 2015,
+    "35 s.d 39 tahun": 2196,
+    "40 s.d 44 tahun": 2047,
+    "45 s.d 49 tahun": 1755,
+    "50 s.d 54 tahun": 1233,
+    "55 s.d 59 tahun": 1038,
+    "60 s.d 64 tahun": 696
+   }
+  },
+  "Kebon Kacang": {
+   "total": 25937,
+   "age_bins": {
+    "15 s.d 19 tahun": 1940,
+    "20 s.d 24 tahun": 1846,
+    "25 s.d 29 tahun": 2013,
+    "30 s.d 34 tahun": 2259,
+    "35 s.d 39 tahun": 2191,
+    "40 s.d 44 tahun": 2062,
+    "45 s.d 49 tahun": 2027,
+    "50 s.d 54 tahun": 1709,
+    "55 s.d 59 tahun": 1463,
+    "60 s.d 64 tahun": 1097
+   }
+  },
+  "Kebon Melati": {
+   "total": 39933,
+   "age_bins": {
+    "15 s.d 19 tahun": 3195,
+    "20 s.d 24 tahun": 2994,
+    "25 s.d 29 tahun": 3495,
+    "30 s.d 34 tahun": 3677,
+    "35 s.d 39 tahun": 3583,
+    "40 s.d 44 tahun": 3261,
+    "45 s.d 49 tahun": 2895,
+    "50 s.d 54 tahun": 2306,
+    "55 s.d 59 tahun": 1849,
+    "60 s.d 64 tahun": 1254
+   }
+  },
+  "Petamburan": {
+   "total": 40462,
+   "age_bins": {
+    "15 s.d 19 tahun": 3249,
+    "20 s.d 24 tahun": 3066,
+    "25 s.d 29 tahun": 3296,
+    "30 s.d 34 tahun": 3822,
+    "35 s.d 39 tahun": 3631,
+    "40 s.d 44 tahun": 3286,
+    "45 s.d 49 tahun": 2850,
+    "50 s.d 54 tahun": 2437,
+    "55 s.d 59 tahun": 1823,
+    "60 s.d 64 tahun": 1156
+   }
+  },
+  "Kebon Bawang": {
+   "total": 109826,
+   "age_bins": {
+    "15 s.d 19 tahun": 5229,
+    "20 s.d 24 tahun": 7520,
+    "25 s.d 29 tahun": 6471,
+    "30 s.d 34 tahun": 4677,
+    "35 s.d 39 tahun": 7686,
+    "40 s.d 44 tahun": 8331,
+    "45 s.d 49 tahun": 6789,
+    "50 s.d 54 tahun": 10053,
+    "55 s.d 59 tahun": 9174,
+    "60 s.d 64 tahun": 5422
+   }
+  },
+  "Papanggo": {
+   "total": 81820,
+   "age_bins": {
+    "15 s.d 19 tahun": 3978,
+    "20 s.d 24 tahun": 5818,
+    "25 s.d 29 tahun": 5348,
+    "30 s.d 34 tahun": 3667,
+    "35 s.d 39 tahun": 5957,
+    "40 s.d 44 tahun": 6362,
+    "45 s.d 49 tahun": 4919,
+    "50 s.d 54 tahun": 7189,
+    "55 s.d 59 tahun": 6730,
+    "60 s.d 64 tahun": 3648
+   }
+  },
+  "Sungai Bambu": {
+   "total": 63340,
+   "age_bins": {
+    "15 s.d 19 tahun": 3086,
+    "20 s.d 24 tahun": 4511,
+    "25 s.d 29 tahun": 4103,
+    "30 s.d 34 tahun": 2807,
+    "35 s.d 39 tahun": 4556,
+    "40 s.d 44 tahun": 4871,
+    "45 s.d 49 tahun": 3729,
+    "50 s.d 54 tahun": 5423,
+    "55 s.d 59 tahun": 4950,
+    "60 s.d 64 tahun": 2993
+   }
+  },
+  "Sunter Agung": {
+   "total": 137670,
+   "age_bins": {
+    "15 s.d 19 tahun": 6228,
+    "20 s.d 24 tahun": 9279,
+    "25 s.d 29 tahun": 8643,
+    "30 s.d 34 tahun": 6094,
+    "35 s.d 39 tahun": 9804,
+    "40 s.d 44 tahun": 11330,
+    "45 s.d 49 tahun": 8394,
+    "50 s.d 54 tahun": 12376,
+    "55 s.d 59 tahun": 11580,
+    "60 s.d 64 tahun": 6396
+   }
+  },
+  "Sunter Jaya": {
+   "total": 118824,
+   "age_bins": {
+    "15 s.d 19 tahun": 5437,
+    "20 s.d 24 tahun": 8003,
+    "25 s.d 29 tahun": 7330,
+    "30 s.d 34 tahun": 5374,
+    "35 s.d 39 tahun": 8801,
+    "40 s.d 44 tahun": 10137,
+    "45 s.d 49 tahun": 7777,
+    "50 s.d 54 tahun": 11106,
+    "55 s.d 59 tahun": 9375,
+    "60 s.d 64 tahun": 5110
+   }
+  },
+  "Tanjung Priok": {
+   "total": 78140,
+   "age_bins": {
+    "15 s.d 19 tahun": 3695,
+    "20 s.d 24 tahun": 5421,
+    "25 s.d 29 tahun": 4966,
+    "30 s.d 34 tahun": 3374,
+    "35 s.d 39 tahun": 5399,
+    "40 s.d 44 tahun": 5769,
+    "45 s.d 49 tahun": 4716,
+    "50 s.d 54 tahun": 6954,
+    "55 s.d 59 tahun": 6886,
+    "60 s.d 64 tahun": 3789
+   }
+  },
+  "Warakas": {
+   "total": 96188,
+   "age_bins": {
+    "15 s.d 19 tahun": 4526,
+    "20 s.d 24 tahun": 6602,
+    "25 s.d 29 tahun": 6066,
+    "30 s.d 34 tahun": 4224,
+    "35 s.d 39 tahun": 6832,
+    "40 s.d 44 tahun": 7292,
+    "45 s.d 49 tahun": 5758,
+    "50 s.d 54 tahun": 8496,
+    "55 s.d 59 tahun": 8066,
+    "60 s.d 64 tahun": 4572
+   }
+  },
+  "Bukit Duri": {
+   "total": 42013,
+   "age_bins": {
+    "15 s.d 19 tahun": 3268,
+    "20 s.d 24 tahun": 3121,
+    "25 s.d 29 tahun": 3317,
+    "30 s.d 34 tahun": 3842,
+    "35 s.d 39 tahun": 3681,
+    "40 s.d 44 tahun": 3517,
+    "45 s.d 49 tahun": 3151,
+    "50 s.d 54 tahun": 2563,
+    "55 s.d 59 tahun": 1984,
+    "60 s.d 64 tahun": 1324
+   }
+  },
+  "Kampung Melayu": {
+   "total": 30705,
+   "age_bins": {
+    "15 s.d 19 tahun": 2313,
+    "20 s.d 24 tahun": 2494,
+    "25 s.d 29 tahun": 2833,
+    "30 s.d 34 tahun": 3062,
+    "35 s.d 39 tahun": 2515,
+    "40 s.d 44 tahun": 2286,
+    "45 s.d 49 tahun": 2045,
+    "50 s.d 54 tahun": 1712,
+    "55 s.d 59 tahun": 1295,
+    "60 s.d 64 tahun": 845
+   }
+  },
+  "Kebon Baru": {
+   "total": 41050,
+   "age_bins": {
+    "15 s.d 19 tahun": 2955,
+    "20 s.d 24 tahun": 2804,
+    "25 s.d 29 tahun": 3201,
+    "30 s.d 34 tahun": 4077,
+    "35 s.d 39 tahun": 3992,
+    "40 s.d 44 tahun": 3675,
+    "45 s.d 49 tahun": 2817,
+    "50 s.d 54 tahun": 2221,
+    "55 s.d 59 tahun": 1774,
+    "60 s.d 64 tahun": 1267
+   }
+  },
+  "Manggarai": {
+   "total": 34432,
+   "age_bins": {
+    "15 s.d 19 tahun": 2629,
+    "20 s.d 24 tahun": 2549,
+    "25 s.d 29 tahun": 2683,
+    "30 s.d 34 tahun": 3122,
+    "35 s.d 39 tahun": 3024,
+    "40 s.d 44 tahun": 2885,
+    "45 s.d 49 tahun": 2613,
+    "50 s.d 54 tahun": 2038,
+    "55 s.d 59 tahun": 1651,
+    "60 s.d 64 tahun": 1046
+   }
+  },
+  "Manggarai Selatan": {
+   "total": 26854,
+   "age_bins": {
+    "15 s.d 19 tahun": 1960,
+    "20 s.d 24 tahun": 1845,
+    "25 s.d 29 tahun": 2034,
+    "30 s.d 34 tahun": 2533,
+    "35 s.d 39 tahun": 2528,
+    "40 s.d 44 tahun": 2436,
+    "45 s.d 49 tahun": 2087,
+    "50 s.d 54 tahun": 1547,
+    "55 s.d 59 tahun": 1241,
+    "60 s.d 64 tahun": 775
+   }
+  },
+  "Menteng Dalam": {
+   "total": 42174,
+   "age_bins": {
+    "15 s.d 19 tahun": 3062,
+    "20 s.d 24 tahun": 2911,
+    "25 s.d 29 tahun": 3364,
+    "30 s.d 34 tahun": 4265,
+    "35 s.d 39 tahun": 3942,
+    "40 s.d 44 tahun": 3799,
+    "45 s.d 49 tahun": 3195,
+    "50 s.d 54 tahun": 2421,
+    "55 s.d 59 tahun": 1737,
+    "60 s.d 64 tahun": 1243
+   }
+  },
+  "Tebet Barat": {
+   "total": 24212,
+   "age_bins": {
+    "15 s.d 19 tahun": 1769,
+    "20 s.d 24 tahun": 1593,
+    "25 s.d 29 tahun": 1731,
+    "30 s.d 34 tahun": 2070,
+    "35 s.d 39 tahun": 2118,
+    "40 s.d 44 tahun": 2245,
+    "45 s.d 49 tahun": 2117,
+    "50 s.d 54 tahun": 1688,
+    "55 s.d 59 tahun": 1146,
+    "60 s.d 64 tahun": 884
+   }
+  },
+  "Tebet Timur": {
+   "total": 20215,
+   "age_bins": {
+    "15 s.d 19 tahun": 1492,
+    "20 s.d 24 tahun": 1225,
+    "25 s.d 29 tahun": 1369,
+    "30 s.d 34 tahun": 1673,
+    "35 s.d 39 tahun": 1728,
+    "40 s.d 44 tahun": 1952,
+    "45 s.d 49 tahun": 1854,
+    "50 s.d 54 tahun": 1441,
+    "55 s.d 59 tahun": 1046,
+    "60 s.d 64 tahun": 709
+   }
+  }
+ }
+}

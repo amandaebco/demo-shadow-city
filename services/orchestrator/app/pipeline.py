@@ -6,7 +6,7 @@ from datetime import datetime, timezone
 
 from app.clustering import cluster_personas
 from app.models import ScenarioStatus
-from app.population import build_skeletons, population_id_for
+from app.population import build_skeletons, legacy_population_id_for, population_id_for
 
 logger = logging.getLogger("orchestrator")
 
@@ -19,6 +19,12 @@ def utc_now() -> str:
 
 
 async def ensure_population(store, generator, seed: int, size: int) -> str:
+    # A population from before the official reference data is reused as it is, so scenarios that
+    # compare against an existing baseline keep the same residents.
+    legacy_id = legacy_population_id_for(seed, size)
+    if await asyncio.to_thread(store.count_personas, legacy_id) >= size:
+        logger.info("Reusing population %s", legacy_id)
+        return legacy_id
     population_id = population_id_for(seed, size)
     lock = _population_locks.setdefault(population_id, asyncio.Lock())
     async with lock:

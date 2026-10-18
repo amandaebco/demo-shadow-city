@@ -430,9 +430,10 @@ body {
 }
 
 .bar-tag {
+  flex-shrink: 0;
   font-size: 0.66rem;
   color: #94a3b8;
-  width: 28px;
+  width: 62px;
   text-transform: uppercase;
   font-weight: 600;
 }
@@ -1115,7 +1116,10 @@ body {
 }
 
 .flood-tag {
-  margin-left: 4px;
+  display: block;
+  width: fit-content;
+  margin-top: 3px;
+  white-space: nowrap;
   font-size: 0.6rem;
   text-transform: uppercase;
   background: rgba(250, 204, 21, 0.2);
@@ -1126,7 +1130,10 @@ body {
 }
 
 .clear-route-tag {
-  margin-left: 4px;
+  display: block;
+  width: fit-content;
+  margin-top: 3px;
+  white-space: nowrap;
   font-size: 0.6rem;
   text-transform: uppercase;
   background: rgba(16, 185, 129, 0.16);
@@ -1438,3 +1445,19 @@ body {
 
 
 
+
+/* Mode options table in the decision card: keep numbers on one line, route tag below the time */
+.decision-table th,
+.decision-table td:nth-child(2),
+.decision-table td:nth-child(3),
+.decision-table td:nth-child(4) {
+  white-space: nowrap;
+  vertical-align: middle;
+}
+
+.decision-persona-full-id {
+  display: block;
+  font-size: 0.62rem;
+  font-weight: 500;
+  color: #94a3b8;
+}
