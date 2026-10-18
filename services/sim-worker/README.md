@@ -1,8 +1,21 @@
 # `sim-worker` — Deterministic Simulation Worker (Track B)
 
-**Current Layer:** Layer 3 & Demo Polish — Policy & flood scenarios + per-persona decision evidence chain (`docs/REFERENCE.md` §9, `docs/CONTRACT.md` v1.5).
+**Current Layer:** Layer 6 — Scale + Persona Clustering (`docs/REFERENCE.md` §9, `docs/CONTRACT.md` v1.7 §4.6).
 
-`sim-worker` is the deterministic simulation engine for **Shadow City**. It routes agents across an OpenStreetMap road graph of mainland DKI Jakarta (`NetworkX`), gates `mrt` and `krl` availability on real operational OSM rail stations (with walking access/egress and headway wait times), centralizes all model assumptions with explicit source `TODO`s in `sim_worker/assumptions.py`, preserves scenario-scoped persona memory (`scenarios/{id}/memory/{persona_id}` without mutating `personas/{id}.memory`), persists per-persona decision evidence chains (`scenarios/{id}/decisions/{persona_id}` per `CONTRACT.md` v1.5 §4.5), and produces byte-for-byte reproducible requests for Track A's `system-one` `decision_cache` (`POST /v1/decide`).
+`sim-worker` is the deterministic simulation engine for **Shadow City**. It routes agents across an OpenStreetMap road graph of mainland DKI Jakarta (`NetworkX`), gates `mrt` and `krl` availability on real operational OSM rail stations (with walking access/egress and headway wait times), centralizes all model assumptions with explicit source `TODO`s in `sim_worker/assumptions.py`, shares decisions across persona clusters split by flood signature (`CONTRACT.md` v1.7 §4.6), preserves scenario-scoped persona memory (`scenarios/{id}/memory/{persona_id}` without mutating `personas/{id}.memory`), persists per-persona decision evidence chains (`scenarios/{id}/decisions/{persona_id}` with `shared_from`), and produces byte-for-byte reproducible requests for Track A's `system-one` `decision_cache` (`POST /v1/decide`).
+
+## Layer 6 — Scale + Clustering (`CONTRACT.md` v1.7 §4.6)
+
+1. **Flood-Signature Cluster Splitting:** At each decision point, each cluster's members (`cluster_id`) are split by their flood signature (`flood_signature(options_detail)`, the sorted set of options with `flooded_on_route=True`). Without an active flood, every cluster is a single group.
+2. **One `/v1/decide` Request per Group:** Built from the context of the cluster representative (`is_cluster_representative=True`) if it is in the group, otherwise from the member with the lowest `persona_id`. Requests are ordered and batched per tick (`<= 256` items per call).
+3. **Deterministic Member Sampling:** Each member samples its own `chosen` mode from the returned `probabilities`, restricted to its own available `options` and rescaled to sum to 1, using a deterministic RNG seeded by `seed + tick + persona_hash(persona_id)`. Each member's commute uses its own `options_detail` and road trajectory.
+4. **Evidence Chain (`shared_from`):** Every member's decision record under `scenarios/{id}/decisions/{persona_id}` records `"shared_from": "<persona_id whose request was sent>"`.
+5. **5,000-Resident Scale & Determinism Check (`pop_s42_n5000`):**
+   - Scenario Run A: `s_layer_6_clustered_baseline_run_a_n_5000__0388aa` (**113.41 s** wall-clock)
+   - Scenario Run B: `s_layer_6_clustered_baseline_run_b_n_5000__699334` (**127.92 s** wall-clock)
+   - `/v1/decide` items sent per run: **377** (down from 5,000 — **92.5% reduction** in model calls)
+   - All 204 tick documents (`0000`..`0203`), `metrics/summary`, and 5,000 per-persona decision records verified 100% identical across both runs.
+   - The three frozen 1,000-resident demo scenarios (`s_baseline_weekday_ea7247`, `s_central_parking_100_af902a`, `s_central_parking_100_with_north_jakarta_t_78f06b`) are guarded in `FROZEN_DEMO_SCENARIO_IDS` so they are never modified or re-run.
 
 ## Directory Structure
 
@@ -27,7 +40,8 @@ services/sim-worker/
 ├── tools/
 │   ├── build_network.py            # Extracts OSM road network & operational stations via Overpass API
 │   ├── run_determinism_check.py    # Creates and compares two identical scenarios in Firestore
-│   └── run_layer3_demos.py         # Creates or re-runs (--rerun) the 3 Layer 3 demo scenarios (A, B, C)
+│   ├── run_layer3_demos.py         # Creates or re-runs (--rerun) the 3 Layer 3 demo scenarios (A, B, C)
+│   └── run_layer6_check.py         # Runs and verifies the 5,000-resident Layer 6 clustered scenarios
 └── tests/
     └── test_engine.py              # Unit tests for config, road graph, station gating, decisions, and determinism
 ```
@@ -67,7 +81,10 @@ python -m sim_worker.main --scenario-id <scenario_id>
 python tools/run_determinism_check.py --population-size 50 --seed 42
 python tools/run_determinism_check.py --population-size 1000 --seed 42
 
-# 6. Listen for incoming Pub/Sub scenario-start messages
+# 6. Run the Layer 6 clustered 5,000-resident scale & determinism check
+python tools/run_layer6_check.py --population-size 5000 --seed 42
+
+# 7. Listen for incoming Pub/Sub scenario-start messages
 python -m sim_worker.main --listen --max-messages 1
 ```
 

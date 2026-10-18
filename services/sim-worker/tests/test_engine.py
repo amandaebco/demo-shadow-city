@@ -30,9 +30,15 @@ from sim_worker.config import (
     WorkerConfig,
 )
 from sim_worker.engine import (
+    FROZEN_DEMO_SCENARIO_IDS,
+    flood_signature,
     format_tick_id,
+    make_decision_rng,
     make_tick_rng,
+    normalize_member_probabilities,
+    persona_hash,
     run_placeholder_tick_loop,
+    sample_mode_choice,
     simulate_scenario_layer1,
     simulate_scenario_layer2,
     tick_to_local_time,
@@ -422,6 +428,155 @@ class TestSimWorkerLayer0To2(unittest.TestCase):
             )
             self.assertEqual(dec["chosen"], "transjakarta")
             self.assertEqual(dec["decided_by"], "rule-fallback")
+
+    def test_layer6_cluster_decision_sharing_and_flood_split(self) -> None:
+        """Verify CONTRACT.md v1.7 §4.6:
+        1. Split cluster members by flood signature.
+        2. Send 1 request per group (representative if in group, else lowest persona_id).
+        3. Each member samples its own chosen from probabilities restricted & rescaled to its options
+           using RNG seeded by seed + tick + persona_hash(member).
+        4. Member decision records include shared_from.
+        """
+        # Three members in cluster c_001:
+        # - p_00001: in North Jakarta (flooded route during flood), not representative
+        # - p_00002: in North Jakarta (flooded route during flood), IS cluster representative
+        # - p_00003: in South Jakarta (dry route during flood), not representative (lowest id in dry group)
+        clustered_personas = [
+            {
+                "persona_id": "p_00001",
+                "cluster_id": "c_001",
+                "is_cluster_representative": False,
+                "population_id": "pop_s42_n3",
+                "home": {"kelurahan": "Penjaringan", "lat": -6.1214, "lng": 106.7923},
+                "work": {"kelurahan": "Setiabudi", "lat": -6.2088, "lng": 106.8302},
+                "income_band": "middle",
+                "vehicles": ["motorcycle"],
+                "usual_mode": "motorcycle",
+                "usual_departure_tick": 20,
+                "cost_sensitivity": 0.7,
+                "time_sensitivity": 0.6,
+                "profile_summary": "Member 1 in North Jakarta.",
+                "memory": [],
+            },
+            {
+                "persona_id": "p_00002",
+                "cluster_id": "c_001",
+                "is_cluster_representative": True,
+                "population_id": "pop_s42_n3",
+                "home": {"kelurahan": "Pademangan Barat", "lat": -6.1320, "lng": 106.8350},
+                "work": {"kelurahan": "Setiabudi", "lat": -6.2088, "lng": 106.8302},
+                "income_band": "middle",
+                "vehicles": ["motorcycle"],
+                "usual_mode": "motorcycle",
+                "usual_departure_tick": 24,
+                "cost_sensitivity": 0.65,
+                "time_sensitivity": 0.6,
+                "profile_summary": "Representative in North Jakarta.",
+                "memory": [],
+            },
+            {
+                "persona_id": "p_00003",
+                "cluster_id": "c_001",
+                "is_cluster_representative": False,
+                "population_id": "pop_s42_n3",
+                "home": {"kelurahan": "Cipete Selatan", "lat": -6.2780, "lng": 106.7980},
+                "work": {"kelurahan": "Karet Kuningan", "lat": -6.2095, "lng": 106.8220},
+                "income_band": "middle",
+                "vehicles": ["motorcycle"],
+                "usual_mode": "motorcycle",
+                "usual_departure_tick": 22,
+                "cost_sensitivity": 0.7,
+                "time_sensitivity": 0.6,
+                "profile_summary": "Member 3 in South Jakarta (MRT corridor, dry).",
+                "memory": [],
+            },
+        ]
+
+        class MixedProbProvider:
+            def __init__(self) -> None:
+                self.last_items: list[dict[str, Any]] = []
+
+            def decide_batch(self, items: list[dict[str, Any]]) -> list[dict[str, Any]]:
+                self.last_items = copy.deepcopy(items)
+                out: list[dict[str, Any]] = []
+                for item in items:
+                    probs = {o: (0.6 if o == "transjakarta" else 0.4 / max(1, len(item["options"]) - 1)) for o in item["options"]}
+                    out.append(
+                        {
+                            "request_id": item["request_id"],
+                            "decision_id": f"d_{item['request_id']}",
+                            "probabilities": probs,
+                            "chosen": "transjakarta",
+                            "reason_short": "Shared cluster decision reason.",
+                            "decided_by": "gemini-system-two",
+                            "model_version": "gemini-3.8-flash",
+                            "latency_ms": 10,
+                        }
+                    )
+                return out
+
+        # Case A: Baseline (no flood) -> all 3 members have empty flood signature -> 1 group total,
+        # sent using representative p_00002's context.
+        prov_no_flood = MixedProbProvider()
+        res_no_flood = simulate_scenario_layer2(
+            scenario={"scenario_id": "s_layer6_base", "seed": 42, "policies": [], "events": []},
+            personas=clustered_personas,
+            zones=self.zones,
+            decision_provider=prov_no_flood,
+            network=self.network,
+        )
+        self.assertEqual(len(prov_no_flood.last_items), 1)
+        self.assertEqual(prov_no_flood.last_items[0]["persona_id"], "p_00002")
+        for pid in ("p_00001", "p_00002", "p_00003"):
+            dec = res_no_flood.persona_decisions[pid][0]
+            self.assertEqual(dec["shared_from"], "p_00002")
+            self.assertEqual(dec["reason_short"], "Shared cluster decision reason.")
+            # Probabilities restricted to member's own options and sum to 1
+            self.assertAlmostEqual(sum(dec["probabilities"].values()), 1.0, places=3)
+
+        # Case B: Active North Jakarta flood -> cluster c_001 splits into 2 flood-signature groups:
+        # - Flooded group (p_00001, p_00002) -> uses representative p_00002
+        # - Dry group (p_00003) -> representative not in group, uses lowest persona_id p_00003
+        prov_flood = MixedProbProvider()
+        res_flood = simulate_scenario_layer2(
+            scenario={
+                "scenario_id": "s_layer6_flood",
+                "seed": 42,
+                "policies": [],
+                "events": [
+                    {
+                        "type": "flood",
+                        "area_id": "jakarta_utara",
+                        "start_tick": 10,
+                        "end_tick": 60,
+                        "depth_cm": 45,
+                    }
+                ],
+            },
+            personas=clustered_personas,
+            zones=self.zones,
+            decision_provider=prov_flood,
+            network=self.network,
+        )
+        self.assertEqual(len(prov_flood.last_items), 2)
+        sent_pids = {item["persona_id"] for item in prov_flood.last_items}
+        self.assertEqual(sent_pids, {"p_00002", "p_00003"})
+        self.assertEqual(res_flood.persona_decisions["p_00001"][0]["shared_from"], "p_00002")
+        self.assertEqual(res_flood.persona_decisions["p_00002"][0]["shared_from"], "p_00002")
+        self.assertEqual(res_flood.persona_decisions["p_00003"][0]["shared_from"], "p_00003")
+
+        # Verify Frozen Demo Scenario leaves clustering off by default
+        demo_id = next(iter(FROZEN_DEMO_SCENARIO_IDS))
+        prov_demo = MixedProbProvider()
+        res_demo = simulate_scenario_layer2(
+            scenario={"scenario_id": demo_id, "seed": 42, "policies": [], "events": []},
+            personas=clustered_personas,
+            zones=self.zones,
+            decision_provider=prov_demo,
+            network=self.network,
+        )
+        self.assertEqual(len(prov_demo.last_items), 3)
+        self.assertNotIn("shared_from", res_demo.persona_decisions["p_00001"][0])
 
 
 if __name__ == "__main__":
