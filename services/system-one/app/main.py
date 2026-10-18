@@ -57,6 +57,7 @@ def build_decider(settings: Settings):
             settings.gemini_concurrency, PersonaLookup(db),
             cache=FirestoreDecisionCache(db) if settings.decision_cache else None,
             primary=build_gemma(settings) if settings.decider == "gemma" else None,
+            thinking_level=settings.gemini_thinking_level,
         )
         return decider
     raise ValueError(f"Unknown DECIDER '{settings.decider}' (expected 'rule', 'gemini' or 'gemma')")

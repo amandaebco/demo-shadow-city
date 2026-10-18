@@ -131,14 +131,17 @@ def from_stored(item: DecisionRequestItem, stored: dict, latency_ms: int) -> Dec
 
 class GeminiDecider:
     def __init__(self, client, model: str, fallback_model: str, seeds, concurrency: int, personas=None, cache=None,
-                 primary=None):
+                 primary=None, thinking_level: str = ""):
         self._client = client
+        self._thinking_level = thinking_level
         self._cache = cache
         self._models = [m for m in (model, fallback_model) if m]
         # Layer 5: an optional Gemma backend tried before Gemini (decided_by: gemma-system-one).
         self._primary = primary
         self._primary_decided_by = DecidedBy.gemma_system_one if primary else DecidedBy.gemini_system_two
         self.model_version = primary.model if primary else (self._models[0] if self._models else "")
+        # Part of the cache key: decisions made under another thinking level are never replayed.
+        self._cache_model = self.model_version + (f"@thinking-{thinking_level}" if thinking_level and not primary else "")
         self._seeds = seeds
         self._personas = personas
         self._semaphore = asyncio.Semaphore(concurrency)
@@ -150,7 +153,7 @@ class GeminiDecider:
 
         started = time.perf_counter()
         seeds = [await self._seeds.get(item.scenario_id) for item in items]
-        keys = [cache_key(item, seed, self.model_version) for item, seed in zip(items, seeds)]
+        keys = [cache_key(item, seed, self._cache_model) for item, seed in zip(items, seeds)]
         try:
             cached = await self._cache.get_many(keys)
         except Exception:
@@ -236,6 +239,8 @@ class GeminiDecider:
                 temperature=0,
                 response_mime_type="application/json",
                 response_schema=response_schema(item),
+                thinking_config=(types.ThinkingConfig(thinking_level=self._thinking_level.upper())
+                                 if self._thinking_level else None),
             ),
         )
         parsed = json.loads(response.text)

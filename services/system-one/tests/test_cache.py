@@ -102,3 +102,20 @@ def test_cache_read_failure_falls_back_to_model(item):
     models = CountingModels()
     outcome = run(decider(MemoryCache(fail_reads=True), models).decide_batch([make(item)]))[0]
     assert outcome.cache == "miss" and models.calls == 1
+
+
+def test_thinking_level_is_part_of_the_cache_key(item):
+    class Recording(CountingModels):
+        async def generate_content(self, model, contents, config):
+            self.config = config
+            return await super().generate_content(model, contents, config)
+
+    cache = MemoryCache()
+    models = Recording()
+    client = SimpleNamespace(aio=SimpleNamespace(models=models))
+    low = GeminiDecider(client, "gemini-x", "", Seeds(), concurrency=1, cache=cache, thinking_level="low")
+    run(low.decide_batch([make(item)]))
+    assert str(models.config.thinking_config.thinking_level).endswith("LOW")
+    default = GeminiDecider(client, "gemini-x", "", Seeds(), concurrency=1, cache=cache)
+    (outcome,) = run(default.decide_batch([make(item)]))
+    assert outcome.cache == "miss" and len(cache.store) == 2
