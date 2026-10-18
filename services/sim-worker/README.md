@@ -1,8 +1,8 @@
 # `sim-worker` — Deterministic Simulation Worker (Track B)
 
-**Current Layer:** Layer 2 — Real simulation engine (`docs/REFERENCE.md` §9, `docs/CONTRACT.md` v1.4).
+**Current Layer:** Layer 3 & Demo Polish — Policy & flood scenarios + per-persona decision evidence chain (`docs/REFERENCE.md` §9, `docs/CONTRACT.md` v1.5).
 
-`sim-worker` is the deterministic simulation engine for **Shadow City**. In Layer 2, it routes agents across an OpenStreetMap road graph of mainland DKI Jakarta (`NetworkX`), gates `mrt` and `krl` availability on real operational OSM rail stations (with walking access/egress and headway wait times), centralizes all model assumptions with explicit source `TODO`s in `sim_worker/assumptions.py`, preserves scenario-scoped persona memory (`scenarios/{id}/memory/{persona_id}` without mutating `personas/{id}.memory`), and produces byte-for-byte reproducible requests for Track A's `system-one` `decision_cache` (`POST /v1/decide`).
+`sim-worker` is the deterministic simulation engine for **Shadow City**. It routes agents across an OpenStreetMap road graph of mainland DKI Jakarta (`NetworkX`), gates `mrt` and `krl` availability on real operational OSM rail stations (with walking access/egress and headway wait times), centralizes all model assumptions with explicit source `TODO`s in `sim_worker/assumptions.py`, preserves scenario-scoped persona memory (`scenarios/{id}/memory/{persona_id}` without mutating `personas/{id}.memory`), persists per-persona decision evidence chains (`scenarios/{id}/decisions/{persona_id}` per `CONTRACT.md` v1.5 §4.5), and produces byte-for-byte reproducible requests for Track A's `system-one` `decision_cache` (`POST /v1/decide`).
 
 ## Directory Structure
 
@@ -21,14 +21,15 @@ services/sim-worker/
 │   ├── road_graph.py               # NetworkX shortest-path router & rail station catchment index
 │   ├── physics.py                  # Deterministic travel times, IDR tariffs, flood path checks
 │   ├── system_one.py               # Authenticated client for POST /v1/decide (<= 256 batch)
-│   ├── engine.py                   # Layer 2 road-graph tick simulation & metrics aggregation
+│   ├── engine.py                   # Road-graph tick simulation, decisions log & metrics aggregation
 │   ├── runner.py                   # Firestore + Pub/Sub scenario lifecycle runner
 │   └── main.py                     # CLI entry point (--scenario-id, --listen, --dry-run)
 ├── tools/
 │   ├── build_network.py            # Extracts OSM road network & operational stations via Overpass API
-│   └── run_determinism_check.py    # Creates and compares two identical scenarios in Firestore
+│   ├── run_determinism_check.py    # Creates and compares two identical scenarios in Firestore
+│   └── run_layer3_demos.py         # Creates or re-runs (--rerun) the 3 Layer 3 demo scenarios (A, B, C)
 └── tests/
-    └── test_engine.py              # Unit tests for config, road graph, station gating, and determinism
+    └── test_engine.py              # Unit tests for config, road graph, station gating, decisions, and determinism
 ```
 
 ## Configuration

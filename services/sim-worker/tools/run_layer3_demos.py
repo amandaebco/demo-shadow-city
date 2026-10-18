@@ -101,10 +101,87 @@ def ensure_report(orchestrator_url: str, scenario_id: str) -> dict[str, Any]:
     raise RuntimeError(f"Failed to fetch report for {scenario_id}")
 
 
+def rerun_existing_demos(config: WorkerConfig, runner: SimulationRunner) -> int:
+    demos = [
+        ("A (Baseline weekday)", "s_baseline_weekday_ea7247"),
+        ("B (Central parking +100%)", "s_central_parking_100_af902a"),
+        ("C (Central parking +100% + North Jakarta flood)", "s_central_parking_100_with_north_jakarta_t_78f06b"),
+    ]
+    results: dict[str, Any] = {}
+    for label, sid in demos:
+        print(f"\n=== Re-running {label}: {sid} ===")
+        t0 = time.time()
+        res = runner.run_scenario(sid)
+        dur = round(time.time() - t0, 2)
+        print(
+            f"Completed {sid} in {dur}s "
+            f"(decisions stored: {len(res.persona_decisions)}, "
+            f"kelurahan rows: {len(res.metrics_summary.get('by_kelurahan', []))})"
+        )
+        results[sid] = res
+
+    # Find notable residents who switched mode in Scenario B or Scenario C vs Scenario A
+    res_a = results["s_baseline_weekday_ea7247"]
+    res_b = results["s_central_parking_100_af902a"]
+    res_c = results["s_central_parking_100_with_north_jakarta_t_78f06b"]
+
+    switched_b: list[dict[str, Any]] = []
+    switched_c: list[dict[str, Any]] = []
+    for pid, decs_a in sorted(res_a.persona_decisions.items()):
+        da = decs_a[0]
+        db_entry = res_b.persona_decisions[pid][0]
+        dc_entry = res_c.persona_decisions[pid][0]
+        if db_entry["chosen"] != da["chosen"]:
+            switched_b.append(
+                {
+                    "persona_id": pid,
+                    "baseline_chosen": da["chosen"],
+                    "variant_b_chosen": db_entry["chosen"],
+                    "tick": db_entry["tick"],
+                    "reason_short": db_entry["reason_short"],
+                    "probabilities": db_entry["probabilities"],
+                    "options_detail": db_entry["options_detail"],
+                }
+            )
+        if dc_entry["chosen"] != da["chosen"] or any(
+            v.get("flooded_on_route") for v in dc_entry["options_detail"].values()
+        ):
+            switched_c.append(
+                {
+                    "persona_id": pid,
+                    "baseline_chosen": da["chosen"],
+                    "variant_c_chosen": dc_entry["chosen"],
+                    "tick": dc_entry["tick"],
+                    "reason_short": dc_entry["reason_short"],
+                    "probabilities": dc_entry["probabilities"],
+                }
+            )
+
+    print(f"\n=== NOTABLE RESIDENTS FOR DEMO VIDEO (Scenario B switched: {len(switched_b)}, Scenario C flood/switched: {len(switched_c)}) ===")
+    print("Top 5 Scenario B (+100% Central Parking) mode switchers:")
+    print(json.dumps(switched_b[:5], indent=2))
+    print("\nTop 5 Scenario C (+100% Parking + North Jakarta Flood) affected/switchers:")
+    print(json.dumps(switched_c[:5], indent=2))
+    return 0
+
+
 def main() -> int:
+    import argparse
+
+    parser = argparse.ArgumentParser(description="Create or re-run Layer 3 demo scenarios.")
+    parser.add_argument(
+        "--rerun",
+        action="store_true",
+        help="Re-run the existing 3 demo scenarios (A, B, C) in-place to populate decisions/ and by_kelurahan.residents.",
+    )
+    args = parser.parse_args()
+
     config = WorkerConfig.from_env()
     runner = SimulationRunner(config=config)
     ensure_pubsub_subscription(config)
+
+    if args.rerun:
+        return rerun_existing_demos(config, runner)
 
     seed = 42
     pop_size = 1000

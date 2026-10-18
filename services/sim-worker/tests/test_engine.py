@@ -403,10 +403,25 @@ class TestSimWorkerLayer0To2(unittest.TestCase):
             d2 = {k: v for k, v in t2.to_firestore_dict().items() if k != "scenario_id"}
             self.assertEqual(d1, d2)
 
-        # 4. Verify metrics/summary is identical across both runs
+        # 4. Verify metrics/summary is identical across both runs and includes residents in by_kelurahan
         m1 = {k: v for k, v in res_1.metrics_summary.items() if k != "scenario_id"}
         m2 = {k: v for k, v in res_2.metrics_summary.items() if k != "scenario_id"}
         self.assertEqual(m1, m2)
+        for kel_row in res_1.metrics_summary["by_kelurahan"]:
+            self.assertEqual(kel_row["residents"], 1)
+
+        # 5. Verify persona_decisions matches CONTRACT.md v1.5 §4.5
+        self.assertEqual(res_1.persona_decisions, res_2.persona_decisions)
+        for pid in ("p_00001", "p_00002"):
+            self.assertIn(pid, res_1.persona_decisions)
+            self.assertEqual(len(res_1.persona_decisions[pid]), 1)
+            dec = res_1.persona_decisions[pid][0]
+            self.assertEqual(
+                set(dec.keys()),
+                {"tick", "options_detail", "probabilities", "chosen", "reason_short", "decided_by"},
+            )
+            self.assertEqual(dec["chosen"], "transjakarta")
+            self.assertEqual(dec["decided_by"], "rule-fallback")
 
 
 if __name__ == "__main__":
