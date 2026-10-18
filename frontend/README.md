@@ -1,11 +1,16 @@
 # `frontend` — Shadow City Map Web App (Track B)
 
-**Current Layer:** Layer 3, Layer 4 & Demo UX Polish — Policy & flood comparison view, Verifier Agent report tab, resident-weighted kecamatan breakdown, per-resident decision evidence chain, and 1080p demo UX polish (`docs/REFERENCE.md` §9–10, `docs/CONTRACT.md` v1.5).
+**Current Layer:** Layer 3, Layer 4, Layer 6 Scale Showcase & Demo UX Polish — Policy & flood comparison view, Verifier Agent report tab, 5,000-resident clustered scale showcase, resident-weighted kecamatan breakdown, per-resident decision evidence chain (`Shared from <persona_id>`), and 1080p demo UX polish (`docs/REFERENCE.md` §9–10, `docs/CONTRACT.md` v1.7).
 
-This Next.js + React static web application (deployed on Firebase Hosting site `shadow-city` at `https://shadow-city.web.app`) renders the Jakarta policy simulator map, animates up to 1,000 resident dots moving along the OSM road network across ticks `0000`–`0203` (`05:00`–`21:55` WIB), presents a side-by-side **Comparison vs. Baseline** view (`GET /v1/scenarios/{id}/compare` + `GET /v1/scenarios/{id}/report`), displays the **Verifier Report** (`GET /v1/scenarios/{id}/verification`), and lets users find or click any resident dot to inspect their full **Decision Evidence Chain** (`scenarios/{id}/decisions/{persona_id}` + `GET /v1/personas/{persona_id}`).
+This Next.js + React static web application (deployed on Firebase Hosting site `shadow-city` at `https://shadow-city.web.app`) renders the Jakarta policy simulator map, animates 1,000 to 5,000 resident dots moving along the OSM road network across ticks `0000`–`0203` (`05:00`–`21:55` WIB) via a single WebGL GeoJSON source, presents a side-by-side **Comparison vs. Baseline** view (`GET /v1/scenarios/{id}/compare` + `GET /v1/scenarios/{id}/report`), displays the **Verifier Report** (`GET /v1/scenarios/{id}/verification`), and lets users find or click any resident dot to inspect their full **Decision Evidence Chain** (`scenarios/{id}/decisions/{persona_id}` + `GET /v1/personas/{persona_id}`).
 
-## Features in Layer 3, Layer 4 & Demo UX Polish
+## Features in Layer 3, Layer 4, Layer 6 & Demo UX Polish
 
+- **Layer 6 Scale Showcase (`Scale: 5,000 residents (clustered)`):**
+  - Includes `s_layer_6_clustered_baseline_run_a_n_5000__0388aa` in the Scenario Picker right below the three 1,000-resident demo scenarios.
+  - Smoothly renders and animates all 5,000 residents at 1080p using a pre-allocated in-place WebGL GeoJSON `FeatureCollection` buffer (zero DOM markers).
+  - Displays the **Scale & cost** card with measured values: `5,000 residents · 377 clusters · 377 model calls instead of 5,000 (−92.5%) · ~2 minutes end to end · $0.72 in Gemini calls · replay from cache: $0`.
+  - Clicking any resident in the 5,000-resident scenario displays `Shared from <persona_id>` in the Decision Evidence Chain panel (`CONTRACT.md` v1.7 §4.6).
 - **Streamlined Video Flow & Scenario Picker:**
   - Groups the primary 1,000-resident demo scenarios (`Baseline weekday`, `Central parking +100%`, `Central parking +100% with North Jakarta tidal flood`) at the top of the Scenario Picker, parallelizes API + Firestore fetches, and caches completed scenario bundles in memory for instant switching during live demos.
 - **Comparison vs. Baseline View (`GET /v1/scenarios/{id}/compare`):**

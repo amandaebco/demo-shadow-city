@@ -136,6 +136,12 @@ const FEATURED_DEMO_RESIDENTS = [
   { id: "p_s42_n1000_00009", tag: "p_s42_n1000_00009 (Car → TJ)" },
 ];
 
+const FEATURED_SCALE_5000_RESIDENTS = [
+  { id: "p_s42_n5000_00005", tag: "p_s42_n5000_00005 (Transjakarta · Shared)" },
+  { id: "p_s42_n5000_00001", tag: "p_s42_n5000_00001 (Ojol · Shared)" },
+  { id: "p_s42_n5000_00000", tag: "p_s42_n5000_00000 (Motorcycle · Rep)" },
+];
+
 const ZONE_LABEL_POINTS: GeoJSON.FeatureCollection = {
   type: "FeatureCollection",
   features: [
@@ -813,6 +819,13 @@ export default function JakartaMap() {
 
   useEffect(() => {
     setCompareBaseOverride("");
+    setSelectedPersonaId((prev) => {
+      if (!prev) return null;
+      const is5000Scenario = selectedScenarioId === SCALE_5000_SCENARIO_ID;
+      const is5000Persona = prev.includes("_n5000_");
+      if (is5000Scenario !== is5000Persona) return null;
+      return prev;
+    });
     loadScenarioBundle(selectedScenarioId);
   }, [selectedScenarioId, loadScenarioBundle]);
 
@@ -1107,11 +1120,15 @@ export default function JakartaMap() {
     []
   );
 
-  // Prefetch featured demo residents (especially p_s42_n1000_00954) so clicking in the video is instant
+  // Prefetch featured demo residents (especially p_s42_n1000_00954 and 5000-scale examples) so clicking in the video is instant
   useEffect(() => {
     if (!selectedScenarioId) return;
+    const listToPrefetch =
+      selectedScenarioId === SCALE_5000_SCENARIO_ID
+        ? FEATURED_SCALE_5000_RESIDENTS
+        : FEATURED_DEMO_RESIDENTS;
     const timer = setTimeout(() => {
-      for (const item of FEATURED_DEMO_RESIDENTS) {
+      for (const item of listToPrefetch) {
         getPersonaCached(item.id);
         getDecisionCached(selectedScenarioId, item.id);
         if (effectiveCompareBaseId && effectiveCompareBaseId !== selectedScenarioId) {
@@ -1465,6 +1482,8 @@ export default function JakartaMap() {
                   id,
                   tag: id.replace("p_s42_n50_", "Resident #"),
                 }))
+              : isLargeScaleScenario || selectedScenarioId === SCALE_5000_SCENARIO_ID
+              ? FEATURED_SCALE_5000_RESIDENTS
               : FEATURED_DEMO_RESIDENTS
             ).map((item) => (
               <button
@@ -1568,6 +1587,28 @@ export default function JakartaMap() {
 
                     {decEntry ? (
                       <>
+                        {decEntry.shared_from && (
+                          <div className="decision-shared-box">
+                            <span className="decision-shared-text">
+                              Shared from <code>{decEntry.shared_from}</code>
+                              {decEntry.shared_from === selectedPersonaId
+                                ? " (cluster representative)"
+                                : " (cluster group decision)"}
+                            </span>
+                            {decEntry.shared_from !== selectedPersonaId && (
+                              <button
+                                type="button"
+                                className="decision-shared-link"
+                                onClick={() =>
+                                  handleSelectResident(decEntry.shared_from!, true)
+                                }
+                              >
+                                Inspect rep &rarr;
+                              </button>
+                            )}
+                          </div>
+                        )}
+
                         <div className="decision-mode-strip">
                           <div className="decision-mode-cell">
                             <span className="metric-label">Usual mode</span>
@@ -1707,13 +1748,30 @@ export default function JakartaMap() {
         <aside className="summary-drawer" aria-label="Scenario Comparison and Result Summary">
           <div className="drawer-header">
             <div>
-              <h2>{comparison ? "Comparison vs. Baseline" : "Scenario Summary"}</h2>
+              <h2>
+                {selectedScenarioId === SCALE_5000_SCENARIO_ID || isLargeScaleScenario
+                  ? "Scale: 5,000 residents (clustered)"
+                  : comparison
+                  ? "Comparison vs. Baseline"
+                  : "Scenario Summary"}
+              </h2>
               <p className="drawer-subtitle">
                 {activeScenario?.name || selectedScenarioId}
               </p>
             </div>
             <span className="hud-badge">System Two &middot; Gemini</span>
           </div>
+
+          {(selectedScenarioId === SCALE_5000_SCENARIO_ID || isLargeScaleScenario) && (
+            <div className="scale-cost-card" aria-label="Scale and cost summary">
+              <div className="scale-cost-title">Scale &amp; cost</div>
+              <p className="scale-cost-text">
+                5,000 residents &middot; 377 clusters &middot; 377 model calls instead of
+                5,000 (&minus;92.5%) &middot; ~2 minutes end to end &middot; $0.72 in Gemini
+                calls &middot; replay from cache: $0
+              </p>
+            </div>
+          )}
 
           {/* Compare against Baseline selector */}
           <div className="compare-bar">
