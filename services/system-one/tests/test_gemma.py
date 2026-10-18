@@ -75,4 +75,5 @@ def test_ollama_request_shape_and_auth():
     raw, usage = asyncio.run(g.ask("sys", "prompt", {"type": "object"}))
     assert raw == GOOD and seen["url"] == "https://gemma.example/api/chat" and seen["auth"] == "Bearer tok"
     assert seen["body"]["format"] == {"type": "object"} and seen["body"]["options"]["temperature"] == 0
+    assert seen["body"]["think"] is False
     assert (usage.prompt_tokens, usage.output_tokens, usage.cost_usd) == (420, 55, None)

@@ -39,8 +39,11 @@ class IdTokenProvider:
 
 
 class OllamaGemma:
-    def __init__(self, base_url: str, model: str, tokens=None, timeout_s: float = 120.0, transport=None):
+    def __init__(self, base_url: str, model: str, tokens=None, timeout_s: float = 120.0, transport=None,
+                 think: bool = False):
         self.model = model
+        # System One must be fast: Gemma 4's thinking mode is off unless asked for.
+        self._think = think
         self._transport = transport
         self._url = base_url.rstrip("/") + "/api/chat"
         self._tokens = tokens
@@ -53,6 +56,7 @@ class OllamaGemma:
             "messages": [{"role": "system", "content": system}, {"role": "user", "content": prompt}],
             "format": schema,
             "stream": False,
+            "think": self._think,
             "options": {"temperature": 0},
         }
         async with httpx.AsyncClient(timeout=self._timeout, transport=self._transport) as client:
