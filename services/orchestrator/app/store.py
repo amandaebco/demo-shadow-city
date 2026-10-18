@@ -63,6 +63,11 @@ class FirestoreStore:
                 counts[name] = counts.get(name, 0) + 1
         return counts
 
+    def personas_for(self, population_id: str) -> list[dict]:
+        """Every persona in a population, ordered by persona_id."""
+        query = self._db.collection("personas").where(filter=FieldFilter("population_id", "==", population_id))
+        return sorted((doc.to_dict() for doc in query.stream()), key=lambda p: p["persona_id"])
+
     def write_personas(self, personas: list[dict]) -> None:
         collection = self._db.collection("personas")
         for start in range(0, len(personas), WRITE_BATCH_LIMIT):
