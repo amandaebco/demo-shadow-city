@@ -133,12 +133,6 @@ const CANONICAL_MODE_ORDER = [
   "walk",
 ];
 
-const FEATURED_DEMO_RESIDENTS = [
-  { id: "p_s42_n1000_00954", tag: "p_s42_n1000_00954 (KRL)" },
-  { id: "p_s42_n1000_00026", tag: "p_s42_n1000_00026 (Moto → TJ)" },
-  { id: "p_s42_n1000_00009", tag: "p_s42_n1000_00009 (Car → TJ)" },
-];
-
 const FEATURED_SCALE_5000_RESIDENTS = [
   { id: "p_s42_n5000_00005", tag: "p_s42_n5000_00005 (Transjakarta · Shared)" },
   { id: "p_s42_n5000_00001", tag: "p_s42_n5000_00001 (Ojol · Shared)" },
@@ -176,11 +170,18 @@ const ZONE_LABEL_POINTS: GeoJSON.FeatureCollection = {
 };
 
 const DEMO_SCENARIO_PRIORITY: Record<string, number> = {
-  s_baseline_weekday_ea7247: 1,
-  s_central_parking_100_af902a: 2,
-  s_central_parking_100_with_north_jakarta_t_78f06b: 3,
+  s_baseline_weekday_c4d9d5: 1,
+  s_central_parking_100_3aeda8: 2,
+  s_central_parking_100_with_north_jakarta_t_fe362a: 3,
   [SCALE_5000_SCENARIO_ID]: 4,
   [RP1_BACKTEST_SCENARIO_ID]: 5,
+};
+
+const V1_UNIFORM_SCENARIO_PRIORITY: Record<string, number> = {
+  s_baseline_weekday_ea7247: 11,
+  s_central_parking_100_af902a: 12,
+  s_central_parking_100_with_north_jakarta_t_78f06b: 13,
+  s_rp1_fare_day_24_april_2026_0acbd5: 14,
 };
 
 function parseReferenceSource(raw: string | null | undefined): {
@@ -690,15 +691,21 @@ export default function JakartaMap() {
     try {
       const list = await fetchScenarios();
       const sorted = [...list].sort((a, b) => {
-        const pa = DEMO_SCENARIO_PRIORITY[a.scenario_id] ?? 99;
-        const pb = DEMO_SCENARIO_PRIORITY[b.scenario_id] ?? 99;
+        const pa =
+          DEMO_SCENARIO_PRIORITY[a.scenario_id] ??
+          V1_UNIFORM_SCENARIO_PRIORITY[a.scenario_id] ??
+          99;
+        const pb =
+          DEMO_SCENARIO_PRIORITY[b.scenario_id] ??
+          V1_UNIFORM_SCENARIO_PRIORITY[b.scenario_id] ??
+          99;
         if (pa !== pb) return pa - pb;
         return (b.created_at || "").localeCompare(a.created_at || "");
       });
       setScenarios(sorted);
       if (selectPreferredOnFirstLoad && sorted.length > 0) {
         const preferredFloodVariant = sorted.find(
-          (s) => s.scenario_id === "s_central_parking_100_with_north_jakarta_t_78f06b"
+          (s) => s.scenario_id === "s_central_parking_100_with_north_jakarta_t_fe362a"
         );
         const preferredVariant = sorted.find(
           (s) =>
@@ -706,11 +713,13 @@ export default function JakartaMap() {
             s.base_scenario_id &&
             s.name.toLowerCase().includes("central parking")
         );
-        const preferredBase = sorted.find(
-          (s) =>
-            s.status === "completed" &&
-            s.name.toLowerCase() === "baseline weekday"
-        );
+        const preferredBase =
+          sorted.find((s) => s.scenario_id === "s_baseline_weekday_c4d9d5") ||
+          sorted.find(
+            (s) =>
+              s.status === "completed" &&
+              s.name.toLowerCase() === "baseline weekday"
+          );
         if (preferredBase) {
           setNewBaseId(preferredBase.scenario_id);
         }
@@ -1157,15 +1166,23 @@ export default function JakartaMap() {
     []
   );
 
-  // Prefetch featured demo residents (especially p_s42_n1000_00954 and 5000-scale examples) so clicking in the video is instant
+  const quickPickResidents = useMemo(() => {
+    if (isLargeScaleScenario || selectedScenarioId === SCALE_5000_SCENARIO_ID) {
+      return FEATURED_SCALE_5000_RESIDENTS;
+    }
+    const ids = currentTickData?.persona_ids || [];
+    const modes = currentTickData?.mode || [];
+    return ids.slice(0, 3).map((id, idx) => {
+      const modeName = MODE_LABELS[modes[idx] || ""] || modes[idx] || "Resident";
+      return { id, tag: `${id} (${modeName})` };
+    });
+  }, [isLargeScaleScenario, selectedScenarioId, currentTickData]);
+
+  // Prefetch quick-pick residents so clicking in the UI is instant
   useEffect(() => {
-    if (!selectedScenarioId) return;
-    const listToPrefetch =
-      selectedScenarioId === SCALE_5000_SCENARIO_ID
-        ? FEATURED_SCALE_5000_RESIDENTS
-        : FEATURED_DEMO_RESIDENTS;
+    if (!selectedScenarioId || quickPickResidents.length === 0) return;
     const timer = setTimeout(() => {
-      for (const item of listToPrefetch) {
+      for (const item of quickPickResidents) {
         getPersonaCached(item.id);
         getDecisionCached(selectedScenarioId, item.id);
         if (effectiveCompareBaseId && effectiveCompareBaseId !== selectedScenarioId) {
@@ -1174,7 +1191,13 @@ export default function JakartaMap() {
       }
     }, 300);
     return () => clearTimeout(timer);
-  }, [selectedScenarioId, effectiveCompareBaseId, getPersonaCached, getDecisionCached]);
+  }, [
+    selectedScenarioId,
+    effectiveCompareBaseId,
+    quickPickResidents,
+    getPersonaCached,
+    getDecisionCached,
+  ]);
 
   // Load selected persona profile + scenario decision evidence chain when selectedPersonaId changes
   useEffect(() => {
@@ -1249,8 +1272,11 @@ export default function JakartaMap() {
       ids.find((id) => id.toLowerCase().includes(query));
 
     if (!matched && /^\d+$/.test(query)) {
-      const popN = activeScenario?.population_size || 1000;
-      matched = `p_s42_n${popN}_${query.padStart(5, "0")}`;
+      const popId =
+        activeScenario?.population_id ||
+        `pop_s${activeScenario?.seed || 2026}_n${activeScenario?.population_size || 1000}_r2`;
+      const prefix = popId.replace(/^pop_/, "p_");
+      matched = `${prefix}_${query.padStart(5, "0")}`;
     } else if (!matched && query.startsWith("p_")) {
       matched = raw;
     }
@@ -1259,7 +1285,7 @@ export default function JakartaMap() {
       handleSelectResident(matched, true);
     } else {
       setResidentSearchFeedback(
-        `No resident matching "${raw}". Try p_s42_n1000_00954 or 00954.`
+        `No resident matching "${raw}". Enter a persona ID or 5-digit index (e.g. 00001).`
       );
     }
   };
@@ -1349,7 +1375,7 @@ export default function JakartaMap() {
               )}
               {scenarios.some((s) => s.scenario_id in DEMO_SCENARIO_PRIORITY) ? (
                 <>
-                  <optgroup label="Demo & Scale Scenarios">
+                  <optgroup label="Demo Scenarios">
                     {scenarios
                       .filter((s) => s.scenario_id in DEMO_SCENARIO_PRIORITY)
                       .map((s) => (
@@ -1358,11 +1384,25 @@ export default function JakartaMap() {
                         </option>
                       ))}
                   </optgroup>
+                  {scenarios.some(
+                    (s) => s.scenario_id in V1_UNIFORM_SCENARIO_PRIORITY
+                  ) && (
+                    <optgroup label="v1 (uniform population)">
+                      {scenarios
+                        .filter((s) => s.scenario_id in V1_UNIFORM_SCENARIO_PRIORITY)
+                        .map((s) => (
+                          <option key={s.scenario_id} value={s.scenario_id}>
+                            {formatScenarioPickerLabel(s)}
+                          </option>
+                        ))}
+                    </optgroup>
+                  )}
                   <optgroup label="Earlier Validation & Test Runs">
                     {scenarios
                       .filter(
                         (s) =>
                           !(s.scenario_id in DEMO_SCENARIO_PRIORITY) &&
+                          !(s.scenario_id in V1_UNIFORM_SCENARIO_PRIORITY) &&
                           (s.status !== "failed" || s.scenario_id === selectedScenarioId)
                       )
                       .map((s) => (
@@ -1504,7 +1544,7 @@ export default function JakartaMap() {
                 setResidentSearchInput(e.target.value);
                 if (residentSearchFeedback) setResidentSearchFeedback(null);
               }}
-              placeholder="Persona ID (e.g. p_s42_n1000_00954)"
+              placeholder="Persona ID or index (e.g. 00001)"
               className="resident-find-input"
               aria-label="Find resident by persona ID"
             />
@@ -1519,15 +1559,7 @@ export default function JakartaMap() {
             Quick-pick resident (hover to highlight on map):
           </div>
           <div className="resident-pill-group">
-            {(activeScenario?.population_size === 50 && currentTickData?.persona_ids?.length
-              ? currentTickData.persona_ids.slice(0, 3).map((id) => ({
-                  id,
-                  tag: id.replace("p_s42_n50_", "Resident #"),
-                }))
-              : isLargeScaleScenario || selectedScenarioId === SCALE_5000_SCENARIO_ID
-              ? FEATURED_SCALE_5000_RESIDENTS
-              : FEATURED_DEMO_RESIDENTS
-            ).map((item) => (
+            {quickPickResidents.map((item) => (
               <button
                 key={item.id}
                 type="button"
@@ -2253,8 +2285,7 @@ export default function JakartaMap() {
                       ? "vstatus-fail"
                       : "vstatus-warn";
                   const parsedSource = parseReferenceSource(backtest.reference_source);
-                  const btScenarioId =
-                    backtest.scenario_id || RP1_BACKTEST_SCENARIO_ID;
+                  const btScenarioId = RP1_BACKTEST_SCENARIO_ID;
 
                   return (
                     <>

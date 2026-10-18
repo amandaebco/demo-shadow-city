@@ -22,7 +22,7 @@ This Next.js + React static web application (deployed on Firebase Hosting site `
 - **Layer 4 Verifier Report Tab (`GET /v1/scenarios/{id}/verification`):**
   - Displays the Verifier Agent's overall result (`Overall status: PASS` / `WARN` / `FAIL`, with check pass/warning/fail counts) and each check's plain-English title, explicit text status (`Status: PASS` / `Status: WARN` / `Status: FAIL`), and detailed audit explanation.
 - **Find Resident & Decision Evidence Chain (`CONTRACT.md` v1.5 §4.5):**
-  - Includes a **Find Resident (Decision Evidence)** search box by persona ID (e.g. `p_s42_n1000_00954` or `00954`) and quick-pick buttons (`p_s42_n1000_00954 (KRL)`, `p_s42_n1000_00026 (Moto → TJ)`, `p_s42_n1000_00009 (Car → TJ)`) that highlight the resident on the map on hover and fly to their position on click.
+  - Includes a **Find Resident (Decision Evidence)** search box by persona ID or 5-digit index and quick-pick buttons that highlight the resident on the map on hover and fly to their position on click.
   - Clicking any resident opens the **Resident Commute Decision · Evidence Chain** panel showing `profile_summary`, `usual_mode`, `Baseline mode`, `Today's chosen mode`, `reason_short`, and the full table of evaluated options (`Travel time`, `Flooded route` / `Clear route` text badge, `Cost`, and `Probability`).
 - **1080p Map Legibility & Clear Loading/Empty States:**
   - High-contrast on-map labels and outlines for the **Central Parking Zone (+100% tariff)** and **North Jakarta Tidal Flood Area**, readable 1080p legend, plain-English text statuses throughout (never color-only), and explicit loading and empty states on every panel.

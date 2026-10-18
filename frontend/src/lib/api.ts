@@ -104,7 +104,8 @@ export interface Persona {
 
 export const SCALE_5000_SCENARIO_ID =
   "s_layer_6_clustered_baseline_run_a_n_5000__0388aa";
-export const RP1_BACKTEST_SCENARIO_ID = "s_rp1_fare_day_24_april_2026_0acbd5";
+export const RP1_BACKTEST_SCENARIO_ID = "s_rp1_fare_day_24_april_2026_e68060";
+export const DEFAULT_BASELINE_SCENARIO_ID = "s_baseline_weekday_c4d9d5";
 
 export interface PersonaDecisionOptionDetail {
   est_minutes: number;
@@ -261,10 +262,10 @@ export async function fetchBacktest(
   }
   const data = (await res.json()) as BacktestResult;
 
-  // If b_0001 has not yet been linked to the Rp1 scenario doc in Firestore, compute from the Rp1 scenario metrics
+  // If b_0001 has not yet been linked to the Rp1 scenario doc in Firestore, compute from D2 vs A2 metrics
   if (data.simulated_value === null && backtestId === "b_0001") {
     const targetScenarioId = data.scenario_id || RP1_BACKTEST_SCENARIO_ID;
-    const targetBaseId = data.base_scenario_id || "s_baseline_weekday_ea7247";
+    const targetBaseId = data.base_scenario_id || DEFAULT_BASELINE_SCENARIO_ID;
     try {
       const cmp = await fetchScenarioCompare(targetScenarioId, targetBaseId);
       if (cmp?.base && cmp?.variant) {
