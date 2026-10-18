@@ -1181,9 +1181,81 @@ body {
   border-radius: 999px;
 }
 
-/* Layer 4 Verification Tab */
+/* Layer 4 Verification Tab & Layer 7 Backtest Tab */
 .drawer-tabs.three-tabs {
   grid-template-columns: repeat(3, 1fr);
+}
+
+.drawer-tabs.four-tabs {
+  grid-template-columns: repeat(4, 1fr);
+}
+
+.backtest-body {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  font-size: 0.76rem;
+  line-height: 1.44;
+}
+
+.backtest-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.backtest-card {
+  background: rgba(30, 41, 59, 0.58);
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  border-radius: 8px;
+  padding: 9px 11px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.backtest-description {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #f8fafc;
+}
+
+.backtest-val {
+  font-size: 0.88rem;
+  color: #38bdf8;
+  font-variant-numeric: tabular-nums;
+}
+
+.backtest-sub {
+  font-size: 0.71rem;
+  color: #cbd5e1;
+}
+
+.backtest-source-text,
+.backtest-notes-text {
+  font-size: 0.73rem;
+  color: #e2e8f0;
+  line-height: 1.42;
+}
+
+.backtest-source-link {
+  display: inline-block;
+  margin-top: 2px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #38bdf8;
+  text-decoration: none;
+}
+
+.backtest-source-link:hover {
+  text-decoration: underline;
+  color: #7dd3fc;
+}
+
+.backtest-load-btn {
+  align-self: flex-start;
+  width: 100%;
+  text-align: center;
 }
 
 .verification-body {

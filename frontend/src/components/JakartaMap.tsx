@@ -6,7 +6,9 @@ import "maplibre-gl/dist/maplibre-gl.css";
 import { APP_CONFIG } from "@/lib/config";
 import {
   AnalystReport,
+  BacktestResult,
   createScenario,
+  fetchBacktest,
   fetchPersona,
   fetchPersonaDecisions,
   fetchScenario,
@@ -18,6 +20,7 @@ import {
   loadScenarioTicks,
   Persona,
   PersonaDecisionRecord,
+  RP1_BACKTEST_SCENARIO_ID,
   SCALE_5000_SCENARIO_ID,
   Scenario,
   ScenarioCompareResponse,
@@ -177,7 +180,23 @@ const DEMO_SCENARIO_PRIORITY: Record<string, number> = {
   s_central_parking_100_af902a: 2,
   s_central_parking_100_with_north_jakarta_t_78f06b: 3,
   [SCALE_5000_SCENARIO_ID]: 4,
+  [RP1_BACKTEST_SCENARIO_ID]: 5,
 };
+
+function parseReferenceSource(raw: string | null | undefined): {
+  text: string;
+  url: string | null;
+} {
+  if (!raw) return { text: "Reference pending", url: null };
+  const match = raw.match(/https?:\/\/\S+/);
+  if (!match) return { text: raw, url: null };
+  const url = match[0].replace(/[);,]+$/, "");
+  const text = raw
+    .replace(match[0], "")
+    .replace(/[;\s]+$/, "")
+    .trim();
+  return { text: text || url, url };
+}
 
 function formatScenarioPickerLabel(s: Scenario): string {
   if (s.scenario_id === SCALE_5000_SCENARIO_ID) {
@@ -278,9 +297,9 @@ export default function JakartaMap() {
   const [showZones, setShowZones] = useState<boolean>(true);
   const [showReportDrawer, setShowReportDrawer] = useState<boolean>(true);
   const [showCreateModal, setShowCreateModal] = useState<boolean>(false);
-  const [drawerTab, setDrawerTab] = useState<"report" | "breakdown" | "verification">(
-    "report"
-  );
+  const [drawerTab, setDrawerTab] = useState<
+    "report" | "verification" | "backtest" | "breakdown"
+  >("report");
   const [kecamatanSearch, setKecamatanSearch] = useState<string>("");
 
   const [scenarios, setScenarios] = useState<Scenario[]>([]);
@@ -293,6 +312,7 @@ export default function JakartaMap() {
   const [comparison, setComparison] = useState<ScenarioCompareResponse | null>(null);
   const [report, setReport] = useState<AnalystReport | null>(null);
   const [verification, setVerification] = useState<VerificationReport | null>(null);
+  const [backtest, setBacktest] = useState<BacktestResult | null>(null);
   const [ticks, setTicks] = useState<TickData[]>([]);
   const [currentTick, setCurrentTick] = useState<number>(22);
   const [isPlaying, setIsPlaying] = useState<boolean>(true);
@@ -300,6 +320,7 @@ export default function JakartaMap() {
   const [loadingScenario, setLoadingScenario] = useState<boolean>(false);
   const [loadingReport, setLoadingReport] = useState<boolean>(false);
   const [loadingVerification, setLoadingVerification] = useState<boolean>(false);
+  const [loadingBacktest, setLoadingBacktest] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   // Selected & hovered resident decision (evidence chain) state
@@ -706,9 +727,22 @@ export default function JakartaMap() {
     }
   }, []);
 
+  const loadBacktestData = useCallback(async () => {
+    setLoadingBacktest(true);
+    try {
+      const bt = await fetchBacktest("b_0001");
+      setBacktest(bt);
+    } catch {
+      setBacktest(null);
+    } finally {
+      setLoadingBacktest(false);
+    }
+  }, []);
+
   useEffect(() => {
     refreshScenarioList(true);
-  }, [refreshScenarioList]);
+    loadBacktestData();
+  }, [refreshScenarioList, loadBacktestData]);
 
   // Fetch a scenario bundle (used for both active scenario load and background prefetch)
   const fetchScenarioBundleRaw = useCallback(
@@ -819,6 +853,9 @@ export default function JakartaMap() {
 
   useEffect(() => {
     setCompareBaseOverride("");
+    if (selectedScenarioId === RP1_BACKTEST_SCENARIO_ID) {
+      setDrawerTab("backtest");
+    }
     setSelectedPersonaId((prev) => {
       if (!prev) return null;
       const is5000Scenario = selectedScenarioId === SCALE_5000_SCENARIO_ID;
@@ -1355,9 +1392,14 @@ export default function JakartaMap() {
           <button
             type="button"
             className="hud-button"
-            onClick={() =>
-              loadScenarioBundle(selectedScenarioId, compareBaseOverride || undefined, true)
-            }
+            onClick={() => {
+              loadScenarioBundle(
+                selectedScenarioId,
+                compareBaseOverride || undefined,
+                true
+              );
+              loadBacktestData();
+            }}
             disabled={loadingScenario}
           >
             {loadingScenario ? "Syncing..." : "Refresh"}
@@ -2025,8 +2067,8 @@ export default function JakartaMap() {
             )
           )}
 
-          {/* Drawer Tabs: Analyst Report vs. Verification vs. Per-Kecamatan & Income Breakdown */}
-          <div className="drawer-tabs three-tabs">
+          {/* Drawer Tabs: Analyst Report vs. Verification vs. Backtest vs. Per-Kecamatan & Income Breakdown */}
+          <div className="drawer-tabs four-tabs">
             <button
               type="button"
               className={`tab-btn ${drawerTab === "report" ? "active" : ""}`}
@@ -2044,10 +2086,22 @@ export default function JakartaMap() {
             </button>
             <button
               type="button"
+              className={`tab-btn ${drawerTab === "backtest" ? "active" : ""}`}
+              onClick={() => setDrawerTab("backtest")}
+            >
+              Backtest{" "}
+              {backtest?.direction_match === true
+                ? "(Yes)"
+                : backtest?.direction_match === false
+                ? "(No)"
+                : ""}
+            </button>
+            <button
+              type="button"
               className={`tab-btn ${drawerTab === "breakdown" ? "active" : ""}`}
               onClick={() => setDrawerTab("breakdown")}
             >
-              Income &amp; Kecamatan ({kecamatanComparisonRows.length})
+              Income &amp; Area ({kecamatanComparisonRows.length})
             </button>
           </div>
 
@@ -2175,6 +2229,130 @@ export default function JakartaMap() {
               ) : (
                 <div className="state-box empty-state-box">
                   Verification report available once the scenario completes.
+                </div>
+              )}
+            </div>
+          ) : drawerTab === "backtest" ? (
+            <div className="backtest-body">
+              {loadingBacktest ? (
+                <div className="state-box loading-state-box">
+                  Loading backtest result (GET /v1/backtests/b_0001)...
+                </div>
+              ) : backtest ? (
+                (() => {
+                  const matchText =
+                    backtest.direction_match === true
+                      ? "Yes"
+                      : backtest.direction_match === false
+                      ? "No"
+                      : "Pending";
+                  const matchStatusClass =
+                    backtest.direction_match === true
+                      ? "vstatus-pass"
+                      : backtest.direction_match === false
+                      ? "vstatus-fail"
+                      : "vstatus-warn";
+                  const parsedSource = parseReferenceSource(backtest.reference_source);
+                  const btScenarioId =
+                    backtest.scenario_id || RP1_BACKTEST_SCENARIO_ID;
+
+                  return (
+                    <>
+                      <div className={`verification-overall ${matchStatusClass}`}>
+                        <div>
+                          <div className="metric-label">
+                            Backtest {backtest.backtest_id} &middot; Historical Event Check
+                          </div>
+                          <strong className="verification-overall-text">
+                            Direction match: {matchText}
+                          </strong>
+                        </div>
+                        <span className={`vstatus-badge ${matchStatusClass}`}>
+                          Direction match: {matchText}
+                        </span>
+                      </div>
+
+                      {backtest.description && (
+                        <div className="backtest-card">
+                          <div className="metric-label">Backtest description</div>
+                          <div className="backtest-description">
+                            {backtest.description}
+                          </div>
+                        </div>
+                      )}
+
+                      <div className="backtest-grid">
+                        <div className="backtest-card">
+                          <div className="metric-label">
+                            Simulated change in transit share (Transjakarta + MRT + KRL)
+                          </div>
+                          <strong className="backtest-val">
+                            {backtest.simulated_value !== null
+                              ? `${formatSignedDelta(
+                                  backtest.simulated_value,
+                                  1,
+                                  " pp"
+                                )}`
+                              : "Pending"}
+                          </strong>
+                          <div className="backtest-sub">
+                            Simulated direction:{" "}
+                            <b>{backtest.simulated_direction || "pending"}</b>
+                          </div>
+                        </div>
+
+                        <div className="backtest-card">
+                          <div className="metric-label">
+                            Reported direction &amp; magnitude
+                          </div>
+                          <strong className="backtest-val">
+                            Reported direction:{" "}
+                            {backtest.reference_direction || "increase"}
+                          </strong>
+                          <div className="backtest-sub">
+                            Magnitude: reference pending (no official daily ridership
+                            published)
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="backtest-card">
+                        <div className="metric-label">Reference source</div>
+                        <p className="backtest-source-text">{parsedSource.text}</p>
+                        {parsedSource.url && (
+                          <a
+                            href={parsedSource.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="backtest-source-link"
+                          >
+                            Read ANTARA report (24 April 2026) &rarr;
+                          </a>
+                        )}
+                      </div>
+
+                      {backtest.notes && (
+                        <div className="backtest-card">
+                          <div className="metric-label">Notes &amp; scope</div>
+                          <p className="backtest-notes-text">{backtest.notes}</p>
+                        </div>
+                      )}
+
+                      {selectedScenarioId !== btScenarioId && (
+                        <button
+                          type="button"
+                          className="hud-button active backtest-load-btn"
+                          onClick={() => setSelectedScenarioId(btScenarioId)}
+                        >
+                          View Rp1 fare day (24 April 2026) scenario on map &rarr;
+                        </button>
+                      )}
+                    </>
+                  );
+                })()
+              ) : (
+                <div className="state-box empty-state-box">
+                  Backtest result will appear once the Rp1 fare day scenario completes.
                 </div>
               )}
             </div>
