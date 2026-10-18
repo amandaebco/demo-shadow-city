@@ -31,10 +31,16 @@ Copy each slide into the PPT, then export to PDF. Numbers come from the demo run
 - The report may only quote numbers it was given; without a baseline it cannot claim a policy effect.
 
 ## Slide 6 · Every decision is explainable
-- Each decision is logged: inputs, option probabilities, chosen mode, model, cost.
+- Each decision is logged in BigQuery: inputs, option probabilities, chosen mode, model, tokens, cost (9,300+ so far).
 - Residents remember (e.g. "stuck in flood near Pluit yesterday") and keep habits; they switch only when another option is clearly better.
 - Real example (parking + flood run): a logistics supervisor who depends on a motorcycle. Motorcycle: 65 min, Rp 25,465, route flooded. KRL: 75 min, Rp 3,000, dry. Chose KRL.
 - Reason, in Gemini's words: "Motorcycle route is flooded and parking costs are up. KRL is slightly slower but safe from floods and very cheap."
+
+## Slide 6b · Checking itself
+- A separate verifier agent grades every scenario: pass / warn / fail, each with its reason
+- Baseline mode share vs a cited BPS commuter survey: two-wheelers 50.1% vs 58.0%, car 15.7% vs 12.8%, public transport 32.0% vs 27.0% → pass (within 10 points)
+- Gemini, in a separate context, audits 40 sampled residents: 39 coherent; it flags "a 19-year-old junior designer with a high income"
+- Distributions without an official reference yet are reported as warn, never compared against invented numbers
 
 ## Slide 7 · Demo scenario
 - Baseline weekday vs. central parking tariff +100% vs. +100% with a North Jakarta tidal flood
@@ -65,7 +71,10 @@ Copy each slide into the PPT, then export to PDF. Numbers come from the demo run
 - Written interface contract between two parallel tracks; CI on every merge request
 
 ## Slide 10 · Scalability
-- Gemma as System One, distilled from Gemini's logged decisions, on Cloud Run GPU, to cut cost per decision
+- Gemma as System One is already live on a Cloud Run L4 GPU (Singapore), behind the same API
+- Untuned Gemma vs Gemini on 150 logged decisions: 100% valid structured output; same favourite option 50–63%; Gemini's favourite in Gemma's top two 75–83%
+- Next: distil Gemini into Gemma with 4,228 logged teacher decisions, then switch System One to Gemma
+- Cheaper Gemini today: thinking level `low` cuts cost per decision by 65% ($0.0020 → $0.0007) while keeping the same favourite in 87% of 100 logged decisions (Gemini agrees with itself 93% of the time)
 - Persona clustering: one decision shared by similar residents
 - Parallel workers via Pub/Sub for thousands of residents
 - Any JAPAC city with OpenStreetMap and open population data

@@ -29,10 +29,18 @@ class RuleDecider:
         return [Outcome(decide(item), None, "off") for item in items]
 
 
+def build_gemma(settings: Settings):
+    if not settings.gemma_url:
+        raise ValueError("DECIDER=gemma needs GEMMA_URL")
+    from app.gemma import IdTokenProvider, OllamaGemma
+
+    return OllamaGemma(settings.gemma_url, settings.gemma_model, IdTokenProvider(settings.gemma_url))
+
+
 def build_decider(settings: Settings):
     if settings.decider == "rule":
         return RuleDecider()
-    if settings.decider == "gemini":
+    if settings.decider in ("gemini", "gemma"):
         # Imported lazily so the rule mock runs without Google Cloud credentials.
         from google import genai
         from google.cloud import firestore
@@ -48,10 +56,11 @@ def build_decider(settings: Settings):
             client, settings.gemini_model, settings.gemini_fallback_model, SeedLookup(db),
             settings.gemini_concurrency, PersonaLookup(db),
             cache=FirestoreDecisionCache(db) if settings.decision_cache else None,
+            primary=build_gemma(settings) if settings.decider == "gemma" else None,
+            thinking_level=settings.gemini_thinking_level,
         )
-        decider.model_version = settings.gemini_model
         return decider
-    raise ValueError(f"Unknown DECIDER '{settings.decider}' (expected 'rule' or 'gemini')")
+    raise ValueError(f"Unknown DECIDER '{settings.decider}' (expected 'rule', 'gemini' or 'gemma')")
 
 
 def build_decision_log(settings: Settings):

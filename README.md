@@ -50,9 +50,11 @@ flowchart LR
 | --- | --- | --- |
 | Frontend | Next.js, Firebase Hosting | Map of Jakarta, resident animation, scenario selection, analyst report |
 | Orchestrator | Python, FastAPI on Cloud Run | Scenarios, population generation, comparison, analyst report |
-| System One | Python, FastAPI on Cloud Run | Per-resident decisions with structured output, decision cache |
+| System One | Python, FastAPI on Cloud Run | Per-resident decisions with structured output, decision cache, BigQuery log |
+| Gemma | Ollama on Cloud Run with an NVIDIA L4 (Singapore) | Gemma 4 / Gemma 3 behind the same System One API |
 | Simulation worker | Python | Deterministic engine: ticks, routes, travel time, cost, flooding |
-| State | Firestore (named database `shadow-city`) | Scenarios, personas, ticks, metrics, reports, decision cache |
+| State | Firestore (named database `shadow-city`) | Scenarios, personas, ticks, metrics, reports, decision records, decision cache |
+| Analytics | BigQuery (`shadow_city`) | Every decision with inputs, probabilities, model, tokens and cost |
 | Events | Pub/Sub | `scenario-start`, `scenario-completed`, `scenario-failed` |
 | CI | Cloud Build | Tests on every merge request and on `main` |
 
@@ -68,8 +70,11 @@ The interface between the AI/backend track and the simulation/frontend track is 
 | Simulation engine, live map from Firestore | Live |
 | Baseline vs policy comparison (`/v1/scenarios/{id}/compare`) and analyst report | Live |
 | Token usage and cost per decision, per scenario | Live |
-| Evidence-chain panel and verifier agent | Next |
-| Gemma as System One, distilled from Gemini's logged decisions, on Cloud Run GPU | Next |
+| Evidence chain: click a resident to see options, probabilities, choice and reason | Live |
+| Decision log in BigQuery (`shadow_city.decisions`, every decision with full evidence) | Live |
+| Verifier agent: code-decided checks against a cited BPS reference, Gemini audit of persona coherence | Live |
+| Gemma 4 (e2b, e4b) and Gemma 3 4B on a Cloud Run L4 GPU, behind the same System One API | Live (demo uses Gemini) |
+| Distil Gemini into Gemma with the logged teacher decisions | Next |
 | Persona clustering and parallel workers for thousands of residents | Next |
 | Backtest against a real event (Jakarta's Rp1 transit fare day) | Next |
 
@@ -83,7 +88,12 @@ Measured on 2026-10-17 with `gemini-3.8-flash` at its introductory Vertex AI pri
 | Population of 50 residents | 8,418 | 0.022 |
 | Replayed (cached) decision | 0 | 0 |
 
-`infra/cost_report.py <scenario_id>` totals a scenario's Gemini cost from Cloud Logging. This Gemini-only figure is the baseline the planned Gemma System One will be measured against.
+`infra/cost_report.py <scenario_id>` totals a scenario's Gemini cost from Cloud Logging.
+
+Two ways to cut it, both measured on logged decisions (details in [`ml/distillation/README.md`](ml/distillation/README.md)):
+
+- **Gemini thinking level `low`:** −65% per decision ($0.0020 → $0.0007), same favourite option in 87% of 100 decisions, against 93% when Gemini is simply asked again. Available as `GEMINI_THINKING_LEVEL=low`.
+- **Gemma as System One:** live on a Cloud Run L4 GPU. Untuned, it returns valid structured output 100% of the time and picks Gemini's favourite in 50–63% of 150 decisions (Gemini's favourite is in Gemma's top two 75–83%). Distillation on the 4,228 logged Gemini decisions is the next step.
 
 ## Limitations
 
@@ -100,6 +110,8 @@ shadow-city/
 ├── services/orchestrator/  # scenarios, population, comparison, analyst report
 ├── services/system-one/    # /v1/decide: Gemini decisions, decision cache
 ├── services/sim-worker/    # deterministic simulation engine
+├── services/gemma/         # Gemma on a Cloud Run L4 GPU (Ollama)
+├── ml/distillation/        # Gemma vs Gemini agreement, thinking-level experiment
 ├── frontend/               # map web app (Firebase Hosting)
 ├── data/zones.geojson      # parking zone and flood area polygons
 ├── ci/                     # Cloud Build test pipeline

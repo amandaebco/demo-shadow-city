@@ -1,0 +1,38 @@
+{
+ "samples": 150,
+ "results": [
+  {
+   "model": "gemma4:e4b",
+   "n": 150,
+   "valid_json_rate": 1.0,
+   "top1_agreement": 0.5,
+   "top2_contains_gemini_favourite": 0.833,
+   "mean_tv_distance": 0.308,
+   "median_latency_s": 2.59,
+   "throughput_decisions_per_s": 1.18,
+   "concurrency": 4
+  },
+  {
+   "model": "gemma4:e2b",
+   "n": 150,
+   "valid_json_rate": 1.0,
+   "top1_agreement": 0.607,
+   "top2_contains_gemini_favourite": 0.747,
+   "mean_tv_distance": 0.31,
+   "median_latency_s": 2.69,
+   "throughput_decisions_per_s": 1.21,
+   "concurrency": 4
+  },
+  {
+   "model": "gemma3:4b",
+   "n": 150,
+   "valid_json_rate": 1.0,
+   "top1_agreement": 0.633,
+   "top2_contains_gemini_favourite": 0.82,
+   "mean_tv_distance": 0.286,
+   "median_latency_s": 3.61,
+   "throughput_decisions_per_s": 0.95,
+   "concurrency": 4
+  }
+ ]
+}

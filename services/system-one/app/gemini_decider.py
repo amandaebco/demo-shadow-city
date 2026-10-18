@@ -130,10 +130,18 @@ def from_stored(item: DecisionRequestItem, stored: dict, latency_ms: int) -> Dec
 
 
 class GeminiDecider:
-    def __init__(self, client, model: str, fallback_model: str, seeds, concurrency: int, personas=None, cache=None):
+    def __init__(self, client, model: str, fallback_model: str, seeds, concurrency: int, personas=None, cache=None,
+                 primary=None, thinking_level: str = ""):
         self._client = client
+        self._thinking_level = thinking_level
         self._cache = cache
         self._models = [m for m in (model, fallback_model) if m]
+        # Layer 5: an optional Gemma backend tried before Gemini (decided_by: gemma-system-one).
+        self._primary = primary
+        self._primary_decided_by = DecidedBy.gemma_system_one if primary else DecidedBy.gemini_system_two
+        self.model_version = primary.model if primary else (self._models[0] if self._models else "")
+        # Part of the cache key: decisions made under another thinking level are never replayed.
+        self._cache_model = self.model_version + (f"@thinking-{thinking_level}" if thinking_level and not primary else "")
         self._seeds = seeds
         self._personas = personas
         self._semaphore = asyncio.Semaphore(concurrency)
@@ -145,7 +153,7 @@ class GeminiDecider:
 
         started = time.perf_counter()
         seeds = [await self._seeds.get(item.scenario_id) for item in items]
-        keys = [cache_key(item, seed, self._models[0]) for item, seed in zip(items, seeds)]
+        keys = [cache_key(item, seed, self._cache_model) for item, seed in zip(items, seeds)]
         try:
             cached = await self._cache.get_many(keys)
         except Exception:
@@ -164,7 +172,7 @@ class GeminiDecider:
         to_store = {
             key: stored_decision(response)
             for key, (response, _) in fresh_by_key.items()
-            if response.decided_by is DecidedBy.gemini_system_two  # never cache fallbacks
+            if response.decided_by is self._primary_decided_by  # never cache fallbacks
         }
         try:
             await self._cache.put_many(to_store)
@@ -189,15 +197,21 @@ class GeminiDecider:
     async def decide_with_usage(self, item: DecisionRequestItem) -> tuple[DecisionResponseItem, Usage | None]:
         started = time.perf_counter()
         persona = await self._personas.get(item.persona_id) if self._personas else None
+        attempts = ([(self._primary.model, DecidedBy.gemma_system_one)] if self._primary else []) + [
+            (m, DecidedBy.gemini_system_two) for m in self._models]
         async with self._semaphore:
-            for model in self._models:
+            for model, decided_by in attempts:
                 try:
-                    raw, usage = await self._ask(model, item, persona)
+                    if decided_by is DecidedBy.gemma_system_one:
+                        raw, usage = await self._primary.ask(SYSTEM_INSTRUCTION, build_prompt(item, persona),
+                                                             response_schema(item))
+                    else:
+                        raw, usage = await self._ask(model, item, persona)
                     break
                 except Exception:
-                    logger.exception("Gemini model %s failed for %s", model, item.request_id)
+                    logger.exception("Model %s failed for %s", model, item.request_id)
             else:
-                # Every Gemini model failed: last-resort rule decision (decided_by: rule-fallback).
+                # Every model failed: last-resort rule decision (decided_by: rule-fallback).
                 return rules.decide(item), None
 
         probabilities = normalize_probabilities(raw.get("probabilities") or {}, item.options)
@@ -210,7 +224,7 @@ class GeminiDecider:
             probabilities=probabilities,
             chosen=chosen,
             reason_short=truncate_reason(reason),
-            decided_by=DecidedBy.gemini_system_two,
+            decided_by=decided_by,
             model_version=model,
             latency_ms=int((time.perf_counter() - started) * 1000),
         )
@@ -225,6 +239,8 @@ class GeminiDecider:
                 temperature=0,
                 response_mime_type="application/json",
                 response_schema=response_schema(item),
+                thinking_config=(types.ThinkingConfig(thinking_level=self._thinking_level.upper())
+                                 if self._thinking_level else None),
             ),
         )
         parsed = json.loads(response.text)
