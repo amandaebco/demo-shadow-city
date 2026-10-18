@@ -177,11 +177,49 @@ def format_active_policies(policies: list[dict[str, Any]]) -> list[str]:
     out: list[str] = []
     for p in policies:
         ptype = str(p.get("type", "policy"))
-        zone = str(p.get("zone", "all"))
+        pol_modes = p.get("modes")
+        if pol_modes and isinstance(pol_modes, list):
+            target = ",".join(sorted(str(m).lower() for m in pol_modes))
+        else:
+            target = str(p.get("zone") or "all")
         ratio = float(p.get("change_ratio", 0.0))
         pct = int(round(ratio * 100))
-        out.append(f"{ptype}:{zone}:{pct:+d}%")
+        out.append(f"{ptype}:{target}:{pct:+d}%")
     return sorted(out)
+
+
+def transit_multiplier_for_mode(mode: str, policies: list[dict[str, Any]]) -> tuple[float, bool]:
+    """Compute cumulative transit_fare multiplier for a specific transit mode (CONTRACT.md v1.8 §2.2).
+
+    If `modes` is present on a `transit_fare` policy, the fare change applies only to the listed modes;
+    if `modes` is absent or empty, it applies to every transit mode.
+    Returns (multiplier, has_non_free_discount) so a promo like -0.9997 (Rp1 day) floors at 1 IDR.
+    """
+    mult = 1.0
+    non_free_discount = False
+    mode_lc = mode.lower()
+    for pol in policies:
+        if pol.get("type") == "transit_fare":
+            pol_modes = pol.get("modes")
+            if pol_modes is not None and len(pol_modes) > 0:
+                allowed = {str(m).lower() for m in pol_modes}
+                if mode_lc not in allowed:
+                    continue
+            ratio = float(pol.get("change_ratio", 0.0))
+            if -1.0 < ratio < 0.0:
+                non_free_discount = True
+            mult *= max(0.0, 1.0 + ratio)
+    return mult, non_free_discount
+
+
+def _apply_transit_fare(base_fare_idr: int, mode: str, policies: list[dict[str, Any]]) -> int:
+    mult, non_free_discount = transit_multiplier_for_mode(mode, policies)
+    if non_free_discount and base_fare_idr > 0 and 0.0 < mult <= 0.001:
+        return 1
+    discounted = int(round(base_fare_idr * mult))
+    if non_free_discount and base_fare_idr > 0 and mult > 0.0:
+        return max(1, discounted)
+    return max(0, discounted)
 
 
 def get_active_events_at_tick(events: list[dict[str, Any]], tick: int) -> list[dict[str, Any]]:
@@ -393,7 +431,7 @@ def compute_options_detail(
                 int(round(access_egress_min + TRANSJAKARTA_WAIT_MIN + in_veh))
                 + flood_delay_brt_min,
             )
-            cost_idr = int(round(TRANSJAKARTA_BASE_FARE_IDR * transit_multiplier))
+            cost_idr = _apply_transit_fare(TRANSJAKARTA_BASE_FARE_IDR, "transjakarta", policies)
             flooded = route_flooded
         elif mode == "krl":
             access_min = krl_plan.access_walk_km * WALK_MINUTES_PER_KM
@@ -407,7 +445,7 @@ def compute_options_detail(
             base_fare = KRL_BASE_FARE_IDR + KRL_INCREMENT_FARE_IDR * max(
                 0, int((rail_km - KRL_DISTANCE_THRESHOLD_KM) // KRL_INCREMENT_STEP_KM)
             )
-            cost_idr = int(round(base_fare * transit_multiplier))
+            cost_idr = _apply_transit_fare(base_fare, "krl", policies)
             flooded = False
         elif mode == "mrt":
             access_min = mrt_plan.access_walk_km * WALK_MINUTES_PER_KM
@@ -423,7 +461,7 @@ def compute_options_detail(
                 MRT_BASE_FARE_IDR
                 + MRT_INCREMENT_FARE_IDR * int(rail_km // MRT_INCREMENT_STEP_KM),
             )
-            cost_idr = int(round(base_fare * transit_multiplier))
+            cost_idr = _apply_transit_fare(base_fare, "mrt", policies)
             flooded = False
         elif mode == "ojol":
             in_veh = dist_km * OJOL_MINUTES_PER_KM * cong_mult

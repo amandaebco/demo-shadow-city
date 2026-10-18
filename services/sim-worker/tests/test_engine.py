@@ -578,6 +578,73 @@ class TestSimWorkerLayer0To2(unittest.TestCase):
         self.assertEqual(len(prov_demo.last_items), 3)
         self.assertNotIn("shared_from", res_demo.persona_decisions["p_00001"][0])
 
+    def test_layer7_transit_fare_modes_filter_rp1_day(self) -> None:
+        """Verify CONTRACT.md v1.8 §2.2:
+        - transit_fare with modes: ['transjakarta', 'mrt'] and change_ratio: -0.9997
+          discounts Transjakarta and MRT to Rp 1 while leaving KRL at its normal fare.
+        - transit_fare without modes discounts all transit modes (including KRL).
+        """
+        # Persona near Kebayoran KRL & Blok M MRT -> Sudirman KRL & Dukuh Atas MRT
+        persona_both_rail = {
+            "persona_id": "p_rail_both",
+            "home": {"kelurahan": "Kramat Pela", "lat": -6.2440, "lng": 106.7980},
+            "work": {"kelurahan": "Kebon Melati", "lat": -6.2008, "lng": 106.8228},
+            "vehicles": ["motorcycle"],
+            "usual_mode": "motorcycle",
+            "usual_departure_tick": 24,
+        }
+        opts_base, detail_base, _, _ = compute_options_detail(
+            persona=persona_both_rail,
+            tick=24,
+            policies=[],
+            events=[],
+            zones=self.zones,
+            network=self.network,
+        )
+        self.assertIn("transjakarta", opts_base)
+        self.assertIn("mrt", opts_base)
+        self.assertIn("krl", opts_base)
+
+        # Rp1 day policy: modes = ["transjakarta", "mrt"], KRL not discounted
+        rp1_policies = [
+            {
+                "type": "transit_fare",
+                "zone": "all",
+                "change_ratio": -0.9997,
+                "modes": ["transjakarta", "mrt"],
+            }
+        ]
+        _, detail_rp1, pol_str_rp1, _ = compute_options_detail(
+            persona=persona_both_rail,
+            tick=24,
+            policies=rp1_policies,
+            events=[],
+            zones=self.zones,
+            network=self.network,
+        )
+        self.assertEqual(detail_rp1["transjakarta"]["cost_idr"], 1)
+        self.assertEqual(detail_rp1["mrt"]["cost_idr"], 1)
+        self.assertEqual(detail_rp1["krl"]["cost_idr"], detail_base["krl"]["cost_idr"])
+        self.assertGreaterEqual(detail_rp1["krl"]["cost_idr"], 3000)
+        self.assertEqual(pol_str_rp1, ["transit_fare:mrt,transjakarta:-100%"])
+
+        # Absent modes = applies to every transit mode (including KRL)
+        all_transit_policies = [
+            {"type": "transit_fare", "zone": "all", "change_ratio": -0.5}
+        ]
+        _, detail_all, pol_str_all, _ = compute_options_detail(
+            persona=persona_both_rail,
+            tick=24,
+            policies=all_transit_policies,
+            events=[],
+            zones=self.zones,
+            network=self.network,
+        )
+        self.assertLess(detail_all["transjakarta"]["cost_idr"], detail_base["transjakarta"]["cost_idr"])
+        self.assertLess(detail_all["mrt"]["cost_idr"], detail_base["mrt"]["cost_idr"])
+        self.assertLess(detail_all["krl"]["cost_idr"], detail_base["krl"]["cost_idr"])
+        self.assertEqual(pol_str_all, ["transit_fare:all:-50%"])
+
 
 if __name__ == "__main__":
     unittest.main()
