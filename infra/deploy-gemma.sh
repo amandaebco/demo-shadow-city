@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # Deploy the Gemma (Ollama) service on a Cloud Run L4 GPU in Singapore. It costs money while running.
 # Usage: infra/deploy-gemma.sh [--yes]
+# The build bakes ~15 GB of models into the image and takes 10-20 minutes.
 set -euo pipefail
 source "$(dirname "${BASH_SOURCE[0]}")/lib.sh"
 [[ "${1:-}" == "--yes" ]] && ASSUME_YES=true
