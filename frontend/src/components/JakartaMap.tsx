@@ -133,6 +133,9 @@ const CANONICAL_MODE_ORDER = [
   "walk",
 ];
 
+// Resident shown in the demo video (C2: motorcycle route flooded, switches to KRL).
+const FEATURED_DEMO_RESIDENT_ID = "p_s2026_n1000_r2_00747";
+
 const FEATURED_SCALE_5000_RESIDENTS = [
   { id: "p_s42_n5000_00005", tag: "p_s42_n5000_00005 (Transjakarta · Shared)" },
   { id: "p_s42_n5000_00001", tag: "p_s42_n5000_00001 (Ojol · Shared)" },
@@ -168,6 +171,18 @@ const ZONE_LABEL_POINTS: GeoJSON.FeatureCollection = {
     },
   ],
 };
+
+// Earlier validation runs ("Layer N ...") and v1 uniform-population runs stay in Firestore as
+// evidence but are hidden from the pickers; the selected scenario is always listed.
+function isInternalScenario(s: Scenario): boolean {
+  return s.scenario_id in V1_UNIFORM_SCENARIO_PRIORITY || /^Layer \d/.test(s.name || "");
+}
+
+function isOtherPickerScenario(s: Scenario, selectedId: string): boolean {
+  if (s.scenario_id in DEMO_SCENARIO_PRIORITY) return false;
+  if (s.scenario_id === selectedId) return true;
+  return !isInternalScenario(s) && s.status !== "failed";
+}
 
 const DEMO_SCENARIO_PRIORITY: Record<string, number> = {
   s_baseline_weekday_c4d9d5: 1,
@@ -1185,7 +1200,11 @@ export default function JakartaMap() {
     }
     const ids = currentTickData?.persona_ids || [];
     const modes = currentTickData?.mode || [];
-    return ids.slice(0, 3).map((id, idx) => {
+    const featuredIdx = ids.indexOf(FEATURED_DEMO_RESIDENT_ID);
+    const first = [0, 1, 2].filter((i) => i < ids.length && i !== featuredIdx);
+    const ordered = featuredIdx >= 0 ? [featuredIdx, ...first] : first;
+    return ordered.slice(0, 3).map((idx) => {
+      const id = ids[idx];
       const modeName = MODE_LABELS[modes[idx] || ""] || modes[idx] || "Resident";
       return { id, tag: `${id} (${modeName})` };
     });
@@ -1397,12 +1416,10 @@ export default function JakartaMap() {
                         </option>
                       ))}
                   </optgroup>
-                  {scenarios.some(
-                    (s) => s.scenario_id in V1_UNIFORM_SCENARIO_PRIORITY
-                  ) && (
-                    <optgroup label="v1 (uniform population)">
+                  {scenarios.some((s) => isOtherPickerScenario(s, selectedScenarioId)) && (
+                    <optgroup label="Other Scenarios">
                       {scenarios
-                        .filter((s) => s.scenario_id in V1_UNIFORM_SCENARIO_PRIORITY)
+                        .filter((s) => isOtherPickerScenario(s, selectedScenarioId))
                         .map((s) => (
                           <option key={s.scenario_id} value={s.scenario_id}>
                             {formatScenarioPickerLabel(s)}
@@ -1410,20 +1427,6 @@ export default function JakartaMap() {
                         ))}
                     </optgroup>
                   )}
-                  <optgroup label="Earlier Validation & Test Runs">
-                    {scenarios
-                      .filter(
-                        (s) =>
-                          !(s.scenario_id in DEMO_SCENARIO_PRIORITY) &&
-                          !(s.scenario_id in V1_UNIFORM_SCENARIO_PRIORITY) &&
-                          (s.status !== "failed" || s.scenario_id === selectedScenarioId)
-                      )
-                      .map((s) => (
-                        <option key={s.scenario_id} value={s.scenario_id}>
-                          {formatScenarioPickerLabel(s)}
-                        </option>
-                      ))}
-                  </optgroup>
                 </>
               ) : (
                 scenarios.map((s) => (
@@ -1874,7 +1877,10 @@ export default function JakartaMap() {
                   .filter(
                     (s) =>
                       s.scenario_id !== selectedScenarioId &&
-                      s.status === "completed"
+                      s.status === "completed" &&
+                      !isInternalScenario(s) &&
+                      s.population_id ===
+                        scenarios.find((x) => x.scenario_id === selectedScenarioId)?.population_id
                   )
                   .map((s) => (
                     <option key={s.scenario_id} value={s.scenario_id}>
