@@ -158,3 +158,14 @@ def test_report_uses_baseline_once_its_metrics_exist(client, deps):
     deps.store.metrics[base_id] = {"scenario_id": base_id}
     assert client.get(f"/v1/scenarios/{variant_id}/report").status_code == 200
     assert deps.report_writer.last_base["scenario_id"] == base_id
+
+
+def test_verification_waits_for_metrics_then_is_stored(client, deps):
+    scenario_id = client.post("/v1/scenarios", json=BODY).json()["scenario_id"]
+    assert wait_for(lambda: deps.publisher.started)
+    assert client.get(f"/v1/scenarios/{scenario_id}/verification").status_code == 404
+    deps.store.metrics[scenario_id] = {"scenario_id": scenario_id, "citywide": {}}
+    first = client.get(f"/v1/scenarios/{scenario_id}/verification").json()
+    assert first["persona_count"] == 50
+    assert client.get(f"/v1/scenarios/{scenario_id}/verification").json() == first
+    assert deps.verifier.calls == 1
