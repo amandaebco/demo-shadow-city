@@ -39,8 +39,16 @@ def load(path: str) -> list[dict]:
         return [json.loads(line) for line in f]
 
 
+def json_instruction(options: list[str]) -> str:
+    """Production enforces the format with a response schema; plain generation needs it spelled out."""
+    shape = ", ".join(f'"{o}": <number>' for o in options)
+    return ("\n\nAnswer with only one JSON object and nothing else: "
+            f'{{"probabilities": {{{shape}}}, "reason_short": "<at most 140 characters>"}}')
+
+
 def messages(example: dict) -> list[dict]:
-    return [{"role": "system", "content": example["system"]}, {"role": "user", "content": example["prompt"]}]
+    return [{"role": "system", "content": example["system"]},
+            {"role": "user", "content": example["prompt"] + json_instruction(example["options"])}]
 
 
 def target_text(example: dict) -> str:
