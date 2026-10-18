@@ -41,3 +41,15 @@ PYTHONPATH=services/system-one services/system-one/.venv/bin/python ml/distillat
     --gemma-url "$(gcloud run services describe gemma --project=ebc-cloud-dev-03 --region=asia-southeast1 --format='value(status.url)')" \
     --n 150 --models gemma4:e4b gemma4:e2b gemma3:4b
 ```
+
+## Cheaper Gemini: thinking level (2026-10-18)
+
+`eval_thinking.py`: 100 logged Gemini decisions re-asked with the same prompt. The `default` arm
+re-runs the production configuration, so its agreement is Gemini's own run-to-run variation.
+
+| Arm | Same favourite as logged | Logged favourite in top 2 | Mean TV distance | Thinking tokens | Cost per decision |
+| --- | --- | --- | --- | --- | --- |
+| default (control) | 93% | 100% | 0.047 | 364 | $0.00202 |
+| thinking level `low` | 87% | 100% | 0.067 | 2 | $0.00072 (−65%) |
+
+`gemini-3.8-flash` rejects `minimal`. Raw results: `results/thinking_levels_2026-10-18.json`.

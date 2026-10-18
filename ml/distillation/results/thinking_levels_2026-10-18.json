@@ -1,0 +1,24 @@
+{
+ "model": "gemini-3.8-flash",
+ "samples": 100,
+ "results": [
+  {
+   "arm": "default",
+   "n": 100,
+   "top1_agreement_with_logged": 0.93,
+   "top2_contains_logged_favourite": 1.0,
+   "mean_tv_distance": 0.047,
+   "mean_thoughts_tokens": 363.6,
+   "mean_cost_usd_per_decision": 0.002023
+  },
+  {
+   "arm": "low",
+   "n": 100,
+   "top1_agreement_with_logged": 0.87,
+   "top2_contains_logged_favourite": 1.0,
+   "mean_tv_distance": 0.067,
+   "mean_thoughts_tokens": 2.4,
+   "mean_cost_usd_per_decision": 0.000717
+  }
+ ]
+}
