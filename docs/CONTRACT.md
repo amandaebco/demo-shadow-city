@@ -1,6 +1,6 @@
 # Shadow City — Integration Contract
 
-**Version:** v1.4 (frozen, 2026-10-17) — v1.1 adds the named Firestore database `shadow-city`; v1.2 adds the optional `population_id` field (2.1, 2.2) and clarifies the pre-Layer-5 System One decider (10.3); v1.3 adds the Track A-only `decision_cache` collection (5); v1.4 makes memory produced during a scenario scenario-scoped (2.1, 4.3, 5)
+**Version:** v1.5 (frozen, 2026-10-18) — v1.1 adds the named Firestore database `shadow-city`; v1.2 adds the optional `population_id` field (2.1, 2.2) and clarifies the pre-Layer-5 System One decider (10.3); v1.3 adds the Track A-only `decision_cache` collection (5); v1.4 makes memory produced during a scenario scenario-scoped (2.1, 4.3, 5); v1.5 adds per-persona decision records for the evidence chain (4.5, 5)
 **Status:** Frozen. Changes follow section 9.
 **GCP project:** `ebc-cloud-dev-03`
 **Source of truth for design:** `docs/REFERENCE.md`
@@ -294,6 +294,30 @@ Until Layer 5, Track A provides `system-one` with `decided_by: "rule-fallback"`:
 
 ---
 
+### 4.5 Decision records (evidence chain)
+
+The worker stores every decision it received for a persona in a scenario, so the frontend can show why a resident chose a mode:
+
+```json
+{
+  "persona_id": "p_s42_n1000_00421",
+  "decisions": [
+    {
+      "tick": 24,
+      "options_detail": {"motorcycle": {"est_minutes": 72, "cost_idr": 30000, "flooded_on_route": true}},
+      "probabilities": {"motorcycle": 0.21, "transjakarta": 0.55},
+      "chosen": "transjakarta",
+      "reason_short": "Usual route is flooded and transit is cheaper and faster today.",
+      "decided_by": "gemini-system-two"
+    }
+  ]
+}
+```
+
+- Path: `scenarios/{scenario_id}/decisions/{persona_id}`, written by Track B, read by the frontend and Track A.
+- Values are copied from the decision request (2.3, `context.options_detail`) and response (2.3), ordered by tick.
+- This is the Firestore copy for the UI; the full decision log stays with Track A (2.3, 6).
+
 ## 5. Firestore layout
 
 All paths below live in the **named Firestore database `shadow-city`** (Native mode, `asia-southeast2`) in project `ebc-cloud-dev-03`. Never write to the project's `(default)` database; it predates this project and may be used by other applications. Every client must select the database explicitly (for example `firestore.Client(project="ebc-cloud-dev-03", database="shadow-city")` in Python, `getFirestore(app, "shadow-city")` in the web SDK), read from the config value `FIRESTORE_DATABASE=shadow-city`.
@@ -305,6 +329,7 @@ All paths below live in the **named Firestore database `shadow-city`** (Native m
 | `scenarios/{scenario_id}/metrics/summary` | B | Frontend, A |
 | `personas/{persona_id}` | A | Both |
 | `scenarios/{scenario_id}/memory/{persona_id}` | B (optional, 4.3) | Frontend, A |
+| `scenarios/{scenario_id}/decisions/{persona_id}` | B (4.5) | Frontend, A |
 | `reports/{report_id}` | A | Frontend |
 | `decision_cache/{cache_key}` | A (`system-one`) | A only; Track B never reads or writes it |
 
