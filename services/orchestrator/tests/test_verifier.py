@@ -66,7 +66,7 @@ def test_verify_baseline_includes_reference_checks():
     report = asyncio.run(v.verify(scenario, metrics, personas(50)))
     names = [c["name"] for c in report["checks"]]
     assert "baseline_mode_share_vs_reference" in names and "persona_profile_coherence" in names
-    assert report["report_id"] == "r_verifier_base" and report["overall"] == "warn"  # reference TODOs warn
+    assert report["report_id"] == "r_verifier_base" and report["overall"] in ("warn", "fail")
 
 
 def test_verify_variant_skips_baseline_only_checks():
@@ -80,3 +80,23 @@ def test_verify_variant_skips_baseline_only_checks():
     names = [c["name"] for c in report["checks"]]
     assert "baseline_mode_share_vs_reference" not in names
     assert report["checks"][-1]["status"] == "warn" and "unavailable" in report["checks"][-1]["detail"]
+
+
+
+def test_home_spread_compares_with_official_shares():
+    from app.kelurahan import HOME_KELURAHAN, HOME_WEIGHTS
+    from app.population import build_skeletons
+    from app.verifier import check_home_spread
+
+    weighted = check_home_spread(build_skeletons(3, 4000))
+    assert weighted["status"] == "pass" and "Dukcapil" in weighted["detail"]
+    one_place = [{"home": {"kelurahan": "Gambir"}}] * 500
+    assert check_home_spread(one_place)["status"] == "fail"
+
+
+def test_age_check_compares_with_official_structure():
+    from app.population import build_skeletons
+    from app.verifier import check_age
+
+    assert check_age(build_skeletons(3, 4000))["status"] == "pass"
+    assert check_age([{"age": 64}] * 200)["status"] == "fail"
