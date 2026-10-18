@@ -18,6 +18,7 @@ Requirements from https://aibuildercup.com/themes.html. Tick each box before sub
 
 ## Final checks (on the day)
 
+- [ ] Run `python3 infra/smoke_test.py`: every check passes (22 read-only checks through the public URL).
 - [ ] Open the prototype URL in a private/incognito window: map loads, the three demo scenarios and the 5,000-resident scenario open, Find Resident `00954` works, Analyst Report and Verification tabs show content.
 - [ ] Video link opens while signed out (truly public).
 - [ ] Deck PDF opens, has no `[bracket]` placeholders left, and the closing slide has the prototype and video links.
