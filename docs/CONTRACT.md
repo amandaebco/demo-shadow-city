@@ -1,6 +1,6 @@
 # Shadow City — Integration Contract
 
-**Version:** v1.7 (frozen, 2026-10-18) — v1.1 adds the named Firestore database `shadow-city`; v1.2 adds the optional `population_id` field (2.1, 2.2) and clarifies the pre-Layer-5 System One decider (10.3); v1.3 adds the Track A-only `decision_cache` collection (5); v1.4 makes memory produced during a scenario scenario-scoped (2.1, 4.3, 5); v1.5 adds per-persona decision records for the evidence chain (4.5, 5); v1.6 moves the Gemma GPU to `asia-southeast1` and names the models (10.3); v1.7 adds persona clusters that share decisions (2.1, 4.6)
+**Version:** v1.8 (frozen, 2026-10-18) — v1.1 adds the named Firestore database `shadow-city`; v1.2 adds the optional `population_id` field (2.1, 2.2) and clarifies the pre-Layer-5 System One decider (10.3); v1.3 adds the Track A-only `decision_cache` collection (5); v1.4 makes memory produced during a scenario scenario-scoped (2.1, 4.3, 5); v1.5 adds per-persona decision records for the evidence chain (4.5, 5); v1.6 moves the Gemma GPU to `asia-southeast1` and names the models (10.3); v1.7 adds persona clusters that share decisions (2.1, 4.6); v1.8 adds `modes` on `transit_fare`, backtest definitions in Firestore and the direction-only backtest (2.2, 5, 8)
 **Status:** Frozen. Changes follow section 9.
 **GCP project:** `ebc-cloud-dev-03`
 **Source of truth for design:** `docs/REFERENCE.md`
@@ -100,6 +100,7 @@ Adding a value to an enum is a **minor** change (section 9). Removing or renamin
 ```
 
 - `change_ratio`: relative change. `1.0` = +100%, `-0.5` = −50%.
+- `modes` (optional on `transit_fare`, added in v1.8): the modes the fare change applies to, e.g. `["transjakarta", "mrt"]`; absent = every transit mode. Jakarta's Rp1 days covered Transjakarta, MRT Jakarta and LRT Jakarta but not KRL.
 - `zone` and `area_id` refer to polygons defined in `data/zones.geojson` (owner: Track B).
 - `base_scenario_id`: `null` for a baseline scenario.
 - `population_id` (optional, added in v1.2): set by Track A when the population is ready, before `scenario-start` is published. Scenarios with the same `seed` and `population_size` share one population, so a baseline and its variant use identical personas.
@@ -343,6 +344,7 @@ All paths below live in the **named Firestore database `shadow-city`** (Native m
 | `scenarios/{scenario_id}/memory/{persona_id}` | B (optional, 4.3) | Frontend, A |
 | `scenarios/{scenario_id}/decisions/{persona_id}` | B (4.5) | Frontend, A |
 | `reports/{report_id}` | A | Frontend |
+| `backtests/{backtest_id}` | A | A (served via §3) |
 | `decision_cache/{cache_key}` | A (`system-one`) | A only; Track B never reads or writes it |
 
 `decision_cache` makes System One deterministic (Layer 2): an identical decision request (same seed, tick, persona, options and context; `request_id` excluded) returns the stored decision instead of asking the model again. It changes nothing in the request/response shapes.
@@ -404,6 +406,10 @@ Codes: `INVALID_REQUEST`, `INVALID_SCENARIO`, `NOT_FOUND`, `MODEL_UNAVAILABLE`, 
 ```
 
 Reference values must come from a cited source; never fill them with guesses.
+
+**Direction-only backtest (v1.8).** When a source reports only the direction of a change, the definition in `backtests/{backtest_id}` carries `reference_direction` (`increase | decrease | no change`) and its `reference_source`, with `reference_value: null`. `GET /v1/backtests/{id}` then returns, computed from the two scenarios' metrics: `simulated_value` (change in transit share, Transjakarta + MRT + KRL, in percentage points), `simulated_direction` (changes under 0.5 pp count as `no change`), and `direction_match`.
+
+`b_0001`: scenario "Rp1 fare day" (`transit_fare`, `change_ratio: -0.9997`, `modes: ["transjakarta", "mrt"]`, same seed and population as the baseline) vs the demo baseline. Reference: ANTARA reported a "significant increase" in Transjakarta departures at Kampung Rambutan terminal on 24 April 2026 (https://megapolitan.antaranews.com/berita/525817/tarif-spesial-rp1-transjakarta-diserbu-penumpang-di-terminal-kampung-rambutan); no official daily ridership was found, so the magnitude stays "reference pending".
 
 ---
 

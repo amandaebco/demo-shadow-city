@@ -62,7 +62,7 @@ Copy each slide into the PPT, then export to PDF. Numbers come from the demo run
 - Orchestrator: FastAPI on Cloud Run (scenarios, population, comparison, analyst)
 - System One: FastAPI on Cloud Run (per-resident decisions, decision cache)
 - Gemini on Vertex AI · Firestore · Pub/Sub · Cloud Build CI
-- Diagram: the mermaid diagram in the root README
+- Diagram: `docs/submission/architecture.png` (1920×1080, one full slide)
 
 ## Slide 9 · Feasibility: it runs today
 - Live prototype: shadow-city.web.app
@@ -75,7 +75,8 @@ Copy each slide into the PPT, then export to PDF. Numbers come from the demo run
 - Untuned Gemma vs Gemini on 150 logged decisions: 100% valid structured output; same favourite option 50–63%; Gemini's favourite in Gemma's top two 75–83%
 - Next: distil Gemini into Gemma with 4,228 logged teacher decisions, then switch System One to Gemma
 - Cheaper Gemini today: thinking level `low` cuts cost per decision by 65% ($0.0020 → $0.0007) while keeping the same favourite in 87% of 100 logged decisions (Gemini agrees with itself 93% of the time)
-- Persona clustering: one decision shared by similar residents
+- Measured at scale: 5,000 residents simulated in ~2 minutes, 377 model calls instead of 5,000 (−92.5%), $0.72 per run; identical replay from cache for $0
+- Persona clustering: 1,000 residents → 106 clusters, 84–89% fewer model calls; the shared decision matches members' own choices in 75–89% of cases (random groups: 19–25%)
 - Parallel workers via Pub/Sub for thousands of residents
 - Any JAPAC city with OpenStreetMap and open population data
 

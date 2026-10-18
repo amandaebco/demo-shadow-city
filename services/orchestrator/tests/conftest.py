@@ -9,7 +9,7 @@ from app.main import app
 
 class FakeStore:
     def __init__(self):
-        self.scenarios, self.personas, self.metrics, self.reports = {}, {}, {}, {}
+        self.scenarios, self.personas, self.metrics, self.reports, self.backtests = {}, {}, {}, {}, {}
 
     def create_scenario(self, scenario):
         assert scenario["scenario_id"] not in self.scenarios
@@ -32,6 +32,9 @@ class FakeStore:
 
     def save_report(self, report):
         self.reports[report["report_id"]] = report
+
+    def get_backtest(self, backtest_id):
+        return self.backtests.get(backtest_id)
 
     def get_persona(self, persona_id):
         return self.personas.get(persona_id)
