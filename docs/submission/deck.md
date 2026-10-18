@@ -68,6 +68,7 @@ Copy each slide into the PPT, then export to PDF. Numbers come from the demo run
 - Gemma as System One is already live on a Cloud Run L4 GPU (Singapore), behind the same API
 - Untuned Gemma vs Gemini on 150 logged decisions: 100% valid structured output; same favourite option 50–63%; Gemini's favourite in Gemma's top two 75–83%
 - Next: distil Gemini into Gemma with 4,228 logged teacher decisions, then switch System One to Gemma
+- Cheaper Gemini today: thinking level `low` cuts cost per decision by 65% ($0.0020 → $0.0007) while keeping the same favourite in 87% of 100 logged decisions (Gemini agrees with itself 93% of the time)
 - Persona clustering: one decision shared by similar residents
 - Parallel workers via Pub/Sub for thousands of residents
 - Any JAPAC city with OpenStreetMap and open population data
