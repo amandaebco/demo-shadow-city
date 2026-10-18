@@ -12,9 +12,9 @@ import urllib.error
 import urllib.request
 
 DEMO = {
-    "baseline": "s_baseline_weekday_ea7247",
-    "parking": "s_central_parking_100_af902a",
-    "parking_flood": "s_central_parking_100_with_north_jakarta_t_78f06b",
+    "baseline": "s_baseline_weekday_c4d9d5",
+    "parking": "s_central_parking_100_3aeda8",
+    "parking_flood": "s_central_parking_100_with_north_jakarta_t_fe362a",
     "scale_5000": "s_layer_6_clustered_baseline_run_a_n_5000__0388aa",
 }
 FIRESTORE = "https://firestore.googleapis.com/v1/projects/ebc-cloud-dev-03/databases/shadow-city/documents"
@@ -64,9 +64,9 @@ def main() -> None:
     for label in ("parking", "parking_flood"):
         check(f"{label}: compare vs baseline", f"{api}/scenarios/{DEMO[label]}/compare",
               lambda b: "base" in b and "variant" in b)
-    check("persona p_s42_n1000_00954", f"{api}/personas/p_s42_n1000_00954", lambda b: b["usual_mode"])
+    check("persona p_s2026_n1000_r2_00747", f"{api}/personas/p_s2026_n1000_r2_00747", lambda b: b["usual_mode"])
     check("video resident decision (KRL)",
-          f"{FIRESTORE}/scenarios/{DEMO['parking_flood']}/decisions/p_s42_n1000_00954",
+          f"{FIRESTORE}/scenarios/{DEMO['parking_flood']}/decisions/p_s2026_n1000_r2_00747",
           lambda b: b["fields"]["decisions"]["arrayValue"]["values"][0]["mapValue"]["fields"]["chosen"]["stringValue"] == "krl")
     check("live ticks readable (tick 0100)", f"{FIRESTORE}/scenarios/{DEMO['baseline']}/ticks/0100",
           lambda b: "fields" in b)
