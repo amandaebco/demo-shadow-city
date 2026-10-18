@@ -68,6 +68,16 @@ class FirestoreStore:
         query = self._db.collection("personas").where(filter=FieldFilter("population_id", "==", population_id))
         return sorted((doc.to_dict() for doc in query.stream()), key=lambda p: p["persona_id"])
 
+    def update_clusters(self, assignment: dict[str, dict]) -> None:
+        """Set cluster_id and is_cluster_representative on existing personas."""
+        items = list(assignment.items())
+        collection = self._db.collection("personas")
+        for start in range(0, len(items), WRITE_BATCH_LIMIT):
+            batch = self._db.batch()
+            for persona_id, fields in items[start:start + WRITE_BATCH_LIMIT]:
+                batch.update(collection.document(persona_id), fields)
+            batch.commit()
+
     def write_personas(self, personas: list[dict]) -> None:
         collection = self._db.collection("personas")
         for start in range(0, len(personas), WRITE_BATCH_LIMIT):

@@ -24,6 +24,7 @@ from app.models import LAST_TICK, IncomeBand, Mode, Persona
 logger = logging.getLogger("orchestrator")
 
 BATCH_SIZE = 25
+MAX_PARALLEL_BATCHES = 16  # 5,000 residents = 200 batches; avoid hitting Gemini rate limits
 COORD_JITTER_DEG = 0.004
 OWNED_VEHICLES = {Mode.motorcycle, Mode.car}
 
@@ -47,7 +48,7 @@ def persona_id_for(population_id: str, index: int) -> str:
 
 
 def cluster_id_for(population_id: str, index: int) -> str:
-    # No clustering until Layer 6: every persona is its own cluster.
+    # Placeholder singleton cluster; app.clustering assigns real clusters before personas are stored.
     return f"c_{population_id.removeprefix('pop_')}_{index:05d}"
 
 
@@ -137,10 +138,15 @@ class PersonaGenerator:
         self._client = client
         self._model = model
         self._max_attempts = max_attempts
+        self._parallel = asyncio.Semaphore(MAX_PARALLEL_BATCHES)
 
     async def generate(self, skeletons: list[dict]) -> list[Persona]:
         batches = [skeletons[i:i + BATCH_SIZE] for i in range(0, len(skeletons), BATCH_SIZE)]
-        results = await asyncio.gather(*(self._generate_batch(b) for b in batches))
+        async def limited(batch):
+            async with self._parallel:
+                return await self._generate_batch(batch)
+
+        results = await asyncio.gather(*(limited(b) for b in batches))
         return [persona for batch in results for persona in batch]
 
     async def _generate_batch(self, skeletons: list[dict]) -> list[Persona]:

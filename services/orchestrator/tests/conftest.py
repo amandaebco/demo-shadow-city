@@ -50,6 +50,10 @@ class FakeStore:
         return sorted((p for p in self.personas.values() if p["population_id"] == population_id),
                       key=lambda p: p["persona_id"])
 
+    def update_clusters(self, assignment):
+        for pid, fields in assignment.items():
+            self.personas[pid].update(fields)
+
     def write_personas(self, personas):
         for p in personas:
             self.personas[p["persona_id"]] = p
