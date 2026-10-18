@@ -1,6 +1,6 @@
 # Shadow City — 3-minute demo video script
 
-About 440 words of narration, roughly 3 minutes at a normal pace. Record each segment separately and stitch them. Open https://shadow-city.web.app once before recording so every demo scenario is cached and switching is instant.
+About 480 words of narration, roughly 3 minutes 20 seconds at a normal pace (the rules allow 3 to 4 minutes; stay under 3:50). Record each segment separately and stitch them. Open https://shadow-city.web.app once before recording so every demo scenario is cached and switching is instant.
 
 | Time | On screen | Narration |
 | --- | --- | --- |
@@ -10,8 +10,9 @@ About 440 words of narration, roughly 3 minutes at a normal pace. Record each se
 | 1:05–1:25 | Scenario "Central parking +100% with North Jakarta tidal flood"; northern residents stuck | "Add a tidal flood in North Jakarta on the same day. Routes through the flood slow down, and residents adapt. Some can't: in Cilincing, twenty-six of twenty-nine residents are stuck." |
 | 1:25–1:50 | Find Resident `00954`; decision panel | "Every decision is explainable. This logistics supervisor depends on a motorcycle. Today that route is flooded: sixty-five minutes, twenty-five thousand rupiah. KRL takes seventy-five minutes for three thousand, and stays dry. So: KRL, and here is why, in the model's own words." |
 | 1:50–2:15 | Analyst Report tab (winners / losers) | "An analyst agent compares each policy with the baseline. The differences are computed by code; Gemini explains them. Doubling parking costs high-income residents most, but low-income residents lose time. And without a baseline, it refuses to claim an effect." |
-| 2:15–2:30 | Verification tab | "A separate verifier checks the simulation itself, against a cited BPS commuter survey. It even flags an implausible resident: a nineteen-year-old junior designer with a high income." |
-| 2:30–3:00 | Scenario "Scale: 5,000 residents (clustered)" with the Scale & cost card; then the architecture diagram | "And it scales. Similar residents share one decision: five thousand residents run in about two minutes, with three hundred seventy-seven model calls instead of five thousand, for under a dollar. It runs on Cloud Run, Firebase and Gemini, with Gemma already live on a GPU as the next System One. Shadow City: rehearse the policy, protect the residents." |
+| 2:15–2:35 | Verification tab | "A separate verifier checks the simulation itself: homes and ages against official Dukcapil population data, mode share against a cited BPS commuter survey. It even flags an implausible resident." |
+| 2:35–2:50 | Backtest tab | "We also backtest against a real day: Jakarta's Rp1 transit fare. The simulated transit share rises, the direction the news reported. No official daily ridership was published, so we compare direction only, and say so." |
+| 2:50–3:20 | Scenario "Scale: 5,000 residents (clustered)" with the Scale & cost card; then the architecture diagram | "And it scales. Similar residents share one decision: five thousand residents run in about two minutes, with three hundred seventy-seven model calls instead of five thousand, for under a dollar. It runs on Cloud Run, Firebase and Gemini, and Gemma on a Cloud Run GPU, distilled from Gemini to eighty-nine percent agreement, as the next System One. Shadow City: rehearse the policy, protect the residents." |
 
 ## Before recording
 
