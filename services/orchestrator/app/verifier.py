@@ -1,7 +1,8 @@
 """Verifier agent (Layer 4, REFERENCE.md §6.8; report shape CONTRACT.md §2.6).
 
 Checks whether a scenario's population and baseline results are plausible. Every status is
-decided by code against stated thresholds; where no official reference is integrated yet,
+decided by code against stated thresholds: homes and ages against official Dukcapil data,
+baseline mode share against a cited BPS survey. Where no official reference exists (income),
 the check says so with a warn instead of comparing against invented numbers. Gemini, in its
 own context (it never sees the prompts that created the personas), judges a sample of
 persona profiles for internal coherence.
@@ -14,6 +15,7 @@ from collections import Counter
 from google.genai import types
 
 from app.compare import KECAMATAN_OF
+from app.kelurahan import AGE_COUNTS, HOME_KELURAHAN, HOME_WEIGHTS, REFERENCE_SOURCE
 from app.costs import log_usage, usage_from_response
 
 COHERENCE_SAMPLE = 40
@@ -27,6 +29,9 @@ MODE_SHARE_REFERENCE = {
     "public_transport": 0.27,
 }
 PASS_PP, WARN_PP = 10.0, 20.0
+# Distribution checks: total-variation distance between our shares and the official ones.
+DIST_PASS, DIST_WARN = 0.10, 0.20
+AGE_GROUPS = [(18, 29, "18-29"), (30, 39, "30-39"), (40, 49, "40-49"), (50, 64, "50-64")]
 
 COHERENCE_INSTRUCTION = (
     "You audit synthetic residents of Jakarta for a transport simulator. For each resident, decide "
@@ -53,25 +58,57 @@ def check_population_size(scenario: dict, personas: list[dict]) -> dict:
     return _check("population_size_matches", status, f"{len(personas)} personas stored for population_size {expected}.")
 
 
+def _tv(ours: dict, ref: dict) -> float:
+    keys = set(ours) | set(ref)
+    return 0.5 * sum(abs(ours.get(k, 0.0) - ref.get(k, 0.0)) for k in keys)
+
+
+def _shares(counter: Counter) -> dict:
+    total = sum(counter.values()) or 1
+    return {k: v / total for k, v in counter.items()}
+
+
+def _band(tv: float) -> str:
+    return "pass" if tv <= DIST_PASS else "warn" if tv <= DIST_WARN else "fail"
+
+
 def check_home_spread(personas: list[dict]) -> dict:
-    homes = Counter((p.get("home") or {}).get("kelurahan") for p in personas)
-    kecamatan = {KECAMATAN_OF[k] for k in homes if k in KECAMATAN_OF}
+    """Residents per kecamatan vs official population shares (total-variation distance)."""
+    ours = _shares(Counter(KECAMATAN_OF.get((p.get("home") or {}).get("kelurahan")) for p in personas))
+    ours.pop(None, None)
+    ref = Counter()
+    for (name, kecamatan, _, _), weight in zip(HOME_KELURAHAN, HOME_WEIGHTS):
+        ref[kecamatan] += weight
+    tv = _tv(ours, _shares(ref))
     return _check(
-        "home_distribution_vs_reference", "warn",
-        f"Homes cover {len(homes)} kelurahan in {len(kecamatan)} of 42 mainland kecamatan, drawn uniformly per "
-        "kelurahan. No official population per kelurahan is integrated yet (TODO: Dukcapil/BPS), so density "
-        "is not compared against a reference.",
+        "home_distribution_vs_reference", _band(tv),
+        f"Residents per kecamatan vs official population shares: distance {tv:.2f} (pass ≤ {DIST_PASS}, warn ≤ "
+        f"{DIST_WARN}; 0 = identical). Reference: {REFERENCE_SOURCE}.",
     )
 
 
+def _age_group(age: int) -> str:
+    return next(label for low, high, label in AGE_GROUPS if low <= age <= high)
+
+
 def check_age(personas: list[dict]) -> dict:
-    ages = [p["age"] for p in personas if isinstance(p.get("age"), int)]
+    """Ages in four working-age groups vs the official structure of the residents' home kelurahan."""
+    ages = [p["age"] for p in personas if isinstance(p.get("age"), int) and 18 <= p["age"] <= 64]
     if not ages:
-        return _check("age_distribution_vs_reference", "fail", "No ages found.")
+        return _check("age_distribution_vs_reference", "fail", "No working-age residents found.")
+    ours = _shares(Counter(_age_group(a) for a in ages))
+    ref = Counter()
+    for counts in AGE_COUNTS.values():
+        for label, n in counts.items():
+            low = int(label.split()[0])
+            for age in range(max(18, low), low + 5):
+                ref[_age_group(age)] += n / 5
+    tv = _tv(ours, _shares(ref))
+    groups = ", ".join(f"{g} {ours.get(g, 0):.0%}" for _, _, g in AGE_GROUPS)
     return _check(
-        "age_distribution_vs_reference", "warn",
-        f"Ages {min(ages)}–{max(ages)}, median {statistics.median(ages):g}, drawn uniformly over working age. "
-        "No official age distribution is integrated yet (TODO: BPS), so it is not compared against a reference.",
+        "age_distribution_vs_reference", _band(tv),
+        f"Working-age residents by age group ({groups}) vs official structure: distance {tv:.2f} "
+        f"(pass ≤ {DIST_PASS}, warn ≤ {DIST_WARN}). Reference: {REFERENCE_SOURCE}.",
     )
 
 

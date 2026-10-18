@@ -34,13 +34,13 @@ def test_create_scenario_generates_population_and_publishes(client, deps):
     assert wait_for(lambda: deps.publisher.started)
     assert deps.publisher.started == [{"scenario_id": scenario_id, "seed": 42}]
     scenario = client.get(f"/v1/scenarios/{scenario_id}").json()
-    assert scenario["population_id"] == "pop_s42_n50"
+    assert scenario["population_id"] == "pop_s42_n50_r2"
     assert scenario["status"] == "generating_population"
     assert scenario["policies"] == BODY["policies"]
-    assert deps.store.count_personas("pop_s42_n50") == 50
+    assert deps.store.count_personas("pop_s42_n50_r2") == 50
 
-    persona = client.get("/v1/personas/p_s42_n50_00000").json()
-    assert persona["population_id"] == "pop_s42_n50"
+    persona = client.get("/v1/personas/p_s42_n50_r2_00000").json()
+    assert persona["population_id"] == "pop_s42_n50_r2"
     assert persona["memory"] == []
 
 
@@ -174,9 +174,19 @@ def test_verification_waits_for_metrics_then_is_stored(client, deps):
 def test_new_population_is_clustered(client, deps):
     client.post("/v1/scenarios", json=BODY | {"population_size": 60})
     assert wait_for(lambda: deps.publisher.started)
-    personas = [p for p in deps.store.personas.values() if p["population_id"] == "pop_s42_n60"]
+    personas = [p for p in deps.store.personas.values() if p["population_id"] == "pop_s42_n60_r2"]
     clusters = {}
     for p in personas:
         clusters.setdefault(p["cluster_id"], []).append(p["is_cluster_representative"])
     assert len(clusters) < len(personas)  # identical fake profiles share clusters
     assert all(reps.count(True) == 1 for reps in clusters.values())
+
+
+def test_existing_legacy_population_is_reused(client, deps):
+    legacy = [{"persona_id": f"p_s42_n50_{i:05d}", "population_id": "pop_s42_n50", "home": {"kelurahan": "Gambir"}}
+              for i in range(50)]
+    deps.store.write_personas(legacy)
+    scenario_id = client.post("/v1/scenarios", json=BODY).json()["scenario_id"]
+    assert wait_for(lambda: deps.publisher.started)
+    assert deps.store.scenarios[scenario_id]["population_id"] == "pop_s42_n50"
+    assert deps.models.calls == 0

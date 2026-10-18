@@ -18,7 +18,7 @@ import random
 from google.genai import types
 
 from app.costs import log_usage, usage_from_response
-from app.kelurahan import HOME_KELURAHAN, WORK_KELURAHAN
+from app.kelurahan import AGE_BINS, AGE_COUNTS, HOME_KELURAHAN, HOME_WEIGHTS, WORK_KELURAHAN
 from app.models import LAST_TICK, IncomeBand, Mode, Persona
 
 logger = logging.getLogger("orchestrator")
@@ -39,8 +39,32 @@ SYSTEM_INSTRUCTION = (
 )
 
 
+# Populations built with official population weights carry this suffix; earlier populations
+# (pop_s{seed}_n{size}) were drawn uniformly and are still reused as they are.
+REFERENCE_VERSION = "r2"
+
+
 def population_id_for(seed: int, size: int) -> str:
+    return f"pop_s{seed}_n{size}_{REFERENCE_VERSION}"
+
+
+def legacy_population_id_for(seed: int, size: int) -> str:
     return f"pop_s{seed}_n{size}"
+
+
+def sample_age(rng: random.Random, kelurahan: str) -> int:
+    """Age 18-64 from the kelurahan's official 5-year working-age bins."""
+    counts = AGE_COUNTS.get(kelurahan)
+    if not counts or not sum(counts.values()):
+        return rng.randint(18, 64)
+    weights = []
+    for label in AGE_BINS:
+        low = int(label.split()[0])
+        # The 15-19 bin only contributes its 18-19 part.
+        weights.append(counts[label] * (2 / 5 if low == 15 else 1))
+    label = rng.choices(AGE_BINS, weights=weights)[0]
+    low = int(label.split()[0])
+    return rng.randint(max(18, low), low + 4)
 
 
 def persona_id_for(population_id: str, index: int) -> str:
@@ -64,21 +88,22 @@ def _place(rng: random.Random, kelurahan: tuple) -> dict:
 def build_skeletons(seed: int, size: int) -> list[dict]:
     """Deterministic part of each persona.
 
-    TODO(data): age, income and kelurahan are drawn uniformly as placeholders; replace
-    with BPS distributions per kelurahan before any result is presented as realistic.
+    Home kelurahan is weighted by official population and age follows that kelurahan's official
+    working-age structure (app/kelurahan.py). TODO(data): income and workplace are placeholders.
     """
     rng = random.Random(seed)
     population_id = population_id_for(seed, size)
     income_bands = list(IncomeBand)
     skeletons = []
     for index in range(size):
+        home = rng.choices(HOME_KELURAHAN, weights=HOME_WEIGHTS)[0]
         skeletons.append({
             "persona_id": persona_id_for(population_id, index),
             "cluster_id": cluster_id_for(population_id, index),
             "population_id": population_id,
-            "home": _place(rng, rng.choice(HOME_KELURAHAN)),
+            "home": _place(rng, home),
             "work": _place(rng, rng.choice(WORK_KELURAHAN)),
-            "age": rng.randint(18, 64),
+            "age": sample_age(rng, home[0]),
             "income_band": rng.choice(income_bands).value,
         })
     return skeletons
