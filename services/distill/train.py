@@ -11,6 +11,7 @@ import math
 import os
 import random
 import re
+import shutil
 import time
 
 import torch
@@ -115,14 +116,28 @@ def evaluate(model, tokenizer, examples: list[dict], label: str) -> dict:
     return result
 
 
-def load_model():
+def local_copy(src: str, dst: str = "/tmp/model") -> str:
+    """Copy the model files sequentially to local disk: reading tensors one by one through the
+    bucket mount took ~30 minutes, a sequential copy takes a few."""
+    started = time.time()
+    os.makedirs(dst, exist_ok=True)
+    for name in sorted(os.listdir(src)):
+        path = os.path.join(src, name)
+        if os.path.isfile(path):
+            with open(path, "rb") as fin, open(os.path.join(dst, name), "wb") as fout:
+                shutil.copyfileobj(fin, fout, length=64 * 1024 * 1024)
+    log("model_copied", seconds=round(time.time() - started, 1))
+    return dst
+
+
+def load_model(model_dir: str):
     kwargs = {"dtype": torch.bfloat16, "device_map": "cuda"}
     try:
-        return AutoModelForCausalLM.from_pretrained(MODEL_DIR, **kwargs)
+        return AutoModelForCausalLM.from_pretrained(model_dir, **kwargs)
     except (ValueError, KeyError) as exc:
         log("fallback_model_class", error=str(exc)[:200])
         from transformers import AutoModelForImageTextToText
-        return AutoModelForImageTextToText.from_pretrained(MODEL_DIR, **kwargs)
+        return AutoModelForImageTextToText.from_pretrained(model_dir, **kwargs)
 
 
 def main() -> None:
@@ -134,10 +149,11 @@ def main() -> None:
         train = train[:MAX_TRAIN]
     log("start", model=MODEL_DIR, train=len(train), test=len(test), epochs=EPOCHS, lr=LR, lora_r=LORA_R)
 
-    tokenizer = AutoTokenizer.from_pretrained(MODEL_DIR)
+    model_dir = local_copy(MODEL_DIR)
+    tokenizer = AutoTokenizer.from_pretrained(model_dir)
     if tokenizer.pad_token is None:
         tokenizer.pad_token = tokenizer.eos_token
-    model = load_model()
+    model = load_model(model_dir)
     log("model_loaded", seconds=round(time.time() - START, 1), gpu_mem_gb=round(torch.cuda.memory_allocated() / 1e9, 1))
 
     before = evaluate(model, tokenizer, test, "before_tuning")

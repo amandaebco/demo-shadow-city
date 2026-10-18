@@ -16,7 +16,7 @@ gcloud run jobs deploy distill \
   --source="$REPO_ROOT/services/distill" \
   --service-account="sc-system-one@$GCP_PROJECT_ID.iam.gserviceaccount.com" \
   --gpu=1 --gpu-type=nvidia-l4 --no-gpu-zonal-redundancy \
-  --cpu=8 --memory=32Gi --task-timeout=10800 --max-retries=0 \
+  --cpu=8 --memory=32Gi --task-timeout=3600 --max-retries=0 \
   --add-volume=name=models,type=cloud-storage,bucket=vertex-model-garden-public-us,readonly=true \
   --add-volume-mount=volume=models,mount-path=/models \
   --quiet
