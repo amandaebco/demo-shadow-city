@@ -55,11 +55,12 @@ deploy_service() {
       # Public: called by the frontend (CONTRACT.md §3).
       # No CPU throttling: population generation runs after POST /v1/scenarios returns.
       flags=(--allow-unauthenticated --no-cpu-throttling --timeout=300
+             --min-instances="${ORCHESTRATOR_MIN_INSTANCES:-0}"
              --set-env-vars="$common_env,$gemini_env")
       ;;
     system-one)
       # Private: Track B workers call it with ID tokens (CONTRACT.md §4).
-      flags=(--no-allow-unauthenticated --timeout=120
+      flags=(--no-allow-unauthenticated --timeout=120 --min-instances=0
              --set-env-vars="$common_env,$gemini_env,DECIDER=${SYSTEM_ONE_DECIDER:-rule},BIGQUERY_DATASET=${BIGQUERY_DATASET:-}")
       ;;
   esac
@@ -73,7 +74,6 @@ deploy_service() {
     --platform=managed \
     --cpu=1 \
     --memory=512Mi \
-    --min-instances=0 \
     --max-instances=2 \
     "${flags[@]}" \
     --quiet
