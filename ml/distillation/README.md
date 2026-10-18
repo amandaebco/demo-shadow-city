@@ -71,3 +71,20 @@ Gemini decision from the demo runs: would the group's shared decision have match
 Without the flood split, the flood scenario matched 72%; splitting by the full option set instead
 saved only 67–73% for little gain. Agreement drops when a policy or event makes members' situations
 diverge: the cost of sharing, stated here rather than hidden.
+
+## Distillation result (2026-10-18)
+
+`services/distill` (Cloud Run Job, one NVIDIA L4, `asia-southeast1`): LoRA (r=16, attention only,
+5.4M trainable parameters) on Gemma 4 E2B, 2,000 teacher examples from `export_teacher_data.py`,
+one epoch, 36 minutes end to end. Evaluated on 200 held-out Gemini decisions never seen in
+training, same prompt and metrics before and after tuning:
+
+| Gemma 4 E2B | Valid JSON | Same favourite as Gemini | Gemini's favourite in top 2 | Mean TV distance |
+| --- | --- | --- | --- | --- |
+| Before tuning | 100% | 63.0% | 86.5% | 0.331 |
+| **After distillation** | **100%** | **89.0%** | **100%** | **0.097** |
+
+For scale: Gemini agrees with itself 93% of the time when asked the same question again
+(`eval_thinking.py`), so the distilled 2-billion-parameter-class model is within four points of
+Gemini's own consistency. The adapter is not yet served; next step: save it, load it in the Gemma
+service, and switch System One to `DECIDER=gemma`.
