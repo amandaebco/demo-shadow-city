@@ -1,6 +1,6 @@
 # Shadow City — Integration Contract
 
-**Version:** v1.6 (frozen, 2026-10-18) — v1.1 adds the named Firestore database `shadow-city`; v1.2 adds the optional `population_id` field (2.1, 2.2) and clarifies the pre-Layer-5 System One decider (10.3); v1.3 adds the Track A-only `decision_cache` collection (5); v1.4 makes memory produced during a scenario scenario-scoped (2.1, 4.3, 5); v1.5 adds per-persona decision records for the evidence chain (4.5, 5); v1.6 moves the Gemma GPU to `asia-southeast1` and names the models (10.3)
+**Version:** v1.7 (frozen, 2026-10-18) — v1.1 adds the named Firestore database `shadow-city`; v1.2 adds the optional `population_id` field (2.1, 2.2) and clarifies the pre-Layer-5 System One decider (10.3); v1.3 adds the Track A-only `decision_cache` collection (5); v1.4 makes memory produced during a scenario scenario-scoped (2.1, 4.3, 5); v1.5 adds per-persona decision records for the evidence chain (4.5, 5); v1.6 moves the Gemma GPU to `asia-southeast1` and names the models (10.3); v1.7 adds persona clusters that share decisions (2.1, 4.6)
 **Status:** Frozen. Changes follow section 9.
 **GCP project:** `ebc-cloud-dev-03`
 **Source of truth for design:** `docs/REFERENCE.md`
@@ -71,6 +71,7 @@ Adding a value to an enum is a **minor** change (section 9). Removing or renamin
 ```
 
 - `cost_sensitivity`, `time_sensitivity`: 0–1.
+- `cluster_id` and `is_cluster_representative` (added in v1.7): residents with similar profiles share a cluster; exactly one member per cluster is its representative. Set by Track A (4.6).
 - `population_id` (optional, added in v1.2): the population this persona belongs to. Track B loads a scenario's personas by querying `personas` where `population_id` equals the scenario's `population_id`.
 - `memory`: short strings, max 5 items, newest last. The persona's starting memory for every scenario; not changed during simulation (section 4.3).
 - `usual_departure_tick`: the tick the persona normally leaves home.
@@ -293,6 +294,17 @@ Memory produced during a scenario belongs to that scenario only, so that two run
 Until Layer 5, Track A provides `system-one` with `decided_by: "rule-fallback"`: it picks the option with the lowest weighted score of `time_sensitivity × est_minutes` and `cost_sensitivity × cost_idr` (normalized). Same request/response shape, so Track B can integrate from day one.
 
 ---
+
+### 4.6 Clusters share decisions (Layer 6)
+
+To scale to thousands of residents, Track B asks System One once per cluster instead of once per resident.
+
+1. At each decision point (tick), split a cluster's members by their flood signature: the set of options whose `flooded_on_route` is true for that member. Without an active flood every cluster is one group.
+2. Send one decision request per group, built from the context of the cluster representative if it is in the group, otherwise of the member with the lowest `persona_id`.
+3. Each member samples its own `chosen` from the returned `probabilities`, restricted to the options available to that member and rescaled to sum to 1, with the RNG seeded by `seed + tick + persona_id hash` of the member (as in 2.3). Each member's travel uses its own `options_detail`.
+4. A member's decision record (4.5) copies the shared `probabilities`, `reason_short` and `decided_by`, its own `chosen` and `options_detail`, and adds `"shared_from": "<persona_id whose request was sent>"`.
+
+Measured on the 1,000-resident demo population (`ml/distillation/README.md`): 106 clusters, so 84–89% fewer model calls; members' own decisions match their group's in 89% (baseline), 79% (parking +100%) and 75% (parking + flood) of cases, against 19–25% for random groups of the same sizes.
 
 ### 4.5 Decision records (evidence chain)
 
