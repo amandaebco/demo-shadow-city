@@ -16,6 +16,8 @@ class Settings:
     gemini_concurrency: int
     # Layer 2 determinism: replay identical decisions from Firestore decision_cache.
     decision_cache: bool
+    # Layer 4 evidence: also write every decision to BigQuery `{dataset}.decisions`. Empty = off.
+    bigquery_dataset: str
 
 
 def load_settings() -> Settings:
@@ -28,4 +30,5 @@ def load_settings() -> Settings:
         gemini_fallback_model=os.environ.get("GEMINI_FALLBACK_MODEL", "gemini-3.5-flash-lite"),
         gemini_concurrency=int(os.environ.get("GEMINI_CONCURRENCY", "16")),
         decision_cache=os.environ.get("DECISION_CACHE", "on") == "on",
+        bigquery_dataset=os.environ.get("BIGQUERY_DATASET", ""),
     )
