@@ -46,6 +46,10 @@ class FakeStore:
                 counts[p["home"]["kelurahan"]] = counts.get(p["home"]["kelurahan"], 0) + 1
         return counts
 
+    def personas_for(self, population_id):
+        return sorted((p for p in self.personas.values() if p["population_id"] == population_id),
+                      key=lambda p: p["persona_id"])
+
     def write_personas(self, personas):
         for p in personas:
             self.personas[p["persona_id"]] = p
@@ -92,6 +96,17 @@ class FakeReportWriter:
                 "headline": "Summary.", "generated_by": "gemini-system-two"}
 
 
+class FakeVerifier:
+    def __init__(self):
+        self.calls = 0
+
+    async def verify(self, scenario, metrics, personas):
+        self.calls += 1
+        return {"report_id": "r_verifier_" + scenario["scenario_id"].removeprefix("s_"),
+                "scenario_id": scenario["scenario_id"], "checks": [], "overall": "pass",
+                "persona_count": len(personas)}
+
+
 class FakeGeminiModels:
     """Answers every persona prompt with a valid profile for each listed index."""
 
@@ -122,12 +137,13 @@ def deps():
         models=models,
         generator=PersonaGenerator(fake_client(models), "fake-model"),
         report_writer=FakeReportWriter(),
+        verifier=FakeVerifier(),
     )
 
 
 @pytest.fixture
 def client(deps):
-    names = ("store", "generator", "publisher", "report_writer")
+    names = ("store", "generator", "publisher", "report_writer", "verifier")
     for name in names:
         setattr(app.state, name, getattr(deps, name))
     with TestClient(app) as test_client:

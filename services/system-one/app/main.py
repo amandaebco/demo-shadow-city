@@ -1,5 +1,6 @@
 """System One service: POST /v1/decide and GET /v1/health (CONTRACT.md §4)."""
 
+import asyncio
 import logging
 from contextlib import asynccontextmanager
 
@@ -10,6 +11,7 @@ from fastapi.responses import JSONResponse
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from app.config import Settings, load_settings
+from app.decision_log import BigQueryDecisionLog, decision_row
 from app.evidence import log_decision
 from app.models import DecideRequest, DecideResponse, DecisionRequestItem
 from app.outcome import Outcome
@@ -52,10 +54,22 @@ def build_decider(settings: Settings):
     raise ValueError(f"Unknown DECIDER '{settings.decider}' (expected 'rule' or 'gemini')")
 
 
+def build_decision_log(settings: Settings):
+    if not settings.bigquery_dataset:
+        return None
+    from google.cloud import bigquery
+
+    client = bigquery.Client(project=settings.project_id)
+    return BigQueryDecisionLog(client, f"{settings.project_id}.{settings.bigquery_dataset}.decisions")
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    settings = load_settings()
     if not hasattr(app.state, "decider"):
-        app.state.decider = build_decider(load_settings())
+        app.state.decider = build_decider(settings)
+    if not hasattr(app.state, "decision_log"):
+        app.state.decision_log = build_decision_log(settings)
     yield
 
 
@@ -99,7 +113,13 @@ def health(request: Request) -> dict:
 
 @app.post("/v1/decide", response_model=DecideResponse)
 async def decide_batch(body: DecideRequest, request: Request) -> DecideResponse:
-    outcomes = await request.app.state.decider.decide_batch(body.items)
+    state = request.app.state
+    outcomes = await state.decider.decide_batch(body.items)
     for item, outcome in zip(body.items, outcomes):
         log_decision(item, outcome.response, outcome.usage, outcome.cache)
+    if state.decision_log is not None:
+        rows = [decision_row(item, o.response, o.usage, o.cache) for item, o in zip(body.items, outcomes)]
+        # Written before responding: Cloud Run throttles CPU after a response, so a background
+        # write could stall or be lost when the instance scales down. Failures are only logged.
+        await asyncio.to_thread(state.decision_log.write, rows)
     return DecideResponse(items=[outcome.response for outcome in outcomes])

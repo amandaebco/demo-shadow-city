@@ -36,7 +36,22 @@ def item() -> dict:
     return copy.deepcopy(CONTRACT_EXAMPLE_ITEM)
 
 
+class RecordingDecisionLog:
+    def __init__(self):
+        self.rows = []
+
+    def write(self, rows):
+        self.rows.extend(rows)
+
+
 @pytest.fixture
-def client():
+def decision_log():
+    return RecordingDecisionLog()
+
+
+@pytest.fixture
+def client(decision_log):
+    app.state.decision_log = decision_log
     with TestClient(app) as test_client:
         yield test_client
+    del app.state.decision_log

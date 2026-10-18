@@ -37,6 +37,7 @@ def build_dependencies(settings: Settings) -> dict:
     from app.events import PubSubPublisher
     from app.population import PersonaGenerator
     from app.report import ReportWriter
+    from app.verifier import Verifier
     from app.store import FirestoreStore
 
     client = genai.Client(vertexai=True, project=settings.project_id, location=settings.gemini_location)
@@ -44,6 +45,7 @@ def build_dependencies(settings: Settings) -> dict:
         "store": FirestoreStore(firestore.Client(project=settings.project_id, database=settings.firestore_database)),
         "generator": PersonaGenerator(client, settings.gemini_model),
         "report_writer": ReportWriter(client, settings.gemini_model),
+        "verifier": Verifier(client, settings.gemini_model),
         "publisher": PubSubPublisher(settings.project_id, settings.topic_scenario_start, settings.topic_scenario_failed),
     }
 
@@ -207,6 +209,25 @@ async def get_report(scenario_id: str, request: Request) -> dict:
     except Exception as exc:
         logger.exception("Writing report for %s failed", scenario_id)
         raise ApiError(503, "MODEL_UNAVAILABLE", "Could not generate the report; retry later") from exc
+    await asyncio.to_thread(state.store.save_report, report)
+    return report
+
+
+@app.get("/v1/scenarios/{scenario_id}/verification")
+async def get_verification(scenario_id: str, request: Request) -> dict:
+    """Verifier report (CONTRACT.md §2.6), generated on first request once metrics exist, then stored."""
+    state = request.app.state
+    report_id = f"r_verifier_{scenario_id.removeprefix('s_')}"
+    stored = await asyncio.to_thread(state.store.get_report, report_id)
+    if stored:
+        return stored
+    scenario, metrics = await load_with_metrics(state.store, scenario_id)
+    if not scenario:
+        raise not_found("Scenario", scenario_id)
+    if not metrics or not scenario.get("population_id"):
+        raise ApiError(404, "NOT_FOUND", f"Verification for '{scenario_id}' is not available until its metrics exist")
+    personas = await asyncio.to_thread(state.store.personas_for, scenario["population_id"])
+    report = await state.verifier.verify(scenario, metrics, personas)
     await asyncio.to_thread(state.store.save_report, report)
     return report
 

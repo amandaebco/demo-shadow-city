@@ -60,7 +60,7 @@ deploy_service() {
     system-one)
       # Private: Track B workers call it with ID tokens (CONTRACT.md §4).
       flags=(--no-allow-unauthenticated --timeout=120
-             --set-env-vars="$common_env,$gemini_env,DECIDER=${SYSTEM_ONE_DECIDER:-rule}")
+             --set-env-vars="$common_env,$gemini_env,DECIDER=${SYSTEM_ONE_DECIDER:-rule},BIGQUERY_DATASET=${BIGQUERY_DATASET:-}")
       ;;
   esac
 
