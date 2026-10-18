@@ -18,7 +18,7 @@ import requests
 logger = logging.getLogger("sim_worker.system_one")
 
 MAX_BATCH_SIZE = 256
-SAFE_HTTP_CHUNK_SIZE = 64
+SAFE_HTTP_CHUNK_SIZE = 32
 DEFAULT_TIMEOUT_SEC = 300
 
 

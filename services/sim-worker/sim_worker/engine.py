@@ -51,6 +51,12 @@ def make_tick_rng(seed: int, tick: int, salt: str = "") -> random.Random:
 # Clustering is left off for these scenarios and they must never be overwritten.
 FROZEN_DEMO_SCENARIO_IDS: frozenset[str] = frozenset(
     {
+        # v2 official Dukcapil population (pop_s2026_n1000_r2, seed=2026)
+        "s_baseline_weekday_c4d9d5",
+        "s_central_parking_100_3aeda8",
+        "s_central_parking_100_with_north_jakarta_t_fe362a",
+        "s_rp1_fare_day_24_april_2026_e68060",
+        # v1 uniform population (pop_s42_n1000, seed=42)
         "s_baseline_weekday_ea7247",
         "s_central_parking_100_af902a",
         "s_central_parking_100_with_north_jakarta_t_78f06b",
